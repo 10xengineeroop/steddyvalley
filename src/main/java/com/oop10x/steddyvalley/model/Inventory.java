@@ -14,7 +14,15 @@ public class Inventory {
         inventory.put(item, inventory.getOrDefault(item, 0) + 1);
     }
 
-    public boolean addItem(Item item, int i) {
+    public void addItem(Item item, int i) {
         inventory.put(item, inventory.getOrDefault(item, 0) + i);
+    }
+
+    public void decreaseItem(Item item) {
+        decreaseItem(item, 1);
+    }
+
+    public void decreaseItem(Item item, int i) {
+        inventory.put(item, inventory.getOrDefault(item, 0) - i);
     }
 }

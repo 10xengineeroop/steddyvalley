@@ -1,6 +1,5 @@
 package com.oop10x.steddyvalley.model.locations;
 import com.oop10x.steddyvalley.model.Player;
-import com.oop10x.steddyvalley.model.Inventory;
 import com.oop10x.steddyvalley.model.items.Item;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,5 +38,6 @@ public class Shop extends Location {
             System.out.println("You don't have enough money to buy " + quantity + " " + itemName + "(s).");
             return;
         }
-        //belum ada cara buat masukin item ke inventory
+        player.addItem(item, quantity);
+    }
 }

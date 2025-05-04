@@ -1,19 +1,19 @@
 package com.oop10x.steddyvalley.model;
-import com.oop10x.steddyvalley.utils.Placeable;
-import com.oop10x.steddyvalley.utils.Position;
+import com.oop10x.steddyvalley.utils.*;
 import com.oop10x.steddyvalley.model.Player;
-import com.oop10x.steddyvalley.utils.Sellable;
 import com.oop10x.steddyvalley.model.items.Item;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ShippingBin implements Placeable, Sellable {
+public class ShippingBin implements Placeable, Sellable, Observer {
     private final Position position = new Position(0, 0);
-    private Map<Item, Integer> items = new HashMap<>(); // Item and jumlah
+    private final Map<Item, Integer> items = new HashMap<>(); // Item and jumlah
+    private final Player owner;
 
-    public ShippingBin(int x, int y) {
+    public ShippingBin(int x, int y, Player owner) {
         setX(x);
         setY(y);
+        this.owner = owner;
     }
 
     @Override
@@ -48,7 +48,16 @@ public class ShippingBin implements Placeable, Sellable {
         }
         return totalPrice;
     }
-    //masih perlu yang buat dijual di malam hari, keanya perlu observer buat nandain waktu
-    //masih perlu update uang yang didapat ke player
-    
+
+    @Override
+    public void update(EventType eventType, String message) {
+        if (eventType.equals(EventType.NEWDAY)) {
+            owner.setGold(owner.getGold() + getSellPrice());
+            items.clear();
+        }
+    }
+
+    public Player getOwner() {
+        return owner;
+    }
 }

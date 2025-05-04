@@ -70,4 +70,8 @@ public class Player {
     public void addItem(Item item) {
         inventory.addItem(item);
     }
+
+    public void addItem(Item item, Integer amount) {
+        inventory.addItem(item, amount);
+    }
 }
