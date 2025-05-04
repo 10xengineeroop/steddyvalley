@@ -30,6 +30,5 @@ public class Fish extends Item implements Sellable {
     }
 
     public int getSellPrice() {
-
     }
 }
