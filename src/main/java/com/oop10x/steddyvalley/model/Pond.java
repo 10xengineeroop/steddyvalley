@@ -1,8 +1,11 @@
 package com.oop10x.steddyvalley.model;
 
+import com.oop10x.steddyvalley.model.Player;
+import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.utils.Fishable;
 import com.oop10x.steddyvalley.utils.Placeable;
 import com.oop10x.steddyvalley.utils.Position;
+import com.oop10x.steddyvalley.utils.RNG;
 
 public class Pond implements Placeable, Fishable {
     private final Position position = new Position(0, 0);
@@ -39,7 +42,7 @@ public class Pond implements Placeable, Fishable {
     }
 
     public void Fish(Player player) {
-        if (isFishable()) {
+        if (isFishable(player)) {
             // Pada saat action Fishing dimulai, world time akan dihentikan, ditambah 15 menit, dan baru berlanjut kembali setelah action Fishing selesai. Mekanik dari action Fishing ini adalah dengan menggunakan RNG (random number generator), 
             // Tipe common: tebak angka 1-10 (maks. 10 percobaan)
             // Tipe regular: tebak angka 1-100 (maks. 10 percobaan)
@@ -58,8 +61,8 @@ public class Pond implements Placeable, Fishable {
             advance(15) ;
             int fishType = randomizeFishType() ; // 1-3 (common, regular, legendary)
             if (fishType == 1) {
-                int randomNumber = randomizeNumber(1, 10); //perlu rng
-                boolean guessed = playerGuess(randomNumber, 10); //mekanisme guessing?
+                int randomNumber = RNG.randomizeNumber(1, 10); //perlu rng
+                boolean guessed = RNG.playerGuess(randomNumber, 10); //mekanisme guessing?
                 if (guessed) {
                     add(Fish fish) ; 
                     System.out.println("You caught a common fish!");
@@ -69,8 +72,8 @@ public class Pond implements Placeable, Fishable {
             } 
             else if (fishType == 2) {
                 // Regular fish
-                int randomNumber = randomizeNumber(1, 100);
-                boolean guessed = playerGuess(randomNumber, 10);
+                int randomNumber = RNG.randomizeNumber(1, 100);
+                boolean guessed = RNG.playerGuess(randomNumber, 10);
                 if (guessed) {
                     add(Fish fish) ;
                     System.out.println("You caught a regular fish!");
@@ -80,8 +83,8 @@ public class Pond implements Placeable, Fishable {
             } 
             else if (fishType == 3) {
                 // Legendary fish
-                int randomNumber = randomizeNumber(1, 500);
-                boolean guessed = playerGuess(randomNumber, 7);
+                int randomNumber = RNG.randomizeNumber(1, 500);
+                boolean guessed = RNG.playerGuess(randomNumber, 7);
                 if (guessed) {
                     add(Fish fish) ;
                     System.out.println("You caught a legendary fish!");
