@@ -54,7 +54,7 @@ public class SeasonManager implements Observer, Observable {
     }
 
     @Override
-    public void notifyObservers(EventType type, String message) {
+    public void notifyObservers(EventType type, Object message) {
         observers.forEach(observer -> observer.update(type, message));
     }
 

@@ -4,7 +4,6 @@ import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.utils.*;
 import com.oop10x.steddyvalley.utils.Observer;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -20,11 +19,17 @@ public class FarmMap {
         placeShippingBin();
     }
 
-    private void placeHouse() {}
+    private void placeHouse() {
+        // TODO kode place house
+    }
 
-    private void placeShippingBin() {}
+    private void placeShippingBin() {
+        // TODO kode place shipping bin
+    }
 
-    private void placePond() {}
+    private void placePond() {
+        // TODO kode place pond
+    }
 
 
 }
@@ -42,7 +47,7 @@ class Land implements Actionable, Placeable, Observer {
     }
 
     @Override
-    public void onPlayerAction(@NotNull Player player) {
+    public void onPlayerAction(Player player) {
         if (player.getEquippedItem().getName().equals("Watering Can")) {
             setWatered(true);
             return;
@@ -124,7 +129,7 @@ class Land implements Actionable, Placeable, Observer {
     }
     private void plant(Seed s) {
         setSeed(s);
-        setStartPlantTime(player.getCurrentTime());
+        setStartPlantTime(TimeManager.getInstance().getMinutes());
         setEndPlantTime(getStartPlantTime() + (s.getDaysToHarvest() * 3600));
         setLandType(LandType.PLANTED);
     }
@@ -140,15 +145,15 @@ class Land implements Actionable, Placeable, Observer {
     }
 
     @Override
-    public void update(EventType eventType, String message) {
+    public void update(EventType eventType, Object message) {
         if (eventType.equals(EventType.NEWDAY)) {
             if (getLandType().equals(LandType.PLANTED) && !isWatered) {
                 witherCrop();
             }
         } else if (eventType.equals(EventType.NEWWEATHER)) {
-
+            // TODO kalo new weather
         } else if (eventType.equals(EventType.NEWSEASON)) {
-
+            // TODO kalo new season
         }
     }
 }

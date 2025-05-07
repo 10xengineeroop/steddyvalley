@@ -14,4 +14,17 @@ public abstract class Location implements Visitable{
     public void onVisit (Player player) {
         handleVisit(player);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Location location = (Location) o;
+        return name.equals(location.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

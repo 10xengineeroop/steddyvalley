@@ -14,11 +14,13 @@ public class TimeManager implements Observable {
     private int minutes;
     private final Timer timer;
     private final int SIXAM = 360;
+    private static TimeManager tm;
 
-    public TimeManager() {
+    private TimeManager() {
         observers = new ArrayList<>();
         timer = new Timer();
         minutes = SIXAM;
+        tm = this;
     }
 
     @Override
@@ -61,5 +63,22 @@ public class TimeManager implements Observable {
 
     public Timer getTimer() {
         return timer;
+    }
+
+    public int getMinutes() {
+        return minutes;
+    }
+
+    public void setMinutes(int minutes) {
+        stop();
+        this.minutes = minutes;
+        start();
+    }
+
+    public static TimeManager getInstance() {
+        if (tm == null) {
+            tm = new TimeManager();
+        }
+        return tm;
     }
 }

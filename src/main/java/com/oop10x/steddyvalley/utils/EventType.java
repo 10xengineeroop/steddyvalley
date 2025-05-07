@@ -4,5 +4,6 @@ public enum EventType {
     NEWDAY,
     NEWWEATHER,
     NEWSEASON,
-    TIMETICK
+    TIMETICK,
+    ACTION
 }
