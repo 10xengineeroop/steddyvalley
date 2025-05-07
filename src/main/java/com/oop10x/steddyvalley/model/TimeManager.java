@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TimeManager implements Observable {
     private final List<Observer> observers;
-    private int minutes;
+    private final AtomicInteger minutes = new AtomicInteger();
     private final Timer timer;
     private final int SIXAM = 360;
     private static TimeManager tm;
@@ -19,7 +20,7 @@ public class TimeManager implements Observable {
     private TimeManager() {
         observers = new ArrayList<>();
         timer = new Timer();
-        minutes = SIXAM;
+        minutes.set(SIXAM);
         tm = this;
     }
 
@@ -34,7 +35,7 @@ public class TimeManager implements Observable {
     }
 
     @Override
-    public void notifyObservers(EventType type, String message) {
+    public void notifyObservers(EventType type, Object message) {
         for (Observer o : observers) {
             o.update(type, message);
         }
@@ -44,17 +45,17 @@ public class TimeManager implements Observable {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                minutes += 5;
-                notifyObservers(EventType.TIMETICK, String.valueOf(minutes));
-                if ((minutes - SIXAM) % 1440 == 0) {
-                    notifyObservers(EventType.NEWDAY, String.valueOf(minutes));
+                minutes.addAndGet(5);
+                notifyObservers(EventType.TIMETICK, String.valueOf(minutes.get()));
+                if ((minutes.get() - SIXAM) % 1440 == 0) {
+                    notifyObservers(EventType.NEWDAY, String.valueOf(minutes.get()));
                 }
             }
         }, 0, 1000);
     }
 
     public void reset() {
-        minutes = 0;
+        minutes.set(0);
     }
 
     public void stop() {
@@ -66,12 +67,12 @@ public class TimeManager implements Observable {
     }
 
     public int getMinutes() {
-        return minutes;
+        return minutes.get();
     }
 
     public void setMinutes(int minutes) {
         stop();
-        this.minutes = minutes;
+        this.minutes.set(minutes);
         start();
     }
 

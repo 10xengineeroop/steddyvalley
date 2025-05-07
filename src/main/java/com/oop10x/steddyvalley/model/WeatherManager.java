@@ -34,14 +34,14 @@ public class WeatherManager implements Observable, Observer {
     }
 
     @Override
-    public void notifyObservers(EventType type, String message) {
+    public void notifyObservers(EventType type, Object message) {
         for (Observer observer : observers) {
             observer.update(type, message);
         }
     }
 
     @Override
-    public void update(EventType eventType, String message) {
+    public void update(EventType eventType, Object message) {
         if (eventType == EventType.NEWDAY) {
             startNewDay();
         }

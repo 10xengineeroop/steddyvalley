@@ -59,7 +59,7 @@ public class SeasonManager implements Observer, Observable {
     }
 
     @Override
-    public void update(EventType eventType, String message) {
+    public void update(EventType eventType, Object message) {
         if (eventType.equals(EventType.NEWDAY)) {
             handleNewDay();
         }
