@@ -23,9 +23,10 @@ public class RNG {
             // } else {
             //     System.out.println("Terlalu besar.");
             // }
-
             attempt++;
         }
+        scanner.close();
         return false;
+        
     }
 }
