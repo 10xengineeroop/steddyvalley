@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Fish extends Item implements Sellable {
+public class Fish extends Item {
     private int price;
     private Set<Season> seasonList = new HashSet<>();
     private Set<Weather> weatherList = new HashSet<>();

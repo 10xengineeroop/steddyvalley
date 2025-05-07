@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class FishStarter {
 
-    public void start() {
+    public static void start() {
         //    COMMON FISH
         Fish bullhead = new Fish(
                 "Bullhead",

@@ -5,7 +5,7 @@ import com.oop10x.steddyvalley.model.items.Item;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ShippingBin implements Placeable, Sellable, Observer {
+public class ShippingBin implements Placeable, Observer {
     private final Position position = new Position(0, 0);
     private final Map<Item, Integer> items = new HashMap<>(); // Item and jumlah
     private final Player owner;
@@ -40,7 +40,6 @@ public class ShippingBin implements Placeable, Sellable, Observer {
         items.put(item, items.getOrDefault(item, 0) + quantity);
     }
 
-    @Override
     public int getSellPrice() {
         int totalPrice = 0;
         for (Map.Entry<Item, Integer> entry : items.entrySet()) {
@@ -50,7 +49,7 @@ public class ShippingBin implements Placeable, Sellable, Observer {
     }
 
     @Override
-    public void update(EventType eventType, String message) {
+    public void update(EventType eventType, Object message) {
         if (eventType.equals(EventType.NEWDAY)) {
             owner.setGold(owner.getGold() + getSellPrice());
             items.clear();
