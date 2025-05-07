@@ -4,6 +4,7 @@ import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.Actionable;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class NPC implements Actionable {
@@ -13,15 +14,17 @@ public class NPC implements Actionable {
     private final Set<Item> likedItems;
     private final Set<Item> hatedItems;
     private RelStatus relationshipStatus;
+    private static Set<NPC> npcSet = new HashSet<>();
 
     // CONSTRUCTOR
-    public NPC(String name, int heartPoints, Set<Item> lovedItems, Set<Item> likedItems, Set<Item> hatedItems, RelStatus relationshipStatus) {
+    public NPC(String name, Set<Item> lovedItems, Set<Item> likedItems, Set<Item> hatedItems) {
         this.name = name;
-        this.heartPoints = heartPoints;
+        this.heartPoints = 0;
         this.lovedItems = lovedItems;
         this.likedItems = likedItems;
         this.hatedItems = hatedItems;
-        this.relationshipStatus = relationshipStatus;
+        this.relationshipStatus = RelStatus.SINGLE;
+        npcSet.add(this);
     }
 
     // GETTER DAN SETTER
@@ -67,5 +70,13 @@ public class NPC implements Actionable {
     @Override
     public void onPlayerAction(Player player) {
         // TODO atur ini
+    }
+
+    public void addNpc(NPC npc) {
+        npcSet.add(npc);
+    }
+
+    public void removeNpc(NPC npc) {
+        npcSet.remove(npc);
     }
 }
