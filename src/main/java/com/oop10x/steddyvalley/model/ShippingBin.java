@@ -1,6 +1,6 @@
 package com.oop10x.steddyvalley.model;
 import com.oop10x.steddyvalley.utils.*;
-import com.oop10x.steddyvalley.model.Player;
+//import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.items.Item;
 import java.util.HashMap;
 import java.util.Map;

@@ -5,6 +5,7 @@ import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.locations.Location;
 
 import java.util.*;
+//import com.oop10x.steddyvalley.model.items.Fish;
 
 public interface Fishable{
 
