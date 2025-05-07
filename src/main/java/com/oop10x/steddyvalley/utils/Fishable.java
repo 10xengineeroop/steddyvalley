@@ -2,14 +2,13 @@ package com.oop10x.steddyvalley.utils;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.items.Fish;
-import com.oop10x.steddyvalley.model.locations.Location;
 
 import java.util.*;
 //import com.oop10x.steddyvalley.model.items.Fish;
 
 public interface Fishable{
 
-    default void fish(Player player, Weather weather, Season season, Location location) {
+    default void fish(Player player, Weather weather, Season season, String location) {
         // GIMANA CARA HUBUNGIN INI DENGAN UI NANTI
         // STEP 0. NULL CHECKING DAN PRASYARAT
         if (player == null || weather == null || season == null || location == null) throw new NullPointerException();
