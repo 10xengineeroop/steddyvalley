@@ -1,21 +1,41 @@
 package com.oop10x.steddyvalley.model.items;
 
-import com.oop10x.steddyvalley.utils.Sellable;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Crop extends Item implements Sellable {
-    private final int sellPrice;
-    private final int energy;
-    public Crop(String name, int price, int energy, int sellPrice) {
-        super(name,price);
+public class Crop extends Item {
+    private final Integer sellPrice;
+    private final Integer cropPerHarvest;
+    private static final Set<Crop> cropSet = new HashSet<>();
+    public Crop(String name, Integer buyPrice, Integer sellPrice, Integer cropPerHarvest) {
+        super(name,buyPrice);
         this.sellPrice = sellPrice;
-        this.energy = energy;
+        this.cropPerHarvest = cropPerHarvest;
+        cropSet.add(this);
     }
 
-    public int getSellPrice() {
+    public static Crop getCropByName(String name){
+        for(Crop crop : cropSet){
+            if(crop.getName().equals(name)){
+                return crop;
+            }
+        }
+        throw new IllegalArgumentException("Crop not found");
+    }
+
+    public Integer getSellPrice() {
         return sellPrice;
     }
 
-    public int getEnergy() {
-        return energy;
+    public Integer getCropPerHarvest() {
+        return cropPerHarvest;
+    }
+
+    public static void addCrop(Crop crop){
+        cropSet.add(crop);
+    }
+
+    public static void removeCrop(Crop crop){
+        cropSet.remove(crop);
     }
 }

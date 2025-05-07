@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Fish extends Item implements Sellable {
+public class Fish extends Item {
     private int price;
     private Set<Season> seasonList = new HashSet<>();
     private Set<Weather> weatherList = new HashSet<>();
@@ -77,5 +77,14 @@ public class Fish extends Item implements Sellable {
 
     public static void removeFish(String fish) {
         fishSet.removeIf(f -> f.getName().equals(fish));
+    }
+
+    public static Fish getFishbyName(String name) {
+        for (Fish fish : fishSet) {
+            if (fish.getName().equals(name)) {
+                return fish;
+            }
+        }
+        throw new IllegalArgumentException("No Fish with name " + name + " found");
     }
 }

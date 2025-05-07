@@ -4,9 +4,10 @@ import com.oop10x.steddyvalley.exception.NegativePriceException;
 
 public class Item {
     private String name;
-    private int price;
+    private Integer price;
 
-    public Item(String name, int price) {
+    public Item(String name, Integer price) {
+        if (name == null) throw new NullPointerException("Name cannot be null");
         this.name = name;
         this.price = price;
     }
@@ -22,11 +23,11 @@ public class Item {
         this.name = name;
     }
 
-    public int getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Integer price) {
         if (price < 0) throw new NegativePriceException("Negative price");
         this.price = price;
     }
