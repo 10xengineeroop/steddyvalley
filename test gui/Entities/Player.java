@@ -12,7 +12,8 @@ public class Player extends Entity {
         this.gp = gp;
         this.keyH = keyH;
         solidArea = new Rectangle(8, 16, 32, 32); // Set the size of the collision area
-
+        solidAreaDefaultX = solidArea.x; // Set the default X position of the collision area
+        solidAreaDefaultY = solidArea.y; // Set the default Y position of the collision area
         setDefaultValues(); // Set default values for player attributes
         getPlayerImage();
     }
@@ -58,12 +59,15 @@ public class Player extends Entity {
 
         collisionOn = false; // Reset collision status
         gp.cChecker.checkTile(this); // Check for collision with tiles
+        int objIndex = gp.cChecker.checkObject(this, true); // Check for collision with objects
+        
         if (collisionOn == false) {
             if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true || keyH.rightPressed == true) { // If no collision, update position
                 switch (direction) {
                     case "up":
                         y -= speed;
                         //prevent continuous movement
+                        
                         break;
                     case "down":
                         y += speed;
@@ -85,6 +89,24 @@ public class Player extends Entity {
                 spriteNum = 1;
             }
             spriteCounter = 0;
+        }
+    }
+
+    public void objectAction(int i) {
+        if (i != 999) {
+            String objectName = gp.obj[i].name;
+            switch (objectName) {
+                case "Door":
+                    if (gp.gameState == gp.playState) {
+                        gp.gameState = gp.houseState ;
+                    }
+                    break;
+                case "Chest":
+                    // Do something with the chest
+                    System.out.println("You opened the chest!");
+                    break;
+                
+            }
         }
     }
     public void draw(Graphics2D g2) {

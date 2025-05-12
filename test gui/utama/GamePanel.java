@@ -19,12 +19,17 @@ public class GamePanel extends JPanel implements Runnable {
 
     public TileManager tileM = new TileManager(this); // Create a TileManager object
     Thread gameThread; // Thread for the game loop
-    public KeyHandler keyHandler = new KeyHandler(); 
+    public KeyHandler keyHandler = new KeyHandler(this); 
     public Player player = new Player(this, keyHandler); // Create a player object
     public int FPS = 60; // Frames per second
     public CollisionChecker cChecker = new CollisionChecker(this); // Create a CollisionChecker object
     public AssetSetter aSetter = new AssetSetter(this); // Create an AssetSetter object
     public SuperObject[] obj = new SuperObject[10]; // Array to hold game objects
+    public UI ui = new UI(this); // Create a UI object
+
+    public int gameState; // Variable to hold the current game state
+    public final int playState = 0; // Title screen state
+    public final int houseState = 1;
 
 
     public GamePanel() {
@@ -36,6 +41,7 @@ public class GamePanel extends JPanel implements Runnable {
     } 
     public void setupGame() {
         aSetter.setObject(); // Set up game objects
+        gameState = playState; // Set the initial game state
         
     }
     public void startGameThread() {
@@ -70,7 +76,14 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void Update() {
         // Update game state
-        player.update(); // Update the player
+        if (gameState == playState) {
+            player.update(); // Update the player
+        }
+        if (gameState == houseState) {
+            // Update game state for house
+             // Draw the UI
+            ui.draw((Graphics2D) getGraphics()); // Draw the UI
+        }
     }
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
