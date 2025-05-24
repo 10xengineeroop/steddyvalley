@@ -1,7 +1,7 @@
 package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.items.Item;
-import com.oop10x.steddyvalley.utils.Actionable;
+import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
 import java.util.HashSet;

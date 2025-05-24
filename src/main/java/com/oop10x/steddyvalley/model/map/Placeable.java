@@ -1,4 +1,4 @@
-package com.oop10x.steddyvalley.utils;
+package com.oop10x.steddyvalley.model.map;
 
 public interface Placeable {
     void setX(int x);

@@ -3,35 +3,56 @@ package com.oop10x.steddyvalley.model;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.Position;
 
-public class Player {
-    private static Player instance;
+import java.util.ArrayList;
+import java.util.List;
 
+
+public class Player {
     private int gold;
     private int energy;
     private final Position position;
     private Item equippedItem;
     private final Inventory inventory = new Inventory();
     private int currentTime;
+    private int speed ;
+
+    private final transient List<PlayerObserver> observers = new ArrayList<>();
 
 
-    private Player() {
-        this.position = new Position(0,0);
-        this.gold = 0;
-        this.energy = 0;
-        instance = this;
+
+    public Player(int x, int y, int gold, int energy, int speed) {
+        this.position = new Position(x,y);
+        this.gold = gold;
+        this.energy = energy;
+        this.currentTime = 0;
+        this.speed = speed;
+
     }
-    public static Player getInstance() {
-        if (instance == null) {
-            instance = new Player();
+    public void addObserver(PlayerObserver observer) {
+        if (observer != null && !observers.contains(observer)) {
+            observers.add(observer);
         }
-        return instance;
+    }
+    public void removeObserver(PlayerObserver observer) {
+        observers.remove(observer);
+    }
+    private void notifyObservers() {
+        // Membuat salinan untuk menghindari ConcurrentModificationException
+        List<PlayerObserver> observersCopy = new ArrayList<>(observers);
+        for (PlayerObserver observer : observersCopy) {
+            observer.onPlayerUpdated(this); // Mengirim instance Player saat ini
+        }
     }
     public int getGold() {
         return gold;
     }
+    public int getSpeed() {
+        return speed;
+    }
 
     public void setGold(int gold) {
         this.gold = gold;
+        notifyObservers();
     }
 
     public int getEnergy() {
@@ -40,6 +61,7 @@ public class Player {
 
     public void setEnergy(int energy) {
         this.energy = energy;
+        notifyObservers();
     }
 
     public Position getPosition() {
@@ -47,8 +69,27 @@ public class Player {
     }
 
     public void setPosition(int x, int y) {
-        position.setX(x);
-        position.setY(y);
+        boolean positionChanged = false;
+        if (this.position.getX() != x) {
+            this.position.setX(x);
+            positionChanged = true;
+        }
+        if (this.position.getY() != y) {
+            this.position.setY(y);
+            positionChanged = true;
+        }
+        if (positionChanged) {
+            notifyObservers();
+        }
+    }
+    public void move(int deltaX, int deltaY) {
+        if (deltaX != 0 || deltaY != 0) {
+            this.position.setX(this.position.getX() + deltaX);
+            this.position.setY(this.position.getY() + deltaY);
+            // Mungkin kurangi energi di sini juga jika bergerak mengurangi energi
+            // setEnergy(this.energy - 1); // Ini akan memanggil notifyObservers() juga
+            notifyObservers();
+        }
     }
 
     public Item getEquippedItem() {
@@ -57,6 +98,7 @@ public class Player {
 
     public void setEquippedItem(Item equippedItem) {
         this.equippedItem = equippedItem;
+        notifyObservers();
     }
 
     public int getCurrentTime() {
@@ -65,6 +107,7 @@ public class Player {
 
     public void setCurrentTime(int currentTime) {
         this.currentTime = currentTime;
+        notifyObservers();
     }
 
     public void addItem(Item item) {

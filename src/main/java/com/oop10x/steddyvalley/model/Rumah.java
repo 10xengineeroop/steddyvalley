@@ -1,6 +1,6 @@
 package com.oop10x.steddyvalley.model;
 
-import com.oop10x.steddyvalley.utils.Placeable;
+import com.oop10x.steddyvalley.model.map.Placeable;
 import com.oop10x.steddyvalley.utils.Position;
 
 public class Rumah implements Placeable {
