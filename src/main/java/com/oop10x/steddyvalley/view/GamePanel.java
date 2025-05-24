@@ -88,6 +88,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         } else if (currentGameState == GameState.HOUSE_STATE) {
             drawHouseState(g2);
         }
+        else if (currentGameState == GameState.SLEEP_STATE) {
+            drawSleepState(g2);
+        }
         g2.dispose();
     }
 
@@ -107,7 +110,8 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.setColor(Color.WHITE);
         g2.setFont(g2.getFont().deriveFont(14F));
         g2.drawString("Player X: " + playerScreenX + " Y: " + playerScreenY, 10, 20);
-        g2.drawString("STATE: PLAYING (ESC:Pause, I:Inv, Enter:Action)", 10, 40);
+        g2.drawString("STATE: PLAYING (ESC:Pause, I:Inv, E:Action)", 10, 40);
+        g2.drawString("Gold: " + playerModel.getGold() + " Energy: " + playerModel.getEnergy(), 10, 80);
         if (playerModel.getEquippedItem() != null) {
             g2.drawString("Equipped: " + playerModel.getEquippedItem().getName(), 10, 60);
         }
@@ -186,6 +190,30 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         return SCREEN_WIDTH / 2 - (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2;
     }
 
+    private void drawSleepState(Graphics2D g2) {
+        drawPlayState(g2); // Atau g2.setColor(Color.BLACK); g2.fillRect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+
+        // Overlay semi-transparan
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Tampilkan pesan transisi
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 28));
+        String message = gameController.getTransitionMessage(); // Ambil pesan dari controller
+        if (message == null || message.isEmpty()) {
+            message = "Processing..."; // Pesan default jika tidak ada
+        }
+
+        int x = getXforCenteredText(message, g2);
+        int y = SCREEN_HEIGHT / 2 - 30;
+        g2.drawString(message, x, y);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        String continueMessage = "Press Enter or Esc to continue...";
+        x = getXforCenteredText(continueMessage, g2);
+        g2.drawString(continueMessage, x, y + 50);
+    }
     @Override public void onPlayerUpdated(Player player) { /* ... */ }
     @Override public void onGameStateChanged(int newState, int oldState) { /* ... */ }
 }

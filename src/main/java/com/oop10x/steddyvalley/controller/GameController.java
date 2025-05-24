@@ -23,6 +23,7 @@ public class GameController implements PlayerInputActions {
     private CollisionChecker collisionChecker;
     private TimeManager timeManager; // Untuk mendapatkan waktu saat ini
     private int tileSize;
+    private String transitionMessage;
 
     //house punya
     private List<String> houseActions = List.of("Sleep", "Cook", "Watch TV") ;
@@ -83,11 +84,21 @@ public class GameController implements PlayerInputActions {
     @Override public void setMoveRight(boolean active) { this.moveRightActive = active; }
 
     @Override
-    public void togglePause() {
-        if (gameStateModel.isPlaying()) gameStateModel.setCurrentState(GameState.PAUSE_STATE);
-        else if (gameStateModel.isPaused()) gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        else if (gameStateModel.isInInventory()) gameStateModel.setCurrentState(GameState.PLAY_STATE); // Esc dari inventory
+    public void togglePause() { // Tombol Escape
+    int currentState = gameStateModel.getCurrentState();
+    if (currentState == GameState.PLAY_STATE) {
+        gameStateModel.setCurrentState(GameState.PAUSE_STATE);
+    } else if (currentState == GameState.PAUSE_STATE) {
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+    } else if (currentState == GameState.INVENTORY_STATE) {
+        gameStateModel.setCurrentState(GameState.PLAY_STATE); // Keluar dari inventory
+    } else if (currentState == GameState.HOUSE_STATE) {
+        gameStateModel.setCurrentState(GameState.PLAY_STATE); // Keluar dari menu rumah
+    } else if (currentState == GameState.SLEEP_STATE) {
+        gameStateModel.setCurrentState(GameState.HOUSE_STATE); // Keluar dari transisi tidur
+        transitionMessage = ""; // Bersihkan pesan
     }
+}
 
     @Override
     public void toggleInventory() {
@@ -97,87 +108,92 @@ public class GameController implements PlayerInputActions {
 
     @Override
     public void performPrimaryAction() {
-        if (gameStateModel.isInHouse()) {
-            gameStateModel.setCurrentState(GameState.PLAY_STATE);
-            return;
-        }
-        if (!gameStateModel.isPlaying()) return;
+        int currentState = gameStateModel.getCurrentState(); // Ambil state saat ini sekali
 
-        int playerPixelX = playerModel.getPosition().getX();
-        int playerPixelY = playerModel.getPosition().getY();
-        int playerTileX = playerPixelX / tileSize;
-        int playerTileY = playerPixelY / tileSize;
-        // String playerDirection = playerModel.getDirection(); // Jika Player punya arah hadap
-
-        DeployedObject adjacentObject = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
-
-        if (adjacentObject != null && adjacentObject instanceof Actionable) {
-            System.out.println("DEBUG GC: Player attempting to interact with adjacent DeployedObject: " + adjacentObject.getObjectName());
-            if (adjacentObject instanceof HouseObject) {
-                gameStateModel.setCurrentState(GameState.HOUSE_STATE);
-                selectedHouseActionIndex = 0;
-                //updateCurrentHouseActionView() ;
-                return;
-            }
-            else if (adjacentObject instanceof Actionable){
-                ((Actionable) adjacentObject).onPlayerAction(playerModel);
-            }
-            // Di sini Anda bisa menambahkan logika pengurangan energi atau pemajuan waktu jika interaksi berhasil
-            // playerModel.setEnergy(playerModel.getEnergy() - COST_INTERACT_HOUSE);
-            // timeManager.advanceTime(MINUTES_INTERACT_HOUSE);
-            return; // Interaksi dengan DeployedObject selesai, tidak perlu cek Land di bawah.
-        } 
-        if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
+        // 1. Tangani aksi spesifik untuk HOUSE_STATE terlebih dahulu
+        if (currentState == GameState.HOUSE_STATE) {
             if (!houseActions.isEmpty() && selectedHouseActionIndex >= 0 && selectedHouseActionIndex < houseActions.size()) {
                 String selectedAction = houseActions.get(selectedHouseActionIndex);
                 System.out.println("Player selected action in house: " + selectedAction);
-                handleHouseAction(selectedAction); // Metode baru untuk menangani aksi rumah
+                handleHouseAction(selectedAction); // Ini akan memanggil setCurrentState untuk SLEEP_STATE, COOK, dll.
             }
-            return; // Setelah aksi di rumah, jangan proses aksi lain
+            // Setelah aksi di menu rumah ditangani (atau tidak ada aksi valid),
+            // kita hentikan proses untuk tombol 'E' ini.
+            return;
         }
 
-        // 2. Cek interaksi dengan Land di bawah pemain
-        Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
-        if (currentLand != null) {
-            Item equippedItem = playerModel.getEquippedItem(); // Asumsi Player punya metode ini
-            boolean actionTaken = false;
+        // 2. Tangani aksi untuk keluar dari SLEEP_STATE jika 'E' juga berfungsi sebagai tombol "lanjut"
+        // (Tombol 'Escape' Anda di togglePause() sudah menangani ini, jadi ini opsional untuk 'E')
+        if (currentState == GameState.SLEEP_STATE) {
+            // Anda mungkin ingin kembali ke PLAY_STATE atau HOUSE_STATE
+            gameStateModel.setCurrentState(GameState.PLAY_STATE); // atau GameState.HOUSE_STATE
+            transitionMessage = ""; // Bersihkan pesan transisi
+            System.out.println("Exiting sleep state via E press (Primary Action)");
+            return;
+        }
 
-            if (equippedItem != null) { // Pastikan ada item yang dipegang
-                // Contoh sederhana, Anda perlu kelas Tool atau cara lain untuk identifikasi
-                if ("Hoe".equals(equippedItem.getName())) { // Ganti dengan instanceof HoeTool jika ada
-                    if (currentLand.till(playerModel)) { // Metode till di Land sekarang mengembalikan boolean
-                        // playerModel.useEnergy(5); // Energi dikurangi di Controller
-                        actionTaken = true;
+        // 3. Logika asli untuk PLAY_STATE (berinteraksi dengan dunia, objek, tanah)
+        // Pastikan ini hanya berjalan jika benar-benar dalam PLAY_STATE
+        if (currentState == GameState.PLAY_STATE) {
+            int playerPixelX = playerModel.getPosition().getX();
+            int playerPixelY = playerModel.getPosition().getY();
+            int playerTileX = playerPixelX / tileSize;
+            int playerTileY = playerPixelY / tileSize;
+
+            // A. Interaksi dengan DeployedObject yang berdekatan (atau dihadapi)
+            // PERHATIAN: Apakah farmMapModel.getAdjacentInteractableDeployedObject() sudah
+            // memperhitungkan ARAH HADAP pemain? Jika belum, interaksi tidak akan sesuai
+            // dengan objek yang dihadapi pemain. Anda mungkin perlu menggunakan logika targetTileX/Y
+            // berdasarkan playerModel.getDirection() seperti diskusi kita sebelumnya.
+            DeployedObject adjacentObject = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
+
+            if (adjacentObject != null) { // Tidak perlu cek instanceof Actionable di sini jika getAdjacent... sudah memfilter
+                System.out.println("DEBUG GC: Player attempting to interact with DeployedObject: " + adjacentObject.getObjectName());
+                if (adjacentObject instanceof HouseObject) {
+                    gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+                    selectedHouseActionIndex = 0; // Reset pilihan menu rumah
+                    return; // Masuk rumah, selesai.
+                } 
+                else if (adjacentObject instanceof Actionable) {
+                    // Untuk objek lain seperti ShippingBin, Pond, dll.
+                    ((Actionable) adjacentObject).onPlayerAction(playerModel);
+                    // Tambahkan logika energi/waktu jika perlu
+                    return; // Interaksi dengan objek selesai.
+                }
+            }
+
+            // B. Jika tidak ada interaksi objek, cek interaksi dengan Land
+            Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
+            if (currentLand != null) {
+                Item equippedItem = playerModel.getEquippedItem();
+                boolean actionTaken = false;
+
+                if (equippedItem != null) {
+                    if ("Hoe".equals(equippedItem.getName())) {
+                        if (currentLand.till(playerModel)) actionTaken = true;
+                    } else if (equippedItem instanceof Seed) {
+                        if (currentLand.plant((Seed) equippedItem, playerModel, timeManager.getMinutes())) actionTaken = true;
+                    } else if ("Watering Can".equals(equippedItem.getName())) {
+                        if (currentLand.water(playerModel)) actionTaken = true;
                     }
-                } else if (equippedItem instanceof Seed) {
-                    if (currentLand.plant((Seed) equippedItem, playerModel, timeManager.getMinutes())) {
-                        // playerModel.getInventory().removeItem(equippedItem, 1);
-                        // playerModel.useEnergy(2);
-                        actionTaken = true;
-                    }
-                } else if ("Watering Can".equals(equippedItem.getName())) { // Ganti dengan instanceof
-                    if (currentLand.water(playerModel)) {
-                        // playerModel.useEnergy(1);
+                }
+                if (!actionTaken) { // Jika belum ada aksi dari item, coba panen
+                    Item harvestedCrop = currentLand.harvest(playerModel, timeManager.getMinutes());
+                    if (harvestedCrop != null) {
+                        // playerModel.getInventory().addItem(harvestedCrop);
                         actionTaken = true;
                     }
                 }
-            }
-            // Interaksi panen (mungkin tidak perlu item khusus)
-            if (!actionTaken) { // Jika belum ada aksi dari item, coba panen
-                Item harvestedCrop = currentLand.harvest(playerModel, timeManager.getMinutes());
-                if (harvestedCrop != null) {
-                    // playerModel.getInventory().addItem(harvestedCrop);
-                    // playerModel.useEnergy(0); // Panen mungkin tidak butuh energi
-                    actionTaken = true;
-                }
-            }
 
-            if (actionTaken) {
-                // playerModel.notifyObservers(); // Jika aksi mengubah state player yang perlu di-render ulang
-                System.out.println("Action performed on Land at: " + playerTileX + "," + playerTileY);
+                if (actionTaken) {
+                    System.out.println("Action performed on Land at: " + playerTileX + "," + playerTileY);
+                }
+                // Interaksi Land selesai (atau tidak ada aksi), bisa return atau lanjut jika ada logika lain.
+                return;
             }
+            // Tidak ada interaksi objek atau Land yang terjadi.
         }
-        // TODO: 3. Cek interaksi tepi peta untuk visiting
+        return ;
     }
 
     public void updateGameLogic() {
@@ -220,11 +236,27 @@ public class GameController implements PlayerInputActions {
     private void handleHouseAction(String action) {
         switch (action) {
             case "Sleep":
-                // Logika tidur, misalnya set waktu ke pagi
-                //timeManager.setTimeToMorning();
-                gameStateModel.setCurrentState(GameState.PLAY_STATE);
-                System.out.println("Player slept and time is now morning.");
-                break;
+                int energyBeforeSleep = playerModel.getEnergy();
+                int maxEnergy = 100 ;
+                int energyRestored;
+            if (energyBeforeSleep < maxEnergy * 0.1) { // Jika energi < 10%
+                playerModel.setEnergy(maxEnergy / 2); // Hanya pulih setengah
+                energyRestored = (maxEnergy / 2) - energyBeforeSleep;
+            } else {
+                playerModel.setEnergy(maxEnergy); // Pulih penuh
+                energyRestored = maxEnergy - energyBeforeSleep;
+            }
+            // Pastikan energi tidak melebihi maxEnergy jika ada logika penambahan
+            if (playerModel.getEnergy() > maxEnergy) playerModel.setEnergy(maxEnergy);
+
+
+            // Logika memajukan waktu ke pagi berikutnya (perlu implementasi di TimeManager)
+            // timeManager.skipToNextMorning(); // Ini akan memicu NEWDAY
+            System.out.println("Player is sleeping... (Time skipping logic TODO)");
+
+            transitionMessage = "You slept well. Energy +" + Math.max(0, energyRestored) + ".";
+            gameStateModel.setCurrentState(GameState.SLEEP_STATE);
+            break;
             case "Cook":
                 // Logika memasak, misalnya buka UI memasak
                 System.out.println("Opening cooking interface...");
@@ -244,5 +276,8 @@ public class GameController implements PlayerInputActions {
     }
     public int getSelectedHouseActionIndex() {
         return selectedHouseActionIndex;
+    }
+    public String getTransitionMessage() {
+        return transitionMessage;
     }
 }

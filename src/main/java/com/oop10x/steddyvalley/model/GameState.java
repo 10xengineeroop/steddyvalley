@@ -9,7 +9,7 @@ public class GameState {
     public static final int PLAY_STATE = 1;
     public static final int PAUSE_STATE = 2;
     public static final int INVENTORY_STATE = 3;
-    public static final int DIALOGUE_STATE = 4; // Contoh state lain
+    public static final int SLEEP_STATE = 4; // Contoh state lain
     // Tambahkan state lain sesuai kebutuhan game Anda
 
     private int currentState;
