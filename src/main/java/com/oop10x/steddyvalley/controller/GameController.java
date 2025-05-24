@@ -12,7 +12,8 @@ import com.oop10x.steddyvalley.model.items.Seed;
 // import com.oop10x.steddyvalley.model.items.WateringCanTool;
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.Land;
-import com.oop10x.steddyvalley.model.objects.DeployedObject;
+import com.oop10x.steddyvalley.model.objects.*;
+import java.util.List;
 
 public class GameController implements PlayerInputActions {
 
@@ -22,6 +23,10 @@ public class GameController implements PlayerInputActions {
     private CollisionChecker collisionChecker;
     private TimeManager timeManager; // Untuk mendapatkan waktu saat ini
     private int tileSize;
+
+    //house punya
+    private List<String> houseActions = List.of("Sleep", "Cook", "Watch TV") ;
+    private int selectedHouseActionIndex = 0; 
 
     private boolean moveUpActive, moveDownActive, moveLeftActive, moveRightActive;
 
@@ -35,8 +40,45 @@ public class GameController implements PlayerInputActions {
         this.tileSize = tileSize;
     }
 
-    @Override public void setMoveUp(boolean active) { this.moveUpActive = active; }
-    @Override public void setMoveDown(boolean active) { this.moveDownActive = active; }
+    @Override 
+    public void setMoveUp(boolean active) { 
+        if (active) {
+            if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
+                if (!houseActions.isEmpty()) {
+                    selectedHouseActionIndex-- ;
+                    if (selectedHouseActionIndex < 0) {
+                        selectedHouseActionIndex = houseActions.size() - 1; // Loop ke bawah
+                    }
+                }
+            }
+
+        }
+        if (gameStateModel.isPlaying()) {
+            this.moveUpActive = active; 
+        } 
+        if (!active && gameStateModel.isPlaying()) {
+            this.moveUpActive = false; 
+        }
+    }
+    @Override 
+    public void setMoveDown(boolean active) {
+        if (active) {
+            if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
+                if (!houseActions.isEmpty()) {
+                    selectedHouseActionIndex++ ;
+                    if (selectedHouseActionIndex >= houseActions.size()) {
+                        selectedHouseActionIndex = 0; // Loop ke atas
+                    }
+                }
+            }
+        }
+        if (gameStateModel.isPlaying()) {
+            this.moveDownActive = active; 
+        }
+        if (!active && gameStateModel.isPlaying()) {
+            this.moveDownActive = false; 
+        }
+    }
     @Override public void setMoveLeft(boolean active) { this.moveLeftActive = active; }
     @Override public void setMoveRight(boolean active) { this.moveRightActive = active; }
 
@@ -71,13 +113,27 @@ public class GameController implements PlayerInputActions {
 
         if (adjacentObject != null && adjacentObject instanceof Actionable) {
             System.out.println("DEBUG GC: Player attempting to interact with adjacent DeployedObject: " + adjacentObject.getObjectName());
-            ((Actionable) adjacentObject).onPlayerAction(playerModel, gameStateModel);
+            if (adjacentObject instanceof HouseObject) {
+                gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+                selectedHouseActionIndex = 0;
+                //updateCurrentHouseActionView() ;
+                return;
+            }
+            else if (adjacentObject instanceof Actionable){
+                ((Actionable) adjacentObject).onPlayerAction(playerModel);
+            }
             // Di sini Anda bisa menambahkan logika pengurangan energi atau pemajuan waktu jika interaksi berhasil
             // playerModel.setEnergy(playerModel.getEnergy() - COST_INTERACT_HOUSE);
             // timeManager.advanceTime(MINUTES_INTERACT_HOUSE);
             return; // Interaksi dengan DeployedObject selesai, tidak perlu cek Land di bawah.
-        } else {
-            // System.out.println("DEBUG GC: No adjacent interactable DeployedObject found.");
+        } 
+        if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
+            if (!houseActions.isEmpty() && selectedHouseActionIndex >= 0 && selectedHouseActionIndex < houseActions.size()) {
+                String selectedAction = houseActions.get(selectedHouseActionIndex);
+                System.out.println("Player selected action in house: " + selectedAction);
+                handleHouseAction(selectedAction); // Metode baru untuk menangani aksi rumah
+            }
+            return; // Setelah aksi di rumah, jangan proses aksi lain
         }
 
         // 2. Cek interaksi dengan Land di bawah pemain
@@ -160,5 +216,33 @@ public class GameController implements PlayerInputActions {
                 playerModel.setPosition(nextX, nextY);
             }
         }
+    }
+    private void handleHouseAction(String action) {
+        switch (action) {
+            case "Sleep":
+                // Logika tidur, misalnya set waktu ke pagi
+                //timeManager.setTimeToMorning();
+                gameStateModel.setCurrentState(GameState.PLAY_STATE);
+                System.out.println("Player slept and time is now morning.");
+                break;
+            case "Cook":
+                // Logika memasak, misalnya buka UI memasak
+                System.out.println("Opening cooking interface...");
+                // gameStateModel.setCurrentState(GameState.COOKING_STATE); // Jika ada state khusus
+                break;
+            case "Watch TV":
+                // Logika menonton TV, misalnya buka UI TV
+                System.out.println("Opening TV interface...");
+                // gameStateModel.setCurrentState(GameState.TV_STATE); // Jika ada state khusus
+                break;
+            default:
+                System.out.println("Unknown house action: " + action);
+        }
+    }
+    public List<String> getHouseActions() {
+        return houseActions;
+    }
+    public int getSelectedHouseActionIndex() {
+        return selectedHouseActionIndex;
     }
 }

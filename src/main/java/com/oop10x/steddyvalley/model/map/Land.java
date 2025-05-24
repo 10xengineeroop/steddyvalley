@@ -150,7 +150,7 @@ public class Land implements Actionable, Placeable, Observer {
         // Implementasi untuk NEWWEATHER, NEWSEASON jika diperlukan
         
     }
-    public void onPlayerAction(Player player, GameState gameState) {
+    public void onPlayerAction(Player player) {
             Item equippedItem = player.getEquippedItem();
             if (equippedItem == null) {
                 System.out.println("Player has no equipped item.");

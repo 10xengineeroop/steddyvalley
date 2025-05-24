@@ -17,6 +17,7 @@ import java.awt.Graphics2D;
 // import com.oop10x.steddyvalley.model.items.Item;
 // import com.oop10x.steddyvalley.model.Inventory;
 // import java.util.Map;
+import java.util.List;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
@@ -136,14 +137,50 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         // ...
     }
     private void drawHouseState(Graphics2D g2) { 
-        // Gambar rumah (contoh sederhana)
-        g2.setColor(Color.YELLOW);
-        g2.fillRect(100, 100, 200, 200);
-        g2.setColor(Color.BLACK);
-        g2.drawRect(100, 100, 200, 200);
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
-        String text = "House";
-        g2.drawString(text, getXforCenteredText(text, g2), 150);
+        drawPlayState(g2); // Gambar game di belakang
+
+        int panelX = SCREEN_WIDTH / 4;
+        int panelY = SCREEN_HEIGHT / 4;
+        int panelWidth = SCREEN_WIDTH / 2;
+        int panelHeight = SCREEN_HEIGHT / 2;
+
+        // Latar belakang panel menu rumah
+        g2.setColor(new Color(30, 30, 70, 220)); // Biru tua semi-transparan
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        // Judul
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        String title = "House Actions";
+        int titleWidth = g2.getFontMetrics().stringWidth(title);
+        g2.drawString(title, panelX + (panelWidth - titleWidth) / 2, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        int actionY = panelY + 80;
+        int actionX = panelX + 30;
+        int lineHeight = 30;
+
+        List<String> actions = gameController.getHouseActions();
+        int selectedIndex = gameController.getSelectedHouseActionIndex();
+
+        if (actions.isEmpty()) {
+            g2.drawString("No actions available.", actionX, actionY);
+        } else {
+            for (int i = 0; i < actions.size(); i++) {
+                String actionText = actions.get(i);
+                if (i == selectedIndex) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                    g2.setColor(Color.WHITE);
+                } else {
+                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                }
+            }
+        }
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.drawString("W/S: Navigate | Enter: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+
     }
     private int getXforCenteredText(String text, Graphics2D g2) {
         return SCREEN_WIDTH / 2 - (int) g2.getFontMetrics().getStringBounds(text, g2).getWidth() / 2;
