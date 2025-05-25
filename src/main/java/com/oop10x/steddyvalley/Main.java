@@ -28,11 +28,15 @@ public class Main {
 
             // --- Inisialisasi Model ---
             Equipment initialItem = new Equipment("Hoe") ;
+            Equipment initialItem2 = new Equipment("Fishing Rod");
+            
             TimeManager timeManager = new TimeManager();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             playerModel.setEquippedItem(initialItem); // Mengatur item awal sebagai item yang dilengkapi
             GameState gameStateModel = new GameState();
-            // gameStateModel.setCurrentState(GameState.MENU_STATE); // Mulai dari menu jika ada
+            // Tambahkan SeasonManager dan WeatherManager
+            com.oop10x.steddyvalley.model.SeasonManager seasonManager = new com.oop10x.steddyvalley.model.SeasonManager(timeManager);
+            com.oop10x.steddyvalley.model.WeatherManager weatherManager = new com.oop10x.steddyvalley.model.WeatherManager(timeManager);
 
             // Buat beberapa contoh Seed dan Item lain untuk inventory awal
             // Asumsi Crop.getCropByName() ada dan mengembalikan Crop (turunan Item)
@@ -41,6 +45,27 @@ public class Main {
             // playerModel.addItemToInventory(parsnipSeed, 5);
             // playerModel.addItemToInventory(new HoeTool("Basic Hoe")); // Jika Hoe adalah Item
             // playerModel.setEquippedItem(playerModel.getInventory().getItemByName("Basic Hoe")); // Contoh
+
+            // Tambahkan bahan Fish Stew ke inventory player
+            // Fish
+            com.oop10x.steddyvalley.model.items.Fish fish1 = new com.oop10x.steddyvalley.model.items.Fish("FishA", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
+            com.oop10x.steddyvalley.model.items.Fish fish2 = new com.oop10x.steddyvalley.model.items.Fish("FishB", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
+            playerModel.addItem(fish1);
+            playerModel.addItem(fish2);
+            // Hot Pepper
+            playerModel.addItem(initialItem2) ;
+            com.oop10x.steddyvalley.model.items.Crop hotPepper = new com.oop10x.steddyvalley.model.items.Crop("Hot Pepper", 10, 20, 1);
+            playerModel.addItem(hotPepper);
+            // Cauliflower
+            com.oop10x.steddyvalley.model.items.Crop cauliflower1 = new com.oop10x.steddyvalley.model.items.Crop("Cauliflower", 10, 20, 1);
+            com.oop10x.steddyvalley.model.items.Crop cauliflower2 = new com.oop10x.steddyvalley.model.items.Crop("Cauliflower", 10, 20, 1);
+            playerModel.addItem(cauliflower1);
+            playerModel.addItem(cauliflower2);
+            // Fuel (Misc: Firewood & Coal)
+            com.oop10x.steddyvalley.model.items.Misc firewood = com.oop10x.steddyvalley.model.items.Misc.getMisc("Firewood");
+            com.oop10x.steddyvalley.model.items.Misc coal = com.oop10x.steddyvalley.model.items.Misc.getMisc("Coal");
+            playerModel.addItem(firewood);
+            playerModel.addItem(coal);
 
             FarmMap farmMapModel = new FarmMap(timeManager);
 
@@ -55,6 +80,8 @@ public class Main {
 
             // --- Inisialisasi View ---
             GamePanel gamePanel = new GamePanel(playerModel, gameStateModel, gameController, farmMapModel);
+            // Inject managers for HUD
+            gamePanel.setManagers(timeManager, seasonManager, weatherManager);
             GameWindow gameWindow = new GameWindow("Steddy Valley", gamePanel, keyHandler);
 
             gameWindow.addCleanShutdownHook();

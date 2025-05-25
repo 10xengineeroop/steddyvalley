@@ -117,4 +117,8 @@ public class Player {
     public void addItem(Item item, Integer amount) {
         inventory.addItem(item, amount);
     }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
 }

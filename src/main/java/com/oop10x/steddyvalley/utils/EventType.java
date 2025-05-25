@@ -5,5 +5,6 @@ public enum EventType {
     NEWWEATHER,
     NEWSEASON,
     TIMETICK,
-    ACTION
+    ACTION,
+    TWO_AM // Event for 2:00 AM
 }

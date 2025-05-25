@@ -13,9 +13,7 @@ public class PondObject extends DeployedObject implements Actionable {
 
     @Override
     public void onPlayerAction(Player player) {
-        // Logika saat pemain berinteraksi dengan rumah (misalnya, masuk rumah)
-        // Ini akan dipanggil oleh GameController jika pemain berinteraksi di sebelah rumah
-        System.out.println("Player interacted with the House!");
-        // Contoh: gameStateModel.setCurrentState(GameState.INSIDE_HOUSE_STATE);
+        // Only print debug message. Game state change is handled in GameController.
+        System.out.println("Player interacted with the Pond!");
     }
 }

@@ -20,7 +20,7 @@ public class TimeManager implements Observable {
                                                                                       // Atau jika 1 detik nyata = 5 menit game, maka 1000ms untuk 5 menit game
                                                                                       // Jadi 1 menit game = 1000ms / 5 = 200ms.
                                                                                       // Jika ingin 1 menit game per tick:
-    private final int TICK_INTERVAL_MS = 200; // Setiap 200ms nyata, 1 menit game berlalu
+    private final int TICK_INTERVAL_MS = 1000; // Setiap 200ms nyata, 1 menit game berlalu
                                               // Jika ingin 5 menit game per tick 1000ms:
     // private final int TICK_INTERVAL_MS = 1000; // Setiap 1 detik nyata, 5 menit game berlalu
 
@@ -70,6 +70,12 @@ public class TimeManager implements Observable {
 
                 notifyObservers(EventType.TIMETICK, minutes.get()); // Kirim Integer
 
+                // Notify at exactly 2:00 AM every day
+                int mins = minutes.get();
+                if ((mins % 1440) == 120) {
+                    notifyObservers(EventType.TWO_AM, mins);
+                }
+
                 // Cek apakah hari baru (setiap 24 jam game = 1440 menit game)
                 // (minutes.get() - SIXAM_MINUTES) memastikan kita cek relatif terhadap awal hari pertama
                 if ((minutes.get() - SIXAM_MINUTES) > 0 && (minutes.get() - SIXAM_MINUTES) % (24 * 60) == 0) {
@@ -93,6 +99,15 @@ public class TimeManager implements Observable {
         return minutes.get();
     }
 
-    // Hapus getInstance(), tidak lagi Singleton
-    // public static TimeManager getInstance() { ... }
+    // Set the in-game time to 06:00 AM (6 * 60 = 360 minutes)
+    public void setTimeToSixAM() {
+        minutes.set(SIXAM_MINUTES);
+        notifyObservers(EventType.TIMETICK, minutes.get());
+    }
+
+    // Tambahkan method untuk menambah menit ke waktu saat ini
+    public void addMinutes(int delta) {
+        minutes.addAndGet(delta);
+        notifyObservers(EventType.TIMETICK, minutes.get());
+    }
 }

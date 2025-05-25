@@ -11,7 +11,7 @@ public class FishStarter {
 
     public static void start() {
         //    COMMON FISH
-        Fish bullhead = new Fish(
+        new Fish(
                 "Bullhead",
                 FishRarity.COMMON,
                 Set.of(Season.SPRING,Season.SUMMER,Season.AUTUMN,Season.WINTER),
@@ -19,7 +19,7 @@ public class FishStarter {
                 Set.of(Weather.RAINY,Weather.SUNNY),
                 Set.of("Mountain Lake")
         );
-        Fish carp = new Fish(
+        new Fish(
                 "Carp",
                 FishRarity.COMMON,
                 Set.of(Season.SPRING,Season.SUMMER,Season.AUTUMN,Season.WINTER),
@@ -27,7 +27,7 @@ public class FishStarter {
                 Set.of(Weather.RAINY,Weather.SUNNY),
                 Set.of("Mountain Lake", "Pond")
         );
-        Fish chub = new Fish(
+        new Fish(
                 "Chub",
                 FishRarity.COMMON,
                 Set.of(Season.SPRING,Season.SUMMER,Season.AUTUMN,Season.WINTER),
@@ -37,7 +37,7 @@ public class FishStarter {
         );
 
     //    REGULAR FISH
-        Fish largemouth_bass = new Fish(
+        new Fish(
                 "Largemouth Bass",
                 FishRarity.REGULAR,
                 Set.of(Season.SPRING,Season.SUMMER,Season.AUTUMN,Season.WINTER),
@@ -45,7 +45,7 @@ public class FishStarter {
                 Set.of(Weather.RAINY,Weather.SUNNY),
                 Set.of("Mountain Lake")
         );
-        Fish rainbow_trout = new Fish(
+        new Fish(
                 "Rainbow Trout",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER),
@@ -53,7 +53,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY),
                 Set.of("Forest River", "Mountain Lake")
         );
-        Fish sturgeon = new Fish(
+        new Fish(
                 "Sturgeon",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.WINTER),
@@ -61,7 +61,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Mountain Lake")
         );
-        Fish midnightCarp = new Fish(
+        new Fish(
                 "Midnight Carp",
                 FishRarity.REGULAR,
                 Set.of(Season.WINTER, Season.AUTUMN),
@@ -69,7 +69,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Mountain Lake", "Pond")
         );
-        Fish flounder = new Fish(
+        new Fish(
                 "Flounder",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.SPRING),
@@ -77,7 +77,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Ocean")
         );
-        Fish halibut = new Fish(
+        new Fish(
                 "Halibut",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.WINTER, Season.AUTUMN, Season.SPRING),
@@ -85,7 +85,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Ocean")
         );
-        Fish octopus = new Fish(
+        new Fish(
                 "Octopus",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER),
@@ -93,7 +93,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Ocean")
         );
-        Fish pufferfish = new Fish(
+        new Fish(
                 "Pufferfish",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER),
@@ -101,7 +101,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY),
                 Set.of("Ocean")
         );
-        Fish sardine = new Fish(
+        new Fish(
                 "Sardine",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.SPRING, Season.WINTER, Season.AUTUMN),
@@ -109,7 +109,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Ocean")
         );
-        Fish superCucumber = new Fish(
+        new Fish(
                 "Super Cucumber",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.WINTER, Season.AUTUMN),
@@ -117,7 +117,7 @@ public class FishStarter {
                 Set.of(Weather.SUNNY, Weather.RAINY),
                 Set.of("Ocean")
         );
-        Fish catfish = new Fish(
+        new Fish(
                 "Catfish",
                 FishRarity.REGULAR,
                 Set.of(Season.SUMMER, Season.SPRING, Season.AUTUMN),
@@ -125,7 +125,7 @@ public class FishStarter {
                 Set.of(Weather.RAINY),
                 Set.of("Forest River", "Pond")
         );
-        Fish salmon = new Fish(
+        new Fish(
                 "Salmon",
                 FishRarity.REGULAR,
                 Set.of(Season.AUTUMN),
@@ -135,7 +135,7 @@ public class FishStarter {
         );
 
         //    LEGENDARY FISH
-        Fish angler = new Fish(
+        new Fish(
                 "Angler",
                 FishRarity.LEGENDARY,
                 Set.of(Season.AUTUMN),
@@ -143,15 +143,15 @@ public class FishStarter {
                 Set.of(Weather.RAINY, Weather.SUNNY),
                 Set.of("Pond")
         );
-        Fish crimsonFish = new Fish(
-                "Crimson Fish",
+        new Fish(
+                "Crimsonfish",
                 FishRarity.LEGENDARY,
                 Set.of(Season.SUMMER),
                 Set.of(new TimeRange(8 * 60, 20 * 60)),
                 Set.of(Weather.RAINY, Weather.SUNNY),
                 Set.of("Ocean")
         );
-        Fish glacierFish = new Fish(
+        new Fish(
                 "Glacier Fish",
                 FishRarity.LEGENDARY,
                 Set.of(Season.WINTER),
@@ -159,7 +159,7 @@ public class FishStarter {
                 Set.of(Weather.RAINY, Weather.SUNNY),
                 Set.of("Forest River")
         );
-        Fish legend = new Fish(
+        new Fish(
                 "Legend",
                 FishRarity.LEGENDARY,
                 Set.of(Season.SPRING),

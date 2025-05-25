@@ -10,6 +10,9 @@ public class GameState {
     public static final int PAUSE_STATE = 2;
     public static final int INVENTORY_STATE = 3;
     public static final int SLEEP_STATE = 4; // Contoh state lain
+    public static final int COOK_STATE = 5; // Jika ada menu awal
+    public static final int RECIPE_STATE = 6;
+    public static final int FISHING_STATE = 7;
     // Tambahkan state lain sesuai kebutuhan game Anda
 
     private int currentState;
@@ -65,6 +68,18 @@ public class GameState {
 
     public boolean isInInventory() {
         return currentState == INVENTORY_STATE;
+    }
+    public boolean isSleeping() {
+        return currentState == SLEEP_STATE;
+    }
+    public boolean isCooking() {
+        return currentState == COOK_STATE;
+    }
+    public boolean isInRecipeMenu() {
+        return currentState == RECIPE_STATE;
+    }
+    public boolean isFishing() {
+        return currentState == FISHING_STATE;
     }
     // ... tambahkan metode isX() lainnya ...
 }
