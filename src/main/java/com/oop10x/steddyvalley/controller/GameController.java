@@ -93,7 +93,7 @@ public class GameController implements PlayerInputActions, Observer {
             if (gameStateModel.getCurrentState() == GameState.INVENTORY_STATE) {
                 selectedInventoryIndex-- ;
                 if (selectedInventoryIndex < 0) {
-                    selectedInventoryIndex = playerModel.getInventory().getAllItems().size(); // Loop ke bawah
+                    selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; // Loop ke bawah
                 }
             }
 

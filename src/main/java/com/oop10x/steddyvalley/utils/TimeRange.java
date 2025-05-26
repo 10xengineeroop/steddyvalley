@@ -4,7 +4,7 @@ public record TimeRange(Integer start, Integer end) {
     public TimeRange(Integer start, Integer end) {
         if (start > end) {
             throw new IllegalArgumentException("Start must be less than end");
-        } else if (start < end) {
+        } else if (start < 0 || end < 0) {
             throw new IllegalArgumentException("Start and end must be greater than 0");
         } else if (start > 24 * 60 || end > 24 * 60) {
             throw new IllegalArgumentException("Start and end must be less than 24 * 60");

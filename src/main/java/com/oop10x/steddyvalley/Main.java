@@ -6,6 +6,7 @@ import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.items.Equipment;
+import com.oop10x.steddyvalley.model.items.FishStarter;
 import com.oop10x.steddyvalley.model.items.Item; // Untuk item awal
 import com.oop10x.steddyvalley.model.items.Seed; // Untuk item awal
 // import com.oop10x.steddyvalley.model.items.HoeTool; // Jika ada
@@ -52,6 +53,7 @@ public class Main {
             com.oop10x.steddyvalley.model.items.Fish fish2 = new com.oop10x.steddyvalley.model.items.Fish("FishB", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
             playerModel.addItem(fish1);
             playerModel.addItem(fish2);
+            FishStarter.start() ;
             // Hot Pepper
             playerModel.addItem(initialItem2) ;
             com.oop10x.steddyvalley.model.items.Crop hotPepper = new com.oop10x.steddyvalley.model.items.Crop("Hot Pepper", 10, 20, 1);
