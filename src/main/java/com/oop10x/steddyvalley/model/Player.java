@@ -2,6 +2,7 @@ package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.Position;
+import com.oop10x.steddyvalley.utils.RelStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,16 @@ public class Player {
     private Item equippedItem;
     private final Inventory inventory = new Inventory();
     private int currentTime;
-    private int speed ;
+    private int speed;
+    private RelStatus relationshipStatus = RelStatus.SINGLE;
+
+    public RelStatus getRelationshipStatus() {
+        return relationshipStatus;
+    }
+    public void setRelationshipStatus(RelStatus relationshipStatus) {
+        this.relationshipStatus = relationshipStatus;
+        notifyObservers();
+    }
 
     private final transient List<PlayerObserver> observers = new ArrayList<>();
 

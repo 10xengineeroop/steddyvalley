@@ -1,13 +1,12 @@
 package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.items.Item;
-import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class NPC implements Actionable {
+public class NPC {
     private final String name;
     private int heartPoints;
     private final Set<Item> lovedItems;
@@ -64,12 +63,37 @@ public class NPC implements Actionable {
         } else if (hatedItems.contains(item)) {
             setHeartPoints(getHeartPoints() - 25);
         }
+
+        if (getHeartPoints() > 150) {
+            setHeartPoints(150); // Maksimal heart points
+        } else if (getHeartPoints() < 0) {
+            setHeartPoints(0); // Minimal heart points
+        }
+
+        if (item.getName().equals("Proposal Ring")) {
+            propose(item.getOwner()); // Cek apakah item adalah Proposal Ring
+        }
     }
 
-
-    @Override
-    public void onPlayerAction(Player player) {
-        // TODO atur ini
+    public boolean propose(Player player) {
+        // Cek apakah player memiliki Proposal Ring
+        if (player == null || player.getInventory().getItemByName("Proposal Ring") != null) {
+            return false; // Tidak ada Proposal Ring
+        } else if (heartPoints == 150 && (player.getRelationshipStatus().equals(RelStatus.SINGLE) || player.getRelationshipStatus().equals(RelStatus.FIANCE))) {
+            // Jika heart points cukup dan status hubungan player adalah SINGLE
+            if (relationshipStatus == RelStatus.SINGLE) {
+                relationshipStatus = RelStatus.FIANCE;
+                player.setRelationshipStatus(RelStatus.FIANCE);
+                return true; // Proposal diterima
+            } else {
+                relationshipStatus = RelStatus.SPOUSE;
+                player.setRelationshipStatus(RelStatus.SPOUSE);
+                return true; // Pernikahan terjadi
+            }
+        } else {
+            return false; // Heart points tidak cukup untuk menikah
+        }
+        
     }
 
     public void addNpc(NPC npc) {

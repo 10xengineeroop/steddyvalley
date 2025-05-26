@@ -6,5 +6,7 @@ public enum EventType {
     NEWSEASON,
     TIMETICK,
     ACTION,
-    TWO_AM // Event for 2:00 AM
+    TWO_AM, // Event for 2:00 AM
+    PROPOSE,
+    MARRIAGE
 }
