@@ -48,6 +48,11 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     private int fishingTarget = 0;
     private String fishingFishName = "";
     private String fishingMessage = "";
+    private boolean isFishingSliderUIVisible = false; // Status apakah UI slider aktif
+    private String fishingUIMessage = "";             // Pesan yang ditampilkan di UI fishing
+    private int fishingSliderDisplayValue = 0;        // Nilai yang ditunjuk slider saat ini
+    private int fishingSliderMinDisplay = 0;          // Batas bawah nilai slider untuk ditampilkan
+    private int fishingSliderMaxDisplay = 0;  
 
     public GamePanel(Player player, GameState gameState, GameController controller, FarmMap farmMap) {
         this.playerModel = player;
@@ -112,6 +117,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         else if (currentGameState == GameState.FISHING_STATE) {
             drawFishingState(g2);
+        }
+        else if (currentGameState == GameState.FISH_GUESS_STATE) {
+            // Jika ada state khusus untuk fishing guessing game
+            drawFishGuessState(g2);
         }
         g2.dispose();
     }
@@ -386,41 +395,115 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     // --- FISHING GUESSING GAME METHODS ---
     // Call this to start the guessing game from GameController
-    public void startFishingGuess(int upperBound, int maxTries, int target, String fishName) {
-        fishingGuessActive = true;
-        fishingTriesLeft = maxTries;
-        fishingUpperBound = upperBound;
-        fishingTarget = target;
-        fishingFishName = fishName;
-        fishingMessage = "Guess a number between 1 and " + upperBound + " to catch " + fishName + "!";
-        repaint();
-    }
+    private void drawFishGuessState(Graphics2D g2) {
+        drawPlayState(g2);
 
-    // Call this to end the guessing game
-    public void endFishingGuess() {
-        fishingGuessActive = false;
-        repaint();
-    }
+        g2.setColor(new Color(0, 0, 60, 210)); // Overlay
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Add a method to process a guess
-    public void processFishingGuess(int guess) {
-        if (!fishingGuessActive) return;
-        if (guess == fishingTarget) {
-            fishingMessage = "Success! You caught " + fishingFishName + "! Press Enter.";
-            fishingGuessActive = false;
-            // Inform GameController to finish fishing (could use observer/event)
-        } else {
-            fishingTriesLeft--;
-            if (fishingTriesLeft <= 0) {
-                fishingMessage = "Failed! The fish got away. Press Enter.";
-                fishingGuessActive = false;
-                // Inform GameController to finish fishing (fail)
-            } else {
-                fishingMessage = "Wrong! " + fishingTriesLeft + " tries left.";
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 28));
+        String title = "GUESS THE NUMBER!"; // Judul lebih spesifik
+        int titleX = getXforCenteredText(title, g2);
+        int currentY = SCREEN_HEIGHT / 5;
+        g2.drawString(title, titleX, currentY);
+        currentY += 40;
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+
+        // Tampilkan pesan (instruksi, sisa percobaan)
+        if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
+            for (String line : fishingUIMessage.split("\\n")) {
+                g2.drawString(line, getXforCenteredText(line, g2), currentY);
+                currentY += 25;
             }
         }
+        currentY += 20;
+
+        int sliderWidth = SCREEN_WIDTH / 2;
+        int sliderX = SCREEN_WIDTH / 2 - sliderWidth / 2;
+        int sliderHeight = 20;
+        g2.setColor(Color.DARK_GRAY);
+        g2.fillRect(sliderX, currentY, sliderWidth, sliderHeight);
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.drawRect(sliderX, currentY, sliderWidth, sliderHeight);
+
+        double percentage = 0;
+        if (fishingSliderMaxDisplay > fishingSliderMinDisplay) {
+            percentage = (double) (fishingSliderDisplayValue - fishingSliderMinDisplay) / (fishingSliderMaxDisplay - fishingSliderMinDisplay);
+        }
+        percentage = Math.max(0.0, Math.min(1.0, percentage)) ;
+
+        int knobWidth = TILE_SIZE > 0 ? TILE_SIZE : 20; // Pastikan knobWidth > 0
+        knobWidth = Math.max(10, knobWidth/2) ;
+        int knobX = sliderX + (int) (percentage * (sliderWidth - knobWidth)) ;
+        g2.setColor(Color.CYAN);
+        g2.fillRect(knobX, currentY - 5, knobWidth, sliderHeight + 10);
+
+        String sliderValueText = "Selected: " + fishingSliderDisplayValue;
+        g2.setColor(Color.YELLOW);
+        g2.drawString(sliderValueText, getXforCenteredText(sliderValueText, g2), currentY + sliderHeight + 30);
+        currentY += sliderHeight + 30 + 25;
+
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.ITALIC, 16));
+        g2.drawString("Use A/D or Left/Right. 'E' or Enter to confirm.", getXforCenteredText("Use A/D or Left/Right. 'E' or Enter to confirm.", g2), currentY);
+    }
+     public void setFishingMessage(String message) {
+        this.fishingUIMessage = message;
         repaint();
     }
+
+    // Dipanggil oleh GameController untuk memulai UI tebakan slider
+    public void startFishingSliderUI(String initialMessage, int min, int max, int currentValue, int triesLeft) {
+        this.isFishingSliderUIVisible = true; // Aktifkan UI slider
+        this.fishingUIMessage = initialMessage;
+        this.fishingSliderMinDisplay = min;
+        this.fishingSliderMaxDisplay = max;
+        this.fishingSliderDisplayValue = currentValue;
+        // this.fishingTriesLeftForDisplay = triesLeft; // Biasanya info ini ada di initialMessage
+        System.out.println("[View] Starting fishing SLIDER UI. Value: " + currentValue + " Message: " + initialMessage);
+        repaint();
+    }
+
+    public void updateFishingSliderDisplay(int value, String message, int triesLeft) {
+        this.fishingSliderDisplayValue = value;
+        this.fishingUIMessage = message; // Pesan mungkin berisi sisa percobaan
+        // this.fishingTriesLeftForDisplay = triesLeft;
+        System.out.println("[View] Updating fishing SLIDER UI. Value: " + value + " Message: " + message);
+        repaint();
+    }
+
+    // Dipanggil oleh GameController setelah tebakan (salah satu tebakan) diproses
+    // atau semua percobaan habis. Ini menandakan mode input slider tidak aktif lagi.
+    public void endFishingSliderUI(boolean success) {
+        this.isFishingSliderUIVisible = false; // Mode adjusment slider selesai
+        // Pesan hasil (sukses/gagal) akan di-set oleh GameController via setFishingMessage.
+        System.out.println("[View] Ending fishing SLIDER input UI. Success: " + success);
+        repaint();
+    }
+    public void clearFishingUIState() {
+        this.isFishingSliderUIVisible = false;
+        this.fishingUIMessage = "";
+        this.fishingSliderDisplayValue = 0;
+        this.fishingSliderMinDisplay = 0;
+        this.fishingSliderMaxDisplay = 0;
+        System.out.println("[View] All Fishing UI state (slider) cleared.");
+        repaint();
+    }
+
+    // Dipanggil oleh KeyHandler
+    public void signalFishingInteractionComplete() {
+        System.out.println("[View] Signaling GameController to end fishing session.");
+        if (gameController != null) {
+            gameController.endFishingSession();
+        }
+    }
+    public boolean isFishingSliderActive() {
+        return gameStateModel.isGuessingFish();
+    }
+
+
 
     @Override public void onPlayerUpdated(Player player) { /* ... */ }
     @Override public void onGameStateChanged(int newState, int oldState) { /* ... */ }

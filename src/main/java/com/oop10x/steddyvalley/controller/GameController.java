@@ -1,10 +1,12 @@
 package com.oop10x.steddyvalley.controller;
 
 import com.oop10x.steddyvalley.model.FarmMap;
+import com.oop10x.steddyvalley.model.Game;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
+import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
 // Impor Tool jika ada (Hoe, WateringCan)
@@ -17,12 +19,19 @@ import com.oop10x.steddyvalley.model.recipes.Recipe;
 import com.oop10x.steddyvalley.model.recipes.RecipeRequirement;
 import com.oop10x.steddyvalley.model.recipes.RecipeList;
 import com.oop10x.steddyvalley.utils.Observer;
+import com.oop10x.steddyvalley.utils.Season;
+import com.oop10x.steddyvalley.utils.Weather;
 import com.oop10x.steddyvalley.utils.EventType;
+import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.model.SeasonManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
+import com.oop10x.steddyvalley.view.GamePanel;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.List;
 
 public class GameController implements PlayerInputActions, Observer {
@@ -34,6 +43,7 @@ public class GameController implements PlayerInputActions, Observer {
     private TimeManager timeManager; // Untuk mendapatkan waktu saat ini
     private int tileSize;
     private String transitionMessage;
+    private GamePanel gamePanel;
 
     //house punya
     private List<String> houseActions = List.of("Sleep", "Cook", "Watch TV") ;
@@ -41,6 +51,14 @@ public class GameController implements PlayerInputActions, Observer {
     private List<String> recipes = List.of("Fish n' Chips", "Baguette", "Sashimi", "Fugu", "wine", "Pumpkin Pie", "Veggie Soup",
             "Fish Stew", "Spakbor Salad", "Fish Sandwich", "The Legends of Spakbor") ;
     private int selectedRecipeIndex = 0;
+
+    private Fish currentFishingTargetFish;
+    private int currentFishingTargetNumber; // Angka rahasia yang harus ditebak
+    private int currentFishingTriesLeft;
+    private int fishingSliderCurrentValue;
+    private int fishingSliderMin;
+    private int fishingSliderMax;
+    private Random randomGenerator = new Random();
 
 
     private boolean moveUpActive, moveDownActive, moveLeftActive, moveRightActive;
@@ -55,7 +73,7 @@ public class GameController implements PlayerInputActions, Observer {
     // Register as observer in constructor
     public GameController(Player player, GameState gameState, FarmMap farmMap,
                           CollisionChecker cc, TimeManager tm, int tileSize,
-                          SeasonManager seasonManager, WeatherManager weatherManager) {
+                          SeasonManager seasonManager, WeatherManager weatherManager, GamePanel gamePanel) {
         this.playerModel = player;
         this.gameStateModel = gameState;
         this.farmMapModel = farmMap;
@@ -64,13 +82,8 @@ public class GameController implements PlayerInputActions, Observer {
         this.tileSize = tileSize;
         this.seasonManager = seasonManager;
         this.weatherManager = weatherManager;
+        this.gamePanel = gamePanel;
         this.timeManager.addObserver(this); // Register for time events
-    }
-
-    // Overloaded constructor for backward compatibility
-    public GameController(Player player, GameState gameState, FarmMap farmMap,
-                          CollisionChecker cc, TimeManager tm, int tileSize) {
-        this(player, gameState, farmMap, cc, tm, tileSize, null, null);
     }
 
     @Override 
@@ -136,8 +149,36 @@ public class GameController implements PlayerInputActions, Observer {
             this.moveDownActive = false; 
         }
     }
-    @Override public void setMoveLeft(boolean active) { this.moveLeftActive = active; }
-    @Override public void setMoveRight(boolean active) { this.moveRightActive = active; }
+    @Override public void setMoveLeft(boolean active) {
+        if (active) { // Proses hanya saat tombol pertama kali ditekan untuk aksi slider/menu
+            if (gameStateModel.isGuessingFish()) {
+                adjustFishingSlider(-1); // Tombol kiri menggerakkan slider ke kiri
+            } else if (gameStateModel.isPlaying()) { // Hanya set flag untuk gerakan berkelanjutan di PLAY_STATE
+                this.moveLeftActive = true;
+            }
+            // Tambahkan logika untuk navigasi menu ke kiri jika diperlukan untuk state lain
+            // else if (gameStateModel.isInSomeOtherMenu()) { /* ... */ }
+        } else { // active == false (tombol dilepas)
+             if (gameStateModel.isPlaying()) {
+                this.moveLeftActive = false;
+            }
+        }
+    }
+    @Override public void setMoveRight(boolean active) {
+        if (active) {
+            if (gameStateModel.isGuessingFish()) {
+                adjustFishingSlider(1); // Tombol kanan menggerakkan slider ke kanan
+            } else if (gameStateModel.isPlaying()) {
+                this.moveRightActive = true;
+            }
+            // Tambahkan logika untuk navigasi menu ke kanan jika diperlukan
+            // else if (gameStateModel.isInSomeOtherMenu()) { /* ... */ }
+        } else {
+            if (gameStateModel.isPlaying()) {
+                this.moveRightActive = false;
+            }
+        }
+    }
 
     @Override
     public void togglePause() { // Tombol Escape
@@ -157,7 +198,12 @@ public class GameController implements PlayerInputActions, Observer {
     }
     else if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
         gameStateModel.setCurrentState(GameState.HOUSE_STATE); // Keluar dari menu memasak
+
     } 
+    else if (currentState == GameState.FISHING_STATE) {
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        timeManager.start(); // Mulai kembali waktu saat keluar dari fishing
+    }
 }
 
     @Override
@@ -230,6 +276,11 @@ public class GameController implements PlayerInputActions, Observer {
             handleFishingAction();
             return;
         }
+        else if (currentState == GameState.FISH_GUESS_STATE) {
+            System.out.println("Guessing game logic not implemented yet.");
+            confirmFishingSliderGuess();
+            return;
+        }
 
         // 3. Logika asli untuk PLAY_STATE (berinteraksi dengan dunia, objek, tanah)
         // Pastikan ini hanya berjalan jika benar-benar dalam PLAY_STATE
@@ -254,8 +305,21 @@ public class GameController implements PlayerInputActions, Observer {
                     return; // Masuk rumah, selesai.
                 } 
                 else if (adjacentObject instanceof PondObject) {
-                    ((Actionable) adjacentObject).onPlayerAction(playerModel);
-                    gameStateModel.setCurrentState(GameState.FISHING_STATE);
+                    Item equipped = playerModel.getEquippedItem();
+                // Validasi awal sebelum masuk ke FISHING_STATE
+                    if (equipped != null && "Fishing Rod".equals(equipped.getName())) { // [cite: 188]
+                        if (playerModel.getEnergy() >= 5) { // [cite: 188]
+                            gameStateModel.setCurrentState(GameState.FISHING_STATE);
+                            if (gamePanel != null) {
+                                gamePanel.clearFishingUIState(); // Bersihkan UI fishing dari sesi sebelumnya
+                            }
+                            System.out.println("[GC] Entered FISHING_STATE. Ready to cast.");
+                        } else {
+                            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!");
+                        }
+                    } else {
+                        if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod!");
+                    }
                     return; // Mulai memancing
                 }
                 else if (adjacentObject instanceof Actionable) {
@@ -275,10 +339,18 @@ public class GameController implements PlayerInputActions, Observer {
                 if (equippedItem != null) {
                     if ("Hoe".equals(equippedItem.getName())) {
                         if (currentLand.till(playerModel)) actionTaken = true;
+                        playerModel.setEnergy(playerModel.getEnergy() - 5);
                     } else if (equippedItem instanceof Seed) {
                         if (currentLand.plant((Seed) equippedItem, playerModel, timeManager.getMinutes())) actionTaken = true;
                     } else if ("Watering Can".equals(equippedItem.getName())) {
                         if (currentLand.water(playerModel)) actionTaken = true;
+                    }
+                    else if ("Pickaxe".equals(equippedItem.getName())) {
+                        if (true) {
+                            actionTaken = true;
+                            currentLand.resetLand();
+                            playerModel.setEnergy(playerModel.getEnergy() - 5);
+                        }
                     }
                 }
                 if (!actionTaken) { // Jika belum ada aksi dari item, coba panen
@@ -305,7 +377,7 @@ public class GameController implements PlayerInputActions, Observer {
         // Auto-sleep at 2:00 AM or later if not already sleeping
         int minutes = timeManager.getMinutes();
         int twoAM = 2 * 60; 
-        if ((minutes % 1440) == twoAM && !gameStateModel.isSleeping()) {
+        if ((playerModel.getEnergy() < -20) || (minutes % 1440) == twoAM && !gameStateModel.isSleeping()) {
             forceSleep();
             timeManager.stop(); // Stop time progression while sleeping
             return;
@@ -500,82 +572,151 @@ public class GameController implements PlayerInputActions, Observer {
     // Handle fishing action in FISHING_STATE
     private void handleFishingAction() {
         // 1. Stop world time
-        timeManager.stop();
-
-        // 2. Check if player has a fishing rod and enough energy
-        if (playerModel.getEquippedItem() == null || !"Fishing Rod".equals(playerModel.getEquippedItem().getName())) {
-            transitionMessage = "You need a Fishing Rod to fish!";
-            timeManager.start();
-            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        Item equipped = playerModel.getEquippedItem();
+        if (equipped == null || !"Fishing Rod".equals(equipped.getName())) { // [cite: 188]
+            if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod equipped!");
+            // Tetap di FISHING_STATE, tunggu pemain ganti item atau keluar (via Esc)
             return;
         }
-        if (playerModel.getEnergy() < 5) {
-            transitionMessage = "Not enough energy to fish!";
-            timeManager.start();
-            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        if (playerModel.getEnergy() < 5) { // [cite: 188]
+            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!\nPress Enter/Esc to continue.");
+            // Biarkan pemain di FISHING_STATE untuk melihat pesan, lalu keluar via Enter/Esc
+            if(gamePanel != null) gamePanel.endFishingSliderUI(false); // Non-aktifkan input slider jika sempat aktif
             return;
         }
+        playerModel.setEnergy(playerModel.getEnergy() - 5); // [cite: 188]
+        timeManager.stop(); // [cite: 203]
+        timeManager.addMinutes(15); // [cite: 203] (efek waktu berlalu selama persiapan)
 
-        // 3. Deduct energy and add 15 minutes
-        playerModel.setEnergy(playerModel.getEnergy() - 5);
-        timeManager.addMinutes(15);
+        // 3. Tentukan ikan yang bisa ditangkap
+        String location = getFishingLocation(); // Implementasi ini penting
+        Season season = (seasonManager != null) ? seasonManager.getCurrentSeason() : Season.SPRING;
+        Weather weather = (weatherManager != null) ? weatherManager.getCurrentWeather() : Weather.SUNNY;
+        int timeOfDayMinutes = timeManager.getMinutes() % 1440; // Waktu saat ini dalam format 0-1439 menit
 
-        // 4. Determine fishing location (should be based on map/position)
-        String location = getFishingLocation(); // Implement this helper to return "Pond", "Ocean", etc.
-        System.out.println("DEBUG: Fishing location determined: " + location);
-
-        // 5. Get current season and weather from managers if available
-        com.oop10x.steddyvalley.utils.Season season = (seasonManager != null) ? seasonManager.getCurrentSeason() : com.oop10x.steddyvalley.utils.Season.SPRING;
-        com.oop10x.steddyvalley.utils.Weather weather = (weatherManager != null) ? weatherManager.getCurrentWeather() : com.oop10x.steddyvalley.utils.Weather.SUNNY;
-        int time = timeManager.getMinutes();
-        System.out.println("DEBUG: Current season: " + season + ", weather: " + weather + ", time: " + time);
-
-        // 6. Find all fish available for this location, season, weather, and time
-        java.util.List<com.oop10x.steddyvalley.model.items.Fish> fishableFish = new java.util.ArrayList<>();
-        for (com.oop10x.steddyvalley.model.items.Fish fish : com.oop10x.steddyvalley.model.items.Fish.getFishSet()) {
-            if (fish.isInLocation(location) && fish.isInSeason(season) && fish.isInWeather(weather) && fish.isInTime(time)) {
-                fishableFish.add(fish);
+        List<Fish> fishableFish = new ArrayList<>();
+        if (Fish.getFishSet() != null) { // Pastikan fishSet tidak null
+            for (Fish fish : Fish.getFishSet()) {
+                if (fish.isInLocation(location) && fish.isInSeason(season) && fish.isInWeather(weather) && fish.isInTime(timeOfDayMinutes)) {
+                    fishableFish.add(fish);
+                }
             }
         }
+        System.out.println("[GC] Fishable fish at " + location + "/" + season + "/" + weather + "/" + timeOfDayMinutes + ": " + fishableFish.size());
+
         if (fishableFish.isEmpty()) {
-            transitionMessage = "No fish are biting right now.";
-            timeManager.start();
-            gameStateModel.setCurrentState(GameState.PLAY_STATE);
-            System.out.println("DEBUG: No fish available for fishing at this time/location/season/weather.");
+            if (gamePanel != null) gamePanel.setFishingMessage("No fish are biting right now.\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.endFishingSliderUI(false); // Pastikan UI tebakan tidak aktif
+            // Tetap di FISHING_STATE untuk menampilkan pesan. Pemain akan keluar via Enter/Esc (memanggil endFishingSession).
             return;
         }
 
-        // 7. Randomly select a fish
-        java.util.Collections.shuffle(fishableFish);
-        com.oop10x.steddyvalley.model.items.Fish targetFish = fishableFish.get(0);
-        com.oop10x.steddyvalley.utils.FishRarity rarity = targetFish.getRarity();
-        int maxTries, upperBound;
-        if (rarity == com.oop10x.steddyvalley.utils.FishRarity.COMMON) {
-            maxTries = 10; upperBound = 10;
-        } else if (rarity == com.oop10x.steddyvalley.utils.FishRarity.REGULAR) {
-            maxTries = 10; upperBound = 100;
-        } else {
-            maxTries = 7; upperBound = 500;
+        // 4. Pilih ikan acak dan siapkan parameter mini-game
+        Collections.shuffle(fishableFish);
+        currentFishingTargetFish = fishableFish.get(0);
+        FishRarity rarity = currentFishingTargetFish.getRarity();
+
+        switch (rarity) { // [cite: 204, 205]
+            case COMMON:     currentFishingTriesLeft = 10;  fishingSliderMax = 10;  break;
+            case REGULAR:   currentFishingTriesLeft = 10;  fishingSliderMax = 100; break;
+            case LEGENDARY:  currentFishingTriesLeft = 7;   fishingSliderMax = 500; break;
+            default:         currentFishingTriesLeft = 10;  fishingSliderMax = 10;  break;
         }
-        System.out.println("DEBUG: Selected fish: " + targetFish.getName() + ", rarity: " + rarity + ", max tries: " + maxTries + ", upper bound: " + upperBound);
+        fishingSliderMin = 1;
+        currentFishingTargetNumber = fishingSliderMin + randomGenerator.nextInt(fishingSliderMax);
+        fishingSliderCurrentValue = fishingSliderMin; // Atau di tengah: fishingSliderMin + (fishingSliderMax - fishingSliderMin) / 2;
 
-        // 8. Guessing game (UI integration needed)
-        // TODO: Replace this with actual UI input for guessing game
-        // For now, auto-success for demo
-        // If integrating with UI, pause here and wait for user input, then check answer
-        playerModel.addItem(targetFish);
-        transitionMessage = "You caught a " + targetFish.getName() + "!";
-        System.out.println("DEBUG: Caught fish: " + targetFish.getName());
+        System.out.println("[GC] Fishing for: " + currentFishingTargetFish.getName() + " (Target: " + currentFishingTargetNumber + ")");
 
-        // 9. Resume world time and return to PLAY_STATE
-        timeManager.start();
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        // 5. Ubah state ke FISH_GUESS_STATE dan update UI
+        gameStateModel.setCurrentState(GameState.FISH_GUESS_STATE);
+        if (gamePanel != null) {
+            String initialMessage = "A fish is biting! It's a " + currentFishingTargetFish.getName() + " (" + rarity + ")!\n" +
+                                  "Adjust slider (Range: " + fishingSliderMin + "-" + fishingSliderMax + "). Tries: " + currentFishingTriesLeft;
+            gamePanel.startFishingSliderUI(initialMessage, fishingSliderMin, fishingSliderMax, fishingSliderCurrentValue, currentFishingTriesLeft);
+        }
     }
 
     // Helper to determine fishing location based on player position or map
-    private String getFishingLocation() {
-        // TODO: Implement actual logic based on player position and map
-        // For now, return "Pond" as a default
-        return "Pond";
+    public void adjustFishingSlider(int delta) {
+        if (!gameStateModel.isGuessingFish() || gamePanel == null || !gamePanel.isFishingSliderActive()) {
+            return;
+        }
+        fishingSliderCurrentValue += delta;
+        fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax)); // Clamp value
+
+        String currentAttemptMessage = "Current value: " + fishingSliderCurrentValue +
+                                     " (Range: " + fishingSliderMin + "-" + fishingSliderMax +"). Tries left: " + currentFishingTriesLeft;
+        gamePanel.updateFishingSliderDisplay(fishingSliderCurrentValue, currentAttemptMessage, currentFishingTriesLeft);
     }
+     public void confirmFishingSliderGuess() {
+        if (!gameStateModel.isGuessingFish() || gamePanel == null || !gamePanel.isFishingSliderActive()) {
+            return;
+        }
+        System.out.println("[GC] Confirming guess: " + fishingSliderCurrentValue + ". Target: " + currentFishingTargetNumber);
+
+        int guess = fishingSliderCurrentValue;
+        String resultMessage;
+
+        if (guess == currentFishingTargetNumber) {
+            playerModel.addItem(currentFishingTargetFish); // [cite: 206]
+            resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Enter/Esc to continue.";
+            if (gamePanel != null) gamePanel.endFishingSliderUI(true); // Sukses, nonaktifkan input slider
+        } else {
+            currentFishingTriesLeft--;
+            if (currentFishingTriesLeft <= 0) {
+                resultMessage = "Failed! The " + currentFishingTargetFish.getName() + " got away.\nPress Enter/Esc to continue.";
+                if (gamePanel != null) gamePanel.endFishingSliderUI(false); // Gagal total, nonaktifkan input slider
+            } else {
+                // Masih ada percobaan, UI slider tetap aktif
+                fishingSliderCurrentValue = fishingSliderMin; // Reset slider untuk tebakan berikutnya (opsional)
+                resultMessage = "Wrong! " + currentFishingTriesLeft + " tries left.\n" +
+                                "Adjust slider (Range: " + fishingSliderMin + "-" + fishingSliderMax + "). Value: " + fishingSliderCurrentValue;
+                // GamePanel akan diupdate oleh adjustFishingSlider jika pemain menggerakkan lagi,
+                // atau di sini jika ingin langsung update pesan dan nilai slider
+                if (gamePanel != null) gamePanel.updateFishingSliderDisplay(fishingSliderCurrentValue, resultMessage, currentFishingTriesLeft);
+                return; // Jangan pindah state dulu jika masih ada percobaan
+            }
+        }
+        gameStateModel.setCurrentState(GameState.FISHING_STATE); // Kembali ke state fishing umum untuk menampilkan hasil
+        if (gamePanel != null) gamePanel.setFishingMessage(resultMessage);
+    }
+    public void endFishingSession() {
+        System.out.println("[GC] Ending fishing session completely. Returning to PLAY_STATE.");
+        if (gamePanel != null) {
+            gamePanel.clearFishingUIState();
+        }
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        if (timeManager != null) timeManager.start(); // Lanjutkan waktu dunia [cite: 206]
+    }
+
+    private String getFishingLocation() {
+        // TODO: Implementasi untuk menentukan lokasi memancing berdasarkan posisi pemain
+        // Misalnya, cek apakah pemain berada di dekat PondObject di FarmMap,
+        // atau jika di WorldMap, cek nama lokasi saat ini.
+        // Untuk FarmMap dan Pond:
+        int playerTileX = playerModel.getPosition().getX() / tileSize;
+        int playerTileY = playerModel.getPosition().getY() / tileSize;
+        // Anda perlu cara yang lebih baik untuk cek "1 tile DARI Pond" [cite: 201]
+        // Ini mungkin melibatkan pengecekan 4 tile di sekitar pemain, atau tile yang dihadapi.
+        // DeployedObject adjObj = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
+        // if (adjObj instanceof PondObject) {
+        //     return "Pond";
+        // }
+        // Untuk lokasi lain dari World Map [cite: 202] (jika sudah ada)
+        // if (farmMapModel.getCurrentMapName().equals("Forest River")) return "Forest River";
+
+        System.out.println("[WARN] getFishingLocation() is defaulting to 'Pond'. Implement proper detection.");
+        return "Pond"; // Default sementara
+    }
+    private int getUpperBoundForFish(FishRarity rarity) { // Helper untuk konsistensi
+        switch (rarity) {
+            case COMMON: return 10;
+            case REGULAR: return 100;
+            case LEGENDARY: return 500;
+            default: return 10;
+        }
+    }
+
+
 }

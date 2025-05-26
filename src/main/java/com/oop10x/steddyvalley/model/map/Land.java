@@ -112,12 +112,12 @@ public class Land implements Actionable, Placeable, Observer {
         return null;
     }
 
-    private void resetLand() {
+    public void resetLand() {
         this.startPlantTimeMinutes = null;
         this.endPlantTimeMinutes = null;
         this.isWatered = false; // Reset status siram setelah panen
         // Kembali ke tilled setelah panen, atau untilled tergantung aturan game Anda
-        setLandType(LandType.TILLED);
+        setLandType(LandType.UNTILLED);
         this.seed = null;
     }
 

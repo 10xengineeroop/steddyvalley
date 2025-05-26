@@ -13,6 +13,7 @@ public class GameState {
     public static final int COOK_STATE = 5; // Jika ada menu awal
     public static final int RECIPE_STATE = 6;
     public static final int FISHING_STATE = 7;
+    public static final int FISH_GUESS_STATE = 8;
     // Tambahkan state lain sesuai kebutuhan game Anda
 
     private int currentState;
@@ -81,5 +82,7 @@ public class GameState {
     public boolean isFishing() {
         return currentState == FISHING_STATE;
     }
-    // ... tambahkan metode isX() lainnya ...
+    public boolean isGuessingFish() {
+        return currentState == FISH_GUESS_STATE;
+    }
 }

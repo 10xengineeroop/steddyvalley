@@ -2,6 +2,7 @@ package com.oop10x.steddyvalley.controller;
 
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
+import com.oop10x.steddyvalley.view.GamePanel;
 
 public class KeyHandler implements KeyListener{
     private PlayerInputActions inputActionsDelegate;

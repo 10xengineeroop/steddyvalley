@@ -1,9 +1,11 @@
 package com.oop10x.steddyvalley;
 
 import com.oop10x.steddyvalley.model.FarmMap;
+import com.oop10x.steddyvalley.model.Game;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
+import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.items.Equipment;
 import com.oop10x.steddyvalley.model.items.FishStarter;
@@ -16,6 +18,7 @@ import com.oop10x.steddyvalley.controller.KeyHandler;
 import com.oop10x.steddyvalley.view.GamePanel;
 import com.oop10x.steddyvalley.view.GameWindow;
 import com.oop10x.steddyvalley.utils.Season; // Untuk Seed
+import com.oop10x.steddyvalley.model.SeasonManager;
 
 import javax.swing.SwingUtilities;
 import java.util.HashSet;
@@ -30,11 +33,13 @@ public class Main {
             // --- Inisialisasi Model ---
             Equipment initialItem = new Equipment("Hoe") ;
             Equipment initialItem2 = new Equipment("Fishing Rod");
+            Equipment initialItem3 = new Equipment ("Pickaxe") ;
             
             TimeManager timeManager = new TimeManager();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             playerModel.setEquippedItem(initialItem); // Mengatur item awal sebagai item yang dilengkapi
             GameState gameStateModel = new GameState();
+            GamePanel gamePanelModel = new GamePanel(playerModel, gameStateModel, null, null); // Sementara null untuk controller dan farmMap
             // Tambahkan SeasonManager dan WeatherManager
             com.oop10x.steddyvalley.model.SeasonManager seasonManager = new com.oop10x.steddyvalley.model.SeasonManager(timeManager);
             com.oop10x.steddyvalley.model.WeatherManager weatherManager = new com.oop10x.steddyvalley.model.WeatherManager(timeManager);
@@ -56,6 +61,7 @@ public class Main {
             FishStarter.start() ;
             // Hot Pepper
             playerModel.addItem(initialItem2) ;
+            playerModel.addItem(initialItem3);
             com.oop10x.steddyvalley.model.items.Crop hotPepper = new com.oop10x.steddyvalley.model.items.Crop("Hot Pepper", 10, 20, 1);
             playerModel.addItem(hotPepper);
             // Cauliflower
@@ -70,6 +76,8 @@ public class Main {
             playerModel.addItem(coal);
 
             FarmMap farmMapModel = new FarmMap(timeManager);
+            SeasonManager seasonModel = new SeasonManager(timeManager);
+            WeatherManager weatherModel = new WeatherManager(timeManager);
 
             // TileManager masih diperlukan oleh CollisionChecker untuk tile dasar non-FarmMap
             TileManager tileManagerForCollision = new TileManager(TILE_SIZE, FarmMap.MAP_WIDTH_IN_TILES, FarmMap.MAP_HEIGHT_IN_TILES);
@@ -77,7 +85,7 @@ public class Main {
 
             // --- Inisialisasi Controller ---
             GameController gameController = new GameController(playerModel, gameStateModel, farmMapModel,
-                                                               collisionChecker, timeManager, TILE_SIZE);
+                                                               collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, gamePanelModel);
             KeyHandler keyHandler = new KeyHandler(gameController);
 
             // --- Inisialisasi View ---
