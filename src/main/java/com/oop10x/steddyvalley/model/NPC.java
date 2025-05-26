@@ -69,10 +69,6 @@ public class NPC {
         } else if (getHeartPoints() < 0) {
             setHeartPoints(0); // Minimal heart points
         }
-
-        if (item.getName().equals("Proposal Ring")) {
-            propose(item.getOwner()); // Cek apakah item adalah Proposal Ring
-        }
     }
 
     public boolean propose(Player player) {
