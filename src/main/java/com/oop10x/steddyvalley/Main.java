@@ -32,7 +32,6 @@ public class Main {
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             playerModel.setEquippedItem(initialItem); // Mengatur item awal sebagai item yang dilengkapi
             GameState gameStateModel = new GameState();
-            GamePanel gamePanelModel = new GamePanel(playerModel, gameStateModel, null, null); // Sementara null untuk controller dan farmMap
             // Tambahkan SeasonManager dan WeatherManager
             com.oop10x.steddyvalley.model.SeasonManager seasonManager = new com.oop10x.steddyvalley.model.SeasonManager(timeManager);
             com.oop10x.steddyvalley.model.WeatherManager weatherManager = new com.oop10x.steddyvalley.model.WeatherManager(timeManager);
@@ -77,11 +76,12 @@ public class Main {
 
             // --- Inisialisasi Controller ---
             GameController gameController = new GameController(playerModel, gameStateModel, farmMapModel,
-                                                               collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, gamePanelModel);
+                                                               collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, null);
             KeyHandler keyHandler = new KeyHandler(gameController);
 
             // --- Inisialisasi View ---
             GamePanel gamePanel = new GamePanel(playerModel, gameStateModel, gameController, farmMapModel);
+            gameController.setGamePanel(gamePanel);
             // Inject managers for HUD
             gamePanel.setManagers(timeManager, seasonManager, weatherManager);
             GameWindow gameWindow = new GameWindow("Steddy Valley", gamePanel, keyHandler);
