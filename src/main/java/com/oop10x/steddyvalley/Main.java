@@ -1,5 +1,4 @@
 package com.oop10x.steddyvalley;
-
 import com.oop10x.steddyvalley.model.FarmMap;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
@@ -7,18 +6,16 @@ import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.items.Equipment;
-// import com.oop10x.steddyvalley.model.items.HoeTool; // Jika ada
+// import com.oop10x.steddyvalley.model.items.HoeTool;
 import com.oop10x.steddyvalley.model.tile.TileManager;
 import com.oop10x.steddyvalley.controller.GameController;
 import com.oop10x.steddyvalley.controller.KeyHandler;
 import com.oop10x.steddyvalley.view.GamePanel;
 import com.oop10x.steddyvalley.view.GameWindow;
 import com.oop10x.steddyvalley.model.SeasonManager;
-
 import javax.swing.SwingUtilities;
 
 public class Main {
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             final int TILE_SIZE = GamePanel.TILE_SIZE;
@@ -30,7 +27,7 @@ public class Main {
             
             TimeManager timeManager = new TimeManager();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
-            playerModel.setEquippedItem(initialItem); // Mengatur item awal sebagai item yang dilengkapi
+            playerModel.setEquippedItem(initialItem);
             GameState gameStateModel = new GameState();
             GamePanel gamePanelModel = new GamePanel(playerModel, gameStateModel, null, null); // Sementara null untuk controller dan farmMap
             // Tambahkan SeasonManager dan WeatherManager
