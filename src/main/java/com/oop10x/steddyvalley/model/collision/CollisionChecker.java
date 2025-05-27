@@ -1,7 +1,6 @@
 package com.oop10x.steddyvalley.model.collision;
 
 import com.oop10x.steddyvalley.model.FarmMap;
-import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.objects.DeployedObject;
 import com.oop10x.steddyvalley.model.tile.Tile;
 import com.oop10x.steddyvalley.model.tile.TileManager; // Masih digunakan untuk tile dasar

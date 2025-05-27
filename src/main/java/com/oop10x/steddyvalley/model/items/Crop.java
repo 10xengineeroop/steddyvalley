@@ -38,4 +38,18 @@ public class Crop extends Item {
     public static void removeCrop(Crop crop){
         cropSet.remove(crop);
     }
+
+    static {
+        new Crop("Parsnip", 50, 35, 1);
+        new Crop("Cauliflower", 200, 150, 1);
+        new Crop("Potato", null, 80, 1);
+        new Crop("Wheat", 50, 30, 3);
+        new Crop("Blueberry",150, 40, 3);
+        new Crop("Tomato", 90,60, 1);
+        new Crop("Hot Pepper", null, 40, 1);
+        new Crop("Melon", null, 250, 1);
+        new Crop("Cranberry", null, 25, 10);
+        new Crop("Pumpkin", 300, 250, 1);
+        new Crop("Grape", 100, 10, 20);
+    }
 }

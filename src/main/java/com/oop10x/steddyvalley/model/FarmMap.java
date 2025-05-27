@@ -1,12 +1,10 @@
 package com.oop10x.steddyvalley.model; // Sesuaikan paket
 
 import com.oop10x.steddyvalley.model.map.Land;
-import com.oop10x.steddyvalley.model.map.Placeable;
 import com.oop10x.steddyvalley.model.objects.DeployedObject;
 import com.oop10x.steddyvalley.model.objects.HouseObject;
 import com.oop10x.steddyvalley.model.objects.PondObject;
 import com.oop10x.steddyvalley.model.objects.ShippingBinObject;
-import com.oop10x.steddyvalley.utils.Position; // Asumsi
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.LandType;
 import java.awt.Color;

@@ -1,7 +1,12 @@
 package com.oop10x.steddyvalley.model;
 
+import com.oop10x.steddyvalley.model.items.Crop;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.RelStatus;
+import com.oop10x.steddyvalley.model.items.Fish;
+import com.oop10x.steddyvalley.model.items.Misc;
+import com.oop10x.steddyvalley.model.items.Seed;
+import com.oop10x.steddyvalley.model.items.Food;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -98,5 +103,27 @@ public class NPC {
 
     public void removeNpc(NPC npc) {
         npcSet.remove(npc);
+    }
+
+    public static Set<NPC> getNpcSet() {
+        return npcSet;
+    }
+
+    public static NPC getNpcByName(String name) {
+        for (NPC npc : npcSet) {
+            if (npc.getName().equals(name)) {
+                return npc;
+            }
+        }
+        throw new NullPointerException("No NPC with name " + name);
+    }
+    static {
+        // I can't do Mayor Tadi's hated items
+        new NPC("Mayor Tadi", Set.of(Fish.getFishbyName("Legend")), Set.of(Fish.getFishbyName("Angler"), Fish.getFishbyName("Crimsonfish"), Fish.getFishbyName("Glacierfish")), Set.of());
+        new NPC("Caroline", Set.of(Misc.getMisc("Firewood"), Misc.getMisc("Coal")), Set.of(Crop.getCropByName("Potato"), Crop.getCropByName("Wheat")), Set.of(Crop.getCropByName("Hot Pepper")));
+        new NPC("Perry", Set.of(Crop.getCropByName("Cranberry"), Crop.getCropByName("Blueberry")), Set.of(Food.getFoodbyName("Wine")), new HashSet<>(Fish.getFishSet()));
+        new NPC("Dasco",Set.of(Food.getFoodbyName("The Legends of Spakbor"), Food.getFoodbyName("Cooked Pig's Head"), Food.getFoodbyName("Wine"), Food.getFoodbyName("Fugu"), Food.getFoodbyName("Spakbor Salad")),Set.of(Food.getFoodbyName("Fish Sandwich"), Food.getFoodbyName("Fish Stew"), Food.getFoodbyName("Baguette"), Food.getFoodbyName("Fish n' Chips")),Set.of(Fish.getFishbyName("Legend"), Crop.getCropByName("Grape"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Wheat"), Fish.getFishbyName("Pufferfish"), Fish.getFishbyName("Salmon")));
+        new NPC("Emily", new HashSet<>(Seed.getSeedSet()), Set.of(Fish.getFishbyName("Catfish"), Fish.getFishbyName("Salmon"), Fish.getFishbyName("Sardine")), Set.of(Misc.getMisc("Coal"), Misc.getMisc("Firewood")));
+        new NPC("Abigail", Set.of(Crop.getCropByName("Blueberry"), Crop.getCropByName("Melon"), Crop.getCropByName("Pumpkin"), Crop.getCropByName("Grape"), Crop.getCropByName("Cranberry")), Set.of(Food.getFoodbyName("Baguette"), Food.getFoodbyName("Pumpkin Pie"), Food.getFoodbyName("Wine")), Set.of(Crop.getCropByName("Hot Pepper"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Parsnip"), Crop.getCropByName("Wheat")));
     }
 }

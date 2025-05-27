@@ -1,7 +1,5 @@
 package com.oop10x.steddyvalley.model.map; // Sesuaikan paket
 
-import com.oop10x.steddyvalley.model.Game;
-import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.items.Item; // Untuk getEquippedItem

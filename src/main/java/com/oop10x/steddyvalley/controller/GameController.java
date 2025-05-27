@@ -1,7 +1,6 @@
 package com.oop10x.steddyvalley.controller;
 
 import com.oop10x.steddyvalley.model.FarmMap;
-import com.oop10x.steddyvalley.model.Game;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
@@ -29,7 +28,6 @@ import com.oop10x.steddyvalley.view.GamePanel;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.List;
@@ -695,8 +693,6 @@ public class GameController implements PlayerInputActions, Observer {
         // Misalnya, cek apakah pemain berada di dekat PondObject di FarmMap,
         // atau jika di WorldMap, cek nama lokasi saat ini.
         // Untuk FarmMap dan Pond:
-        int playerTileX = playerModel.getPosition().getX() / tileSize;
-        int playerTileY = playerModel.getPosition().getY() / tileSize;
         // Anda perlu cara yang lebih baik untuk cek "1 tile DARI Pond" [cite: 201]
         // Ini mungkin melibatkan pengecekan 4 tile di sekitar pemain, atau tile yang dihadapi.
         // DeployedObject adjObj = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);

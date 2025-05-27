@@ -27,6 +27,5 @@ public class RNG {
         }
         scanner.close();
         return false;
-        
     }
 }

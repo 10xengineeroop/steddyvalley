@@ -1,7 +1,6 @@
 package com.oop10x.steddyvalley.model.objects; // Sesuaikan dengan paket Anda
 
 import com.oop10x.steddyvalley.model.Player;
-import com.oop10x.steddyvalley.model.GameState; // Opsional, jika interaksi mengubah GameState
 import com.oop10x.steddyvalley.model.map.Actionable;
 // Impor lain yang mungkin diperlukan, misalnya untuk item atau inventory UI
 

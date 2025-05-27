@@ -5,11 +5,16 @@ import java.util.Set;
 
 public class Misc extends Item {
     private static final Set<Misc> miscSet = new HashSet<>();
-    static {
-        Misc coal = new Misc("Coal", 50,100);
-        Misc firewood = new Misc("Firewood", 75,150);
-    }
+    
     private final Integer sellPrice;
+    public static Set<Misc> getMiscset() {
+        return miscSet;
+    }
+
+    public Integer getSellPrice() {
+        return sellPrice;
+    }
+
     public Misc(String name, Integer sellPrice, Integer buyPrice) {
         super(name,buyPrice);
         this.sellPrice = sellPrice;
@@ -23,5 +28,11 @@ public class Misc extends Item {
             }
         }
         throw new IllegalArgumentException("Misc not found");
+    }
+
+    static {
+        new Misc("Coal", 50,100);
+        new Misc("Firewood", 75,150);
+        new Misc("Proposal Ring", null, 3000);
     }
 }

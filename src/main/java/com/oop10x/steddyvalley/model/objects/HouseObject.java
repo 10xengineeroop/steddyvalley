@@ -2,7 +2,6 @@ package com.oop10x.steddyvalley.model.objects;
 
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.map.Actionable;
-import com.oop10x.steddyvalley.model.GameState;
 
 public class HouseObject extends DeployedObject implements Actionable {
     public static final int HOUSE_WIDTH = 6;

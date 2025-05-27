@@ -1,28 +1,21 @@
 package com.oop10x.steddyvalley;
 
 import com.oop10x.steddyvalley.model.FarmMap;
-import com.oop10x.steddyvalley.model.Game;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.items.Equipment;
-import com.oop10x.steddyvalley.model.items.FishStarter;
-import com.oop10x.steddyvalley.model.items.Item; // Untuk item awal
-import com.oop10x.steddyvalley.model.items.Seed; // Untuk item awal
 // import com.oop10x.steddyvalley.model.items.HoeTool; // Jika ada
 import com.oop10x.steddyvalley.model.tile.TileManager;
 import com.oop10x.steddyvalley.controller.GameController;
 import com.oop10x.steddyvalley.controller.KeyHandler;
 import com.oop10x.steddyvalley.view.GamePanel;
 import com.oop10x.steddyvalley.view.GameWindow;
-import com.oop10x.steddyvalley.utils.Season; // Untuk Seed
 import com.oop10x.steddyvalley.model.SeasonManager;
 
 import javax.swing.SwingUtilities;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Main {
 
@@ -58,7 +51,6 @@ public class Main {
             com.oop10x.steddyvalley.model.items.Fish fish2 = new com.oop10x.steddyvalley.model.items.Fish("FishB", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
             playerModel.addItem(fish1);
             playerModel.addItem(fish2);
-            FishStarter.start() ;
             // Hot Pepper
             playerModel.addItem(initialItem2) ;
             playerModel.addItem(initialItem3);

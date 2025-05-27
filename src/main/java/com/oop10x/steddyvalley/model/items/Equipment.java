@@ -5,12 +5,6 @@ import java.util.Set;
 
 public class Equipment extends Item {
     private static final Set<Equipment> equipmentSet = new HashSet<>();
-    static {
-        Equipment hoe = new Equipment("Hoe");
-        Equipment wateringCan = new Equipment("Watering Can");
-        Equipment pickaxe = new Equipment("Pickaxe");
-        Equipment fishingRod = new Equipment("Fishing Rod");
-    }
 
     public Equipment(String name) {
         super(name,null);
@@ -24,5 +18,12 @@ public class Equipment extends Item {
             }
         }
         throw new IllegalArgumentException("No equipment with name " + name);
+    }
+
+    static {
+        new Equipment("Hoe");
+        new Equipment("Watering Can");
+        new Equipment("Pickaxe");
+        new Equipment("Fishing Rod");
     }
 }
