@@ -226,7 +226,7 @@ public class Fish extends Item {
                 Set.of("Ocean")
         );
         new Fish(
-                "Glacier Fish",
+                "Glacierfish",
                 FishRarity.LEGENDARY,
                 Set.of(Season.WINTER),
                 Set.of(new TimeRange(8 * 60, 20 * 60)),

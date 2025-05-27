@@ -28,8 +28,6 @@ public class Player {
 
     private final transient List<PlayerObserver> observers = new ArrayList<>();
 
-
-
     public Player(int x, int y, int gold, int energy, int speed) {
         this.position = new Position(x,y);
         this.gold = gold;

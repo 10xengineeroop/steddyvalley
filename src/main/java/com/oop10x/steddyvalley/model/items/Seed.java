@@ -49,6 +49,10 @@ public class Seed extends Item {
         return seedSet;
     }
 
+    public int getSellPrice() {
+        return getPrice() / 2;
+    }
+
     static {
         new Seed(
                 "Parsnip Seeds",

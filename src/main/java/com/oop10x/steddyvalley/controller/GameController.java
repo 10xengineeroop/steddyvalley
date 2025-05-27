@@ -8,6 +8,7 @@ import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
+import com.oop10x.steddyvalley.model.items.Food;
 // Impor Tool jika ada (Hoe, WateringCan)
 // import com.oop10x.steddyvalley.model.items.HoeTool;
 // import com.oop10x.steddyvalley.model.items.WateringCanTool;
@@ -525,7 +526,7 @@ public class GameController implements PlayerInputActions, Observer {
         com.oop10x.steddyvalley.model.items.Food cookedFood = null;
         try {
             cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50); // fallback if not found
-            cookedFood = cookedFood.getFoodbyName(recipe.name);
+            cookedFood = Food.getFoodbyName(recipe.name);
             System.out.println("[DEBUG] Found Food object for: " + recipe.name);
         } catch (Exception e) {
             // fallback: create a generic Food if not found
