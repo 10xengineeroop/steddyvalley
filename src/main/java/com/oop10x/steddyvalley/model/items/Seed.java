@@ -48,8 +48,9 @@ public class Seed extends Item {
     public static Set<Seed> getSeedSet() {
         return seedSet;
     }
-
-    public int getSellPrice() {
+    
+    @Override
+    public Integer getSellPrice() {
         return getPrice() / 2;
     }
 

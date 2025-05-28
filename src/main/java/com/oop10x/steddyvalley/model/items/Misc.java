@@ -16,7 +16,7 @@ public class Misc extends Item {
     }
 
     public Misc(String name, Integer sellPrice, Integer buyPrice) {
-        super(name,buyPrice);
+        super(name,buyPrice, null);
         this.sellPrice = sellPrice;
         miscSet.add(this);
     }

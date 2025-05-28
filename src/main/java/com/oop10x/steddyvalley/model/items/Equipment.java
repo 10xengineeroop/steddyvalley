@@ -7,7 +7,7 @@ public class Equipment extends Item {
     private static final Set<Equipment> equipmentSet = new HashSet<>();
 
     public Equipment(String name) {
-        super(name,null);
+        super(name,null, null);
         equipmentSet.add(this);
     }
 

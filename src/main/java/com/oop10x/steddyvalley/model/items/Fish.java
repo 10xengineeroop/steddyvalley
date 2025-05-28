@@ -16,13 +16,13 @@ public class Fish extends Item {
     private static final Set<Fish> fishSet = new HashSet<>();
 
     public Fish(String name, FishRarity rarity, Set<Season> seasonList, Set<TimeRange> timeList, Set<Weather> weatherList, Set<String> locationList) {
-        super(name, 0);
+        super(name, 0, 0);
         this.seasonList = seasonList;
         this.weatherList = weatherList;
         this.rarity = rarity;
         this.timeList = timeList;
         this.locationList = locationList;
-        setPrice(getSellPrice());
+        setSellPrice(calculateSellPrice());
         fishSet.add(this);
     }
 
@@ -51,7 +51,7 @@ public class Fish extends Item {
         return total;
     }
 
-    public int getSellPrice() {
+    public Integer calculateSellPrice() {
         double sellPrice = rarity.equals(FishRarity.REGULAR) ? 5.0 : rarity.equals(FishRarity.COMMON) ? 10.0 : 25.0;
         sellPrice *= 4.0 / seasonList.size();
         sellPrice *= 24.0 / getTotalHour();

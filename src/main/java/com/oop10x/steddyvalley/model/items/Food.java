@@ -6,20 +6,14 @@ import java.util.Set;
 public class Food extends Item {
     private static final Set<Food> foodSet = new HashSet<>();
     private final Integer energy;
-    private final Integer sellPrice;
     public Food(String name, Integer energy, Integer buyPrice, Integer sellPrice) {
-        super(name, buyPrice);
+        super(name, buyPrice, sellPrice);
         this.energy = energy;
-        this.sellPrice = sellPrice;
         foodSet.add(this);
     }
 
     public Integer getEnergy() {
         return energy;
-    }
-
-    public Integer getSellPrice() {
-        return sellPrice;
     }
 
     public static Food getFoodbyName(String name) {
