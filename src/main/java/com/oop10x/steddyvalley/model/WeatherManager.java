@@ -9,11 +9,13 @@ import java.util.*;
 
 public class WeatherManager implements Observable, Observer {
 
+    private static WeatherManager instance;
+
     private final List<Observer> observers;
     private final Queue<Weather> weatherSchedule;
     private Weather currentWeather;
 
-    public WeatherManager(TimeManager timeManager) {
+    private WeatherManager(TimeManager timeManager) {
         if (timeManager == null) {
             throw new NullPointerException("timeManager");
         }
@@ -21,6 +23,13 @@ public class WeatherManager implements Observable, Observer {
         populateWeather();
         observers = new LinkedList<>();
         timeManager.addObserver(this);
+    }
+
+    public static WeatherManager getInstance(TimeManager timeManager) {
+        if (instance == null) {
+            instance = new WeatherManager(timeManager);
+        }
+        return instance;
     }
 
     @Override

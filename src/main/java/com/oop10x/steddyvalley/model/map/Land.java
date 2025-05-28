@@ -53,6 +53,7 @@ public class Land implements Actionable, Placeable, Observer {
             setLandType(LandType.TILLED);
             // player.decreaseEnergy(COST_TILL);
             System.out.println("Land at (" + getX() + "," + getY() + ") tilled.");
+            player.setEnergy(player.getEnergy() - 5);
             return true;
             // }
         }
@@ -75,6 +76,7 @@ public class Land implements Actionable, Placeable, Observer {
             // player.getInventory().removeItem(seedToPlant, 1);
             // player.decreaseEnergy(COST_PLANT);
             System.out.println(seedToPlant.getName() + " planted at (" + getX() + "," + getY() + "). Harvest at: " + endPlantTimeMinutes);
+            player.getInventory().removeItem(seedToPlant.getName(), 1);
             return true;
             // }
         }
@@ -129,20 +131,16 @@ public class Land implements Actionable, Placeable, Observer {
     @Override
     public void update(EventType eventType, Object message) {
         if (eventType == EventType.NEWDAY) {
-            // int currentDayMinutes = (Integer) message; // Asumsi message adalah waktu awal hari baru
             if (getLandType() == LandType.PLANTED) {
                 if (isWatered) {
-                    // Tanaman tumbuh, cek apakah siap panen (sudah ditangani oleh harvest())
-                    // Reset status siram untuk hari berikutnya
                     setWatered(false);
                     System.out.println("Land ("+getX()+","+getY()+") is no longer watered (new day).");
                 } else {
-                    // Tidak disiram, tanaman layu
                     witherCrop();
                 }
-            } else if (getLandType() == LandType.TILLED) {
-                // Tanah yang dicangkul mungkin kembali menjadi UNTILLED jika tidak ditanami dalam sehari? (Aturan game Anda)
-                // setWatered(false); // Tanah dicangkul juga kering
+            } else if (getLandType() == LandType.TILLED || getLandType() == LandType.UNTILLED) {
+                // Reset tanah yang tidak ditanami atau sudah ditanami tapi tidak disiram
+                resetLand();
             }
         }
         // Implementasi untuk NEWWEATHER, NEWSEASON jika diperlukan

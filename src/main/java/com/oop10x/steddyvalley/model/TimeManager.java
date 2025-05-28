@@ -11,34 +11,30 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TimeManager implements Observable {
-    private final List<Observer> observers;
-    private final AtomicInteger minutes = new AtomicInteger();
-    private Timer timer; // Tidak final agar bisa di-recreate jika perlu
-    private final int SIXAM_MINUTES = 6 * 60; // 6 AM = 360 menit dari tengah malam
-    private final int GAME_MINUTES_PER_REAL_SECOND = 5; // 1 detik nyata = 5 menit game
-    private final int REAL_MILLISECONDS_PER_TICK = 1000 / GAME_MINUTES_PER_REAL_SECOND; // 1000ms / 5 = 200ms per 1 menit game
-                                                                                      // Atau jika 1 detik nyata = 5 menit game, maka 1000ms untuk 5 menit game
-                                                                                      // Jadi 1 menit game = 1000ms / 5 = 200ms.
-                                                                                      // Jika ingin 1 menit game per tick:
-    private final int TICK_INTERVAL_MS = 1000; // Setiap 200ms nyata, 1 menit game berlalu
-                                              // Jika ingin 5 menit game per tick 1000ms:
-    // private final int TICK_INTERVAL_MS = 1000; // Setiap 1 detik nyata, 5 menit game berlalu
 
+    private static final int SIXAM_MINUTES = 6 * 60;
+    private static final int GAME_MINUTES_PER_REAL_SECOND = 5;
+    private static final int TICK_INTERVAL_MS = 1000; // 5 game minutes per 1 real second
 
-    // Hapus static instance tm
-    // private static TimeManager tm;
+    private static final TimeManager INSTANCE = new TimeManager();
 
-    // Constructor sekarang publik
-    public TimeManager() {
-        observers = new ArrayList<>();
-        // timer = new Timer(true); // Buat sebagai daemon thread
-        minutes.set(SIXAM_MINUTES); // Mulai dari jam 6 pagi
-        // tm = this; // Hapus
+    private final List<Observer> observers = new ArrayList<>();
+    private final AtomicInteger minutes = new AtomicInteger(SIXAM_MINUTES);
+    private Timer timer;
+
+    private TimeManager() {
+        // Private constructor prevents instantiation
+    }
+
+    public static TimeManager getInstance() {
+        return INSTANCE;
     }
 
     @Override
     public void addObserver(Observer o) {
-        if (o != null && !observers.contains(o)) observers.add(o);
+        if (o != null && !observers.contains(o)) {
+            observers.add(o);
+        }
     }
 
     @Override
@@ -48,49 +44,39 @@ public class TimeManager implements Observable {
 
     @Override
     public void notifyObservers(EventType type, Object message) {
-        // Buat salinan untuk menghindari ConcurrentModificationException
-        List<Observer> observersCopy = new ArrayList<>(observers);
-        for (Observer o : observersCopy) {
+        List<Observer> snapshot = new ArrayList<>(observers);
+        for (Observer o : snapshot) {
             o.update(type, message);
         }
     }
 
     public void start() {
-        if (timer != null) { // Hentikan timer lama jika ada
+        if (timer != null) {
             timer.cancel();
         }
-        timer = new Timer(true); // Buat timer baru sebagai daemon thread
+
+        timer = new Timer(true);
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                // Jika ingin 5 menit game per tick interval:
-                // minutes.addAndGet(5);
-                // Jika ingin 1 menit game per tick interval:
                 minutes.addAndGet(1);
+                System.out.println("Time tick: " + minutes.get() + " minutes");
+                notifyObservers(EventType.TIMETICK, minutes.get());
 
-                notifyObservers(EventType.TIMETICK, minutes.get()); // Kirim Integer
-
-                // Notify at exactly 2:00 AM every day
-                int mins = minutes.get();
-                if ((mins % 1440) == 120) {
-                    notifyObservers(EventType.TWO_AM, mins);
-                }
-
-                // Cek apakah hari baru (setiap 24 jam game = 1440 menit game)
-                // (minutes.get() - SIXAM_MINUTES) memastikan kita cek relatif terhadap awal hari pertama
-                if ((minutes.get() - SIXAM_MINUTES) > 0 && (minutes.get() - SIXAM_MINUTES) % (24 * 60) == 0) {
-                    System.out.println("NEW DAY Event Fired at minutes: " + minutes.get());
-                    notifyObservers(EventType.NEWDAY, minutes.get()); // Kirim Integer
+                int currentMinutes = minutes.get();
+                if (currentMinutes % 1440 == 120) {
+                    notifyObservers(EventType.TWO_AM, currentMinutes);
                 }
             }
-        }, 0, TICK_INTERVAL_MS); // Tick setiap TICK_INTERVAL_MS
+        }, 0, TICK_INTERVAL_MS);
+
         System.out.println("TimeManager started. Tick interval: " + TICK_INTERVAL_MS + "ms.");
     }
 
     public void stop() {
         if (timer != null) {
             timer.cancel();
-            timer = null; // Set null agar bisa di-start lagi
+            timer = null;
             System.out.println("TimeManager stopped.");
         }
     }
@@ -99,13 +85,14 @@ public class TimeManager implements Observable {
         return minutes.get();
     }
 
-    // Set the in-game time to 06:00 AM (6 * 60 = 360 minutes)
     public void setTimeToSixAM() {
-        minutes.set(SIXAM_MINUTES);
-        notifyObservers(EventType.TIMETICK, minutes.get());
+        stop();
+        int currentMinutes = minutes.get();
+        minutes.set(((currentMinutes - 360 + 1439) / 1440) * 1440 + 360);
+        notifyObservers(EventType.NEWDAY, minutes.get());
+        start();
     }
 
-    // Tambahkan method untuk menambah menit ke waktu saat ini
     public void addMinutes(int delta) {
         minutes.addAndGet(delta);
         notifyObservers(EventType.TIMETICK, minutes.get());

@@ -3,12 +3,12 @@ package com.oop10x.steddyvalley.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.oop10x.steddyvalley.model.items.Crop;
-import com.oop10x.steddyvalley.model.items.Food;
-import com.oop10x.steddyvalley.model.items.Fish;
+import com.oop10x.steddyvalley.model.items.*;
 
 public class PlayerTest {
   private Player player = new Player(0, 0, 0, 100, 0);
@@ -58,6 +58,18 @@ public class PlayerTest {
     assertEquals(100, player.getEnergy(), "Energy should not exceed 100, should be capped at 100");
     
     player.setEnergy(-30);
-    assertEquals(-20, player.getEnergy(), "Energy should not be negative, should be set to 0");
+    assertEquals(-21, player.getEnergy(), "Energy should not be less than -21, should be capped at -21. Karena bakal forceSleep() di - 20");
+  }
+
+  @Test
+  void testInitialInventory() {
+    assertNotEquals(null, player.getInventory(), "Player's inventory should not be null");
+    assertNotEquals(0, player.getInventory().getAllItems().size(),"Player's inventory should not be empty at initialization");
+    Set<Equipment> equipmentSet = Equipment.getEquipmentSet();
+    equipmentSet.forEach(equipment -> {
+      assertNotEquals(null, equipment, "Equipment should not be null");
+      assertEquals(1, player.getInventory().countItem(equipment), "Player should have initial equipment in inventory: " + equipment.getName());
+    });
+    assertEquals(15, player.getInventory().countItem(Seed.getSeedByName("Parsnip Seeds")), "Player should have 15 Parsnip Seeds in inventory");
   }
 }

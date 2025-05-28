@@ -11,17 +11,26 @@ import java.util.List;
 import java.util.Queue;
 
 public class SeasonManager implements Observer, Observable {
+    private static SeasonManager instance;
+
     private final Queue<Season> seasons;
     private Season currentSeason;
     private final List<Observer> observers;
     private Integer daysUntilNextSeason;
 
-    public SeasonManager(TimeManager timeManager) {
+    private SeasonManager(TimeManager timeManager) {
         seasons = new LinkedList<Season>();
         populateSeasons();
         observers = new ArrayList<Observer>();
         daysUntilNextSeason = 10;
         timeManager.addObserver(this);
+    }
+
+    public static SeasonManager getInstance(TimeManager timeManager) {
+        if (instance == null) {
+            instance = new SeasonManager(timeManager);
+        }
+        return instance;
     }
 
     public void populateSeasons() {
@@ -40,7 +49,7 @@ public class SeasonManager implements Observer, Observable {
         currentSeason = seasons.poll();
         seasons.add(currentSeason);
         daysUntilNextSeason = 10;
-        notifyObservers(EventType.NEWSEASON,getCurrentSeason().toString());
+        notifyObservers(EventType.NEWSEASON, getCurrentSeason().toString());
     }
 
     @Override
@@ -71,6 +80,4 @@ public class SeasonManager implements Observer, Observable {
             nextSeason();
         }
     }
-
-
 }

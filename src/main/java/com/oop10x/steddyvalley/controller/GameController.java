@@ -9,9 +9,6 @@ import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.model.items.Food;
-// Impor Tool jika ada (Hoe, WateringCan)
-// import com.oop10x.steddyvalley.model.items.HoeTool;
-// import com.oop10x.steddyvalley.model.items.WateringCanTool;
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.Land;
 import com.oop10x.steddyvalley.model.objects.*;
@@ -299,7 +296,6 @@ public class GameController implements PlayerInputActions, Observer {
                 if (equippedItem != null) {
                     if ("Hoe".equals(equippedItem.getName())) {
                         if (currentLand.till(playerModel)) actionTaken = true;
-                        playerModel.setEnergy(playerModel.getEnergy() - 5);
                     } else if (equippedItem instanceof Seed) {
                         if (currentLand.plant((Seed) equippedItem, playerModel, timeManager.getMinutes())) actionTaken = true;
                     } else if ("Watering Can".equals(equippedItem.getName())) {
@@ -332,14 +328,6 @@ public class GameController implements PlayerInputActions, Observer {
 
     public void updateGameLogic() {
         if (gameStateModel.isSleeping()) return ;
-        int minutes = timeManager.getMinutes();
-        int twoAM = 2 * 60; 
-        if ((playerModel.getEnergy() < -20) || (minutes % 1440) == twoAM && !gameStateModel.isSleeping()) {
-            forceSleep();
-            timeManager.stop(); 
-            return;
-        }
-
         if (!gameStateModel.isPlaying()) return;
         int currentX = playerModel.getPosition().getX();
         int currentY = playerModel.getPosition().getY();

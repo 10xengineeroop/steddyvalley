@@ -141,14 +141,15 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         // --- HUD: Time, Weather, Season ---
         g2.setColor(new Color(0,0,0,180));
-        g2.fillRoundRect(5, 5, 340, 38, 12, 12);
+        g2.fillRoundRect(5, 5, 500, 38, 12, 12);
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 16));
         String timeStr = "Time: --:--";
         String seasonStr = "Season: -";
         String weatherStr = "Weather: -";
+        int mins = timeManager.getMinutes();
+        String days = String.format("Days: %d", mins / 1440 + 1);
         if (timeManager != null) {
-            int mins = timeManager.getMinutes();
             int hour = (mins / 60) % 24;
             int min = mins % 60;
             String ampm = hour < 12 ? "AM" : "PM";
@@ -163,8 +164,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             weatherStr = "Weather: " + weatherManager.getCurrentWeather();
         }
         g2.drawString(timeStr, 15, 28);
-        g2.drawString(seasonStr, 130, 28);
-        g2.drawString(weatherStr, 250, 28);
+        g2.drawString(seasonStr, 140, 28);
+        g2.drawString(weatherStr, 283, 28);
+        g2.drawString(days, 418, 28);
 
         // Informasi Debug
         g2.setColor(Color.WHITE);
@@ -431,7 +433,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         percentage = Math.max(0.0, Math.min(1.0, percentage)) ;
 
-        int knobWidth = TILE_SIZE > 0 ? TILE_SIZE : 20; // Pastikan knobWidth > 0
+        int knobWidth = TILE_SIZE;
         knobWidth = Math.max(10, knobWidth/2) ;
         int knobX = sliderX + (int) (percentage * (sliderWidth - knobWidth)) ;
         g2.setColor(Color.CYAN);

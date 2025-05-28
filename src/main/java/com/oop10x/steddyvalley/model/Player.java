@@ -37,6 +37,10 @@ public class Player {
         Set<Equipment> initialEquipment = Equipment.getEquipmentSet();
         initialEquipment.forEach(equipment -> addItem(equipment));
         addItem(Seed.getSeedByName("Parsnip Seeds"), 15);
+        setEquippedItem(initialEquipment.stream()
+                .filter(equipment -> equipment.getName().equals("Hoe"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No Hoe equipment found")));
     }
     public void addObserver(PlayerObserver observer) {
         if (observer != null && !observers.contains(observer)) {
@@ -71,8 +75,8 @@ public class Player {
 
     public void setEnergy(int energy) {
         this.energy = energy;
-        if (this.energy < -20) {
-            this.energy = -20; // Energi tidak boleh kurang dari -20
+        if (this.energy < -21) {
+            this.energy = -21; // Energi tidak boleh kurang dari -20
         } else if (this.energy > 100) {
             this.energy = 100;
         }
