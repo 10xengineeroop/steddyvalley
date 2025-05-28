@@ -3,25 +3,14 @@ package com.oop10x.steddyvalley.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.oop10x.steddyvalley.model.items.Crop;
 import com.oop10x.steddyvalley.model.items.Fish;
-import com.oop10x.steddyvalley.model.items.Food;
 import com.oop10x.steddyvalley.model.items.Misc;
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
 public class NPCTest {
-  @BeforeAll
-  static void setUp() {
-    Fish f;
-    Misc m;
-    Seed s;
-    Crop c;
-    
-  }
   @Test
   void testGetItem() {
     NPC emily = NPC.getNpcByName("Emily");
@@ -61,5 +50,14 @@ public class NPCTest {
     assertEquals(150, mayorTadi.getHeartPoints(), "Heart points should not exceed 150");
     mayorTadi.setHeartPoints(-50);
     assertEquals(0, mayorTadi.getHeartPoints(), "Heart points should not be less than 0");
+  }
+
+  @Test
+  void testChatNPC() {
+    NPC emily = NPC.getNpcByName("Emily");
+    assertNotEquals(null, emily, "Emily not found");
+    int initialHeartPoints = emily.getHeartPoints();
+    emily.chat();
+    assertEquals(initialHeartPoints + 10, emily.getHeartPoints(), "Heart points should increase by 10 after chatting with Emily");
   }
 }
