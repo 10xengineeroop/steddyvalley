@@ -106,7 +106,11 @@ public class GameController implements PlayerInputActions, Observer {
             if (gameStateModel.getCurrentState() == GameState.INVENTORY_STATE) {
                 selectedInventoryIndex-- ;
                 if (selectedInventoryIndex < 0) {
+<<<<<<< HEAD
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; 
+=======
+                    selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1;
+>>>>>>> 9a0ed4b (HUD)
                 }
             }
 
@@ -159,6 +163,9 @@ public class GameController implements PlayerInputActions, Observer {
         } else {
              if (gameStateModel.isPlaying()) {
                 this.moveLeftActive = false;
+            } else if (gameStateModel.isGuessingFish() && !active) {
+            } else if (!active) {
+                 this.moveLeftActive = false;
             }
         }
     }
@@ -172,6 +179,9 @@ public class GameController implements PlayerInputActions, Observer {
         } else {
             if (gameStateModel.isPlaying()) {
                 this.moveRightActive = false;
+            } else if (gameStateModel.isGuessingFish() && !active) {
+            } else if (!active) {
+                 this.moveRightActive = false;
             }
         }
     }
@@ -293,6 +303,19 @@ public class GameController implements PlayerInputActions, Observer {
             int playerTileY = playerPixelY / tileSize;
 
             DeployedObject adjacentObject = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
+            
+            Item equippedItem = playerModel.getEquippedItem();
+
+            if (equippedItem != null) {
+                boolean isEdible = equippedItem instanceof Food ||
+                                   equippedItem instanceof Fish ||
+                                   equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+    
+                if (isEdible) {
+                    handleEatEquippedItem();
+                    return;
+                }
+            }
 
             if (adjacentObject != null) {
                 System.out.println("DEBUG GC: Player attempting to interact with DeployedObject: " + adjacentObject.getObjectName());
@@ -330,7 +353,6 @@ public class GameController implements PlayerInputActions, Observer {
             //     handleVisitAction() ;
             // }
             if (currentLand != null) {
-                Item equippedItem = playerModel.getEquippedItem();
                 boolean actionTaken = false;
 
                 if (equippedItem != null) {
@@ -449,6 +471,41 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setPosition(this.tileSize * 5, this.tileSize * 5);
         }
         gameStateModel.setCurrentState(GameState.SLEEP_STATE);
+    }
+
+    public void handleEatEquippedItem() {
+        if (!gameStateModel.isPlaying()) {
+            return;
+        }
+
+        Item equippedItem = playerModel.getEquippedItem();
+
+        if (equippedItem == null) {
+            this.transitionMessage = "Nothing equipped to eat!";
+            System.out.println("Eat attempt: No item equipped.");
+            return;
+        }
+
+        boolean isEdible = equippedItem instanceof Food ||
+                           equippedItem instanceof Fish ||
+                           equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+        if (!isEdible) {
+            this.transitionMessage = equippedItem.getName() + " is not edible!";
+            System.out.println("Eat attempt: " + equippedItem.getName() + " is not edible.");
+            return;
+        }
+
+        playerModel.eat(equippedItem);
+
+        playerModel.getInventory().removeItem(equippedItem.getName(), 1);
+
+        String itemName = equippedItem.getName();
+        playerModel.setEquippedItem(null);
+
+        timeManager.addMinutes(5);
+
+        this.transitionMessage = "You ate " + itemName + ".";
+        System.out.println("Player ate: " + itemName);
     }
 
     private void handleHouseAction(String action) {
@@ -671,7 +728,11 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         fishingSliderCurrentValue += delta;
+<<<<<<< HEAD
         fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax)); 
+=======
+        fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax));
+>>>>>>> 9a0ed4b (HUD)
 
         String currentAttemptMessage = "Current value: " + fishingSliderCurrentValue +
                                      " (Range: " + fishingSliderMin + "-" + fishingSliderMax +"). Tries left: " + currentFishingTriesLeft;
@@ -718,7 +779,12 @@ public class GameController implements PlayerInputActions, Observer {
             gamePanel.clearFishingUIState();
         }
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
+<<<<<<< HEAD
         if (timeManager != null) timeManager.start(); 
+=======
+        resetMovementFlags();
+        if (timeManager != null) timeManager.start();
+>>>>>>> 9a0ed4b (HUD)
     }
 
     private String getFishingLocation() {

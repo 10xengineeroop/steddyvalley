@@ -1,23 +1,20 @@
 package com.oop10x.steddyvalley.view;
 
-import com.oop10x.steddyvalley.model.FarmMap; // Import FarmMap
-import com.oop10x.steddyvalley.model.GameState;
-import com.oop10x.steddyvalley.model.GameStateObserver;
-import com.oop10x.steddyvalley.model.Player;
-import com.oop10x.steddyvalley.model.PlayerObserver;
-import com.oop10x.steddyvalley.controller.GameController;
-
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-// Import Item dan Inventory jika mau menampilkan info item di inventory
-// import com.oop10x.steddyvalley.model.items.Item;
-// import com.oop10x.steddyvalley.model.Inventory;
-// import java.util.Map;
 import java.util.List;
+
+import javax.swing.JPanel;
+
+import com.oop10x.steddyvalley.controller.GameController;
+import com.oop10x.steddyvalley.model.FarmMap;
+import com.oop10x.steddyvalley.model.GameState;
+import com.oop10x.steddyvalley.model.GameStateObserver;
+import com.oop10x.steddyvalley.model.Player;
+import com.oop10x.steddyvalley.model.PlayerObserver;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
@@ -67,7 +64,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     public void startGameThread() { if (gameThread == null) { gameThread = new Thread(this); gameThread.start(); }}
     public void stopGameThread() { if (gameThread != null) { gameThread = null; }}
-    @Override public void run() { /* ... game loop tetap sama ... */
+    @Override public void run() {
         double drawInterval = 1000000000.0 / FPS;
         double delta = 0;
         long lastTime = System.nanoTime();
@@ -119,6 +116,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         } else if (currentGameState == GameState.MESSAGE_TV) {
             drawMessageDisplayState(g2);
         }
+        
         g2.dispose();
     }
 
@@ -223,7 +221,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         currentX += weatherStrWidth + interTextPadding;
         g2.drawString(dayStr, currentX, textY);
+<<<<<<< HEAD
         // Ghazy
+=======
+>>>>>>> 9a0ed4b (HUD)
 
         // Informasi Debug
         int debugStartX = 10;
@@ -264,8 +265,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         if (!line4.isEmpty()) {
             g2.drawString(line4, debugStartX, debugStartY + (debugLineHeight * 3));
         }
-    }
-
+    } 
     private void drawPauseState(Graphics2D g2) {
         drawPlayState(g2);
         g2.setColor(new Color(0, 0, 0, 150));
@@ -325,13 +325,11 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int panelWidth = SCREEN_WIDTH / 2;
         int panelHeight = SCREEN_HEIGHT / 2;
 
-        // Latar belakang panel menu rumah
         g2.setColor(new Color(30, 30, 70, 220));
         g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
         g2.drawRect(panelX, panelY, panelWidth, panelHeight);
 
-        // Judul
         g2.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "House Actions";
         int titleWidth = g2.getFontMetrics().stringWidth(title);
@@ -407,7 +405,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // Tampilkan pesan transisi
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
         String message = gameController.getTransitionMessage();
@@ -424,6 +421,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         x = getXforCenteredText(continueMessage, g2);
         g2.drawString(continueMessage, x, y + 50);
     }
+
     private void drawRecipeState(Graphics2D g2) {
         drawPlayState(g2);
 

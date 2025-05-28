@@ -51,10 +51,9 @@ public class Player {
         observers.remove(observer);
     }
     private void notifyObservers() {
-        // Membuat salinan untuk menghindari ConcurrentModificationException
         List<PlayerObserver> observersCopy = new ArrayList<>(observers);
         for (PlayerObserver observer : observersCopy) {
-            observer.onPlayerUpdated(this); // Mengirim instance Player saat ini
+            observer.onPlayerUpdated(this);
         }
     }
     public int getGold() {

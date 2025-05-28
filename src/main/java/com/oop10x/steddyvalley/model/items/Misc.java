@@ -11,7 +11,12 @@ public class Misc extends Item {
     }
 
     public Misc(String name, Integer sellPrice, Integer buyPrice) {
+<<<<<<< HEAD
         super(name,buyPrice, sellPrice);
+=======
+        super(name,buyPrice, null);
+        this.sellPrice = sellPrice;
+>>>>>>> 9a0ed4b (HUD)
         miscSet.add(this);
     }
 
