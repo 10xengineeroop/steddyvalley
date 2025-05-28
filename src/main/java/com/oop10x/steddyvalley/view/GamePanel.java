@@ -48,17 +48,17 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     private int fishingTarget = 0;
     private String fishingFishName = "";
     private String fishingMessage = "";
-    private boolean isFishingSliderUIVisible = false; // Status apakah UI slider aktif
-    private String fishingUIMessage = "";             // Pesan yang ditampilkan di UI fishing
-    private int fishingSliderDisplayValue = 0;        // Nilai yang ditunjuk slider saat ini
-    private int fishingSliderMinDisplay = 0;          // Batas bawah nilai slider untuk ditampilkan
+    private boolean isFishingSliderUIVisible = false;
+    private String fishingUIMessage = "";
+    private int fishingSliderDisplayValue = 0;
+    private int fishingSliderMinDisplay = 0;
     private int fishingSliderMaxDisplay = 0;  
 
     public GamePanel(Player player, GameState gameState, GameController controller, FarmMap farmMap) {
         this.playerModel = player;
         this.gameStateModel = gameState;
         this.gameController = controller;
-        this.farmMapModel = farmMap; // Simpan FarmMap
+        this.farmMapModel = farmMap;
 
         this.playerModel.addObserver(this);
         this.gameStateModel.addObserver(this);
@@ -120,7 +120,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         else if (currentGameState == GameState.FISH_GUESS_STATE) {
             drawFishGuessState(g2);
-        } else if (currentGameState == GameState.MESSAGE_DISPLAY_STATE) {
+        } else if (currentGameState == GameState.MESSAGE_TV) {
             drawMessageDisplayState(g2);
         }
         g2.dispose();
@@ -131,7 +131,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     
-        String message = gameController.getMessageForView();
+        String message = gameController.getMessageTV();
         if (message == null || message.isEmpty()) {
             message = "Displaying message...";
         }
@@ -358,7 +358,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             }
         }
 
-        String controllerMessage = gameController.getMessageForView();
+        String controllerMessage = gameController.getMessageTV();
         if (controllerMessage != null && !controllerMessage.isEmpty()) {
             g2.setFont(new Font("Arial", Font.ITALIC, 16));
             g2.setColor(Color.CYAN);
@@ -430,13 +430,11 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int panelWidth = SCREEN_WIDTH / 2;
         int panelHeight = SCREEN_HEIGHT / 2  + 50;
 
-        // Latar belakang panel menu rumah
-        g2.setColor(new Color(30, 30, 70, 220)); // Biru tua semi-transparan
+        g2.setColor(new Color(30, 30, 70, 220));
         g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
         g2.drawRect(panelX, panelY, panelWidth, panelHeight);
 
-        // Judul
         g2.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "Recipe Book";
         int titleWidth = g2.getFontMetrics().stringWidth(title);
@@ -478,25 +476,27 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int y = 100;
         g2.drawString(title, x, y);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        if (fishingGuessActive) {
-            g2.drawString(fishingMessage, x, y + 40);
-            g2.drawString("Type your guess and press E.", x, y + 70);
+        if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
+            int lineY = y + 40;
+            for (String line : fishingUIMessage.split("\n")) {
+                g2.drawString(line, getXforCenteredText(line, g2), lineY);
+                lineY += 25;
+            }
         } else {
-            g2.drawString("Press E to cast your line! Esc to exit.", x, y + 40);
+            String defaultPrompt = "Press E to cast your line! Esc to exit.";
+            g2.drawString(defaultPrompt, getXforCenteredText(defaultPrompt, g2), y + 40);
         }
     }
 
-    // --- FISHING GUESSING GAME METHODS ---
-    // Call this to start the guessing game from GameController
     private void drawFishGuessState(Graphics2D g2) {
         drawPlayState(g2);
 
-        g2.setColor(new Color(0, 0, 60, 210)); // Overlay
+        g2.setColor(new Color(0, 0, 60, 210));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
-        String title = "GUESS THE NUMBER!"; // Judul lebih spesifik
+        String title = "GUESS THE NUMBER!";
         int titleX = getXforCenteredText(title, g2);
         int currentY = SCREEN_HEIGHT / 5;
         g2.drawString(title, titleX, currentY);
@@ -504,7 +504,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
 
-        // Tampilkan pesan (instruksi, sisa percobaan)
         if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
             for (String line : fishingUIMessage.split("\\n")) {
                 g2.drawString(line, getXforCenteredText(line, g2), currentY);
@@ -527,7 +526,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         percentage = Math.max(0.0, Math.min(1.0, percentage)) ;
 
-        int knobWidth = TILE_SIZE > 0 ? TILE_SIZE : 20; // Pastikan knobWidth > 0
+        int knobWidth = TILE_SIZE > 0 ? TILE_SIZE : 20;
         knobWidth = Math.max(10, knobWidth/2) ;
         int knobX = sliderX + (int) (percentage * (sliderWidth - knobWidth)) ;
         g2.setColor(Color.CYAN);
@@ -547,31 +546,27 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         repaint();
     }
 
-    // Dipanggil oleh GameController untuk memulai UI tebakan slider
     public void startFishingSliderUI(String initialMessage, int min, int max, int currentValue, int triesLeft) {
-        this.isFishingSliderUIVisible = true; // Aktifkan UI slider
+        this.isFishingSliderUIVisible = true;
         this.fishingUIMessage = initialMessage;
         this.fishingSliderMinDisplay = min;
         this.fishingSliderMaxDisplay = max;
         this.fishingSliderDisplayValue = currentValue;
-        // this.fishingTriesLeftForDisplay = triesLeft; // Biasanya info ini ada di initialMessage
+        // this.fishingTriesLeftForDisplay = triesLeft;
         System.out.println("[View] Starting fishing SLIDER UI. Value: " + currentValue + " Message: " + initialMessage);
         repaint();
     }
 
     public void updateFishingSliderDisplay(int value, String message, int triesLeft) {
         this.fishingSliderDisplayValue = value;
-        this.fishingUIMessage = message; // Pesan mungkin berisi sisa percobaan
+        this.fishingUIMessage = message;
         // this.fishingTriesLeftForDisplay = triesLeft;
         System.out.println("[View] Updating fishing SLIDER UI. Value: " + value + " Message: " + message);
         repaint();
     }
 
-    // Dipanggil oleh GameController setelah tebakan (salah satu tebakan) diproses
-    // atau semua percobaan habis. Ini menandakan mode input slider tidak aktif lagi.
     public void endFishingSliderUI(boolean success) {
-        this.isFishingSliderUIVisible = false; // Mode adjusment slider selesai
-        // Pesan hasil (sukses/gagal) akan di-set oleh GameController via setFishingMessage.
+        this.isFishingSliderUIVisible = false;
         System.out.println("[View] Ending fishing SLIDER input UI. Success: " + success);
         repaint();
     }
@@ -585,7 +580,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         repaint();
     }
 
-    // Dipanggil oleh KeyHandler
     public void signalFishingInteractionComplete() {
         System.out.println("[View] Signaling GameController to end fishing session.");
         if (gameController != null) {

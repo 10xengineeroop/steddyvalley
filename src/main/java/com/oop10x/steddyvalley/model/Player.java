@@ -1,6 +1,6 @@
 package com.oop10x.steddyvalley.model;
 
-import com.oop10x.steddyvalley.model.items.Item;
+import com.oop10x.steddyvalley.model.items.*;
 import com.oop10x.steddyvalley.utils.Position;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
@@ -69,6 +69,11 @@ public class Player {
 
     public void setEnergy(int energy) {
         this.energy = energy;
+        if (this.energy < -20) {
+            this.energy = -20; // Energi tidak boleh kurang dari -20
+        } else if (this.energy > 100) {
+            this.energy = 100;
+        }
         notifyObservers();
     }
 
@@ -128,5 +133,17 @@ public class Player {
 
     public Inventory getInventory() {
         return inventory;
+    }
+
+    public void eat(Item item) {
+        if (item != null) {
+            if (item instanceof Food food) {
+                setEnergy(getEnergy() + food.getEnergy());
+            } else if (item instanceof Fish) {
+                setEnergy(getEnergy() + 1);
+            } else if (item instanceof Crop) {
+                setEnergy(getEnergy() + 3);
+            }
+        }
     }
 }

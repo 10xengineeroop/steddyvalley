@@ -13,7 +13,7 @@ public class GameState {
     public static final int RECIPE_STATE = 6;
     public static final int FISHING_STATE = 7;
     public static final int FISH_GUESS_STATE = 8;
-    public static final int MESSAGE_DISPLAY_STATE = 9;
+    public static final int MESSAGE_TV = 9;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();

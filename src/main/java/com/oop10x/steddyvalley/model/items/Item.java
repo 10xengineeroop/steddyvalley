@@ -4,12 +4,20 @@ import com.oop10x.steddyvalley.exception.NegativePriceException;
 
 public class Item {
     private String name;
-    private Integer price;
+    private Integer buyPrice;
+    private Integer sellPrice;
 
-    public Item(String name, Integer price) {
+    public Item(String name, Integer buyPrice) {
         if (name == null) throw new NullPointerException("Name cannot be null");
         this.name = name;
-        this.price = price;
+        this.buyPrice = buyPrice;
+    }
+
+    public Item(String name, Integer buyPrice, Integer sellPrice) {
+        if (name == null) throw new NullPointerException("Name cannot be null");
+        this.name = name;
+        this.buyPrice = buyPrice;
+        this.sellPrice = sellPrice;
     }
 
     public String getName() {
@@ -24,11 +32,28 @@ public class Item {
     }
 
     public Integer getPrice() {
-        return price;
+        return getBuyPrice();
+    }
+
+    public Integer getBuyPrice() {
+        return buyPrice;
+    }
+
+    public Integer getSellPrice() {
+        return sellPrice;
     }
 
     public void setPrice(Integer price) {
-        if (price < 0) throw new NegativePriceException("Negative price");
-        this.price = price;
+        setBuyPrice(price);
+    }
+
+    public void setBuyPrice(Integer buyPrice) {
+        if (buyPrice < 0) throw new NegativePriceException("Negative buy price");
+        this.buyPrice = buyPrice;
+    }
+
+    public void setSellPrice(Integer sellPrice) {
+        if (sellPrice < 0) throw new NegativePriceException("Negative sell price");
+        this.sellPrice = sellPrice;
     }
 }

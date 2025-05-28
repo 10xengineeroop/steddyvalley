@@ -18,6 +18,7 @@ public class Food extends Item {
         return energy;
     }
 
+    @Override
     public Integer getSellPrice() {
         return sellPrice;
     }

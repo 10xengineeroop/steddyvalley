@@ -9,9 +9,6 @@ import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.model.items.Food;
-// Impor Tool jika ada (Hoe, WateringCan)
-// import com.oop10x.steddyvalley.model.items.HoeTool;
-// import com.oop10x.steddyvalley.model.items.WateringCanTool;
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.Land;
 import com.oop10x.steddyvalley.model.objects.*;
@@ -39,7 +36,7 @@ public class GameController implements PlayerInputActions, Observer {
     private GameState gameStateModel;
     private FarmMap farmMapModel;
     private CollisionChecker collisionChecker;
-    private TimeManager timeManager; // Untuk mendapatkan waktu saat ini
+    private TimeManager timeManager;
     private int tileSize;
     private String transitionMessage;
     private GamePanel gamePanel;
@@ -50,10 +47,10 @@ public class GameController implements PlayerInputActions, Observer {
     private List<String> recipes = List.of("Fish n' Chips", "Baguette", "Sashimi", "Fugu", "wine", "Pumpkin Pie", "Veggie Soup",
             "Fish Stew", "Spakbor Salad", "Fish Sandwich", "The Legends of Spakbor") ;
     private int selectedRecipeIndex = 0;
-    private String messageForView = "";
+    private String messageTV = "";
 
     private Fish currentFishingTargetFish;
-    private int currentFishingTargetNumber; // Angka rahasia yang harus ditebak
+    private int currentFishingTargetNumber;
     private int currentFishingTriesLeft;
     private int fishingSliderCurrentValue;
     private int fishingSliderMin;
@@ -86,6 +83,10 @@ public class GameController implements PlayerInputActions, Observer {
         this.timeManager.addObserver(this);
     }
 
+    public void setGamePanel(GamePanel gamePanel) {
+        this.gamePanel = gamePanel;
+    }
+
     @Override 
     public void setMoveUp(boolean active) { 
         if (active) {
@@ -93,7 +94,7 @@ public class GameController implements PlayerInputActions, Observer {
                 if (!houseActions.isEmpty()) {
                     selectedHouseActionIndex-- ;
                     if (selectedHouseActionIndex < 0) {
-                        selectedHouseActionIndex = houseActions.size() - 1; // Loop ke bawah
+                        selectedHouseActionIndex = houseActions.size() - 1;
                     }
                 }
             }
@@ -184,31 +185,36 @@ public class GameController implements PlayerInputActions, Observer {
         timeManager.stop();
     } else if (currentState == GameState.PAUSE_STATE) {
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
         timeManager.start();
     } else if (currentState == GameState.INVENTORY_STATE) {
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
     } else if (currentState == GameState.HOUSE_STATE) {
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
     } else if (currentState == GameState.SLEEP_STATE) {
         gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+        resetMovementFlags();
         transitionMessage = "";
         timeManager.start();
     }
     else if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
         gameStateModel.setCurrentState(GameState.HOUSE_STATE);
-
+        resetMovementFlags();
     } 
     else if (currentState == GameState.FISHING_STATE) {
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
         timeManager.start();
     }
-    /* else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
+    else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
         endFishingSession();
-    } else if (currentState == GameState.SHIPPING_MODE) {
+    } /*  else if (currentState == GameState.SHIPPING_MODE) {
         playerFinishesShippingSession(); // Metode ini harus memanggil timeManager.start() setelah addMinutes(15)
     } */
-    if (currentState == GameState.MESSAGE_DISPLAY_STATE) {
-        messageForView = "";
+    if (currentState == GameState.MESSAGE_TV) {
+        messageTV = "";
         gameStateModel.setCurrentState(GameState.HOUSE_STATE);
         return;
     }
@@ -224,6 +230,7 @@ public class GameController implements PlayerInputActions, Observer {
             gameStateModel.setCurrentState(GameState.INVENTORY_STATE);
         } else if (gameStateModel.isInInventory()) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
         }
     }
 
@@ -239,8 +246,8 @@ public class GameController implements PlayerInputActions, Observer {
             }
             return;
         }
-        if (currentState == GameState.MESSAGE_DISPLAY_STATE) {
-            messageForView = "";
+        if (currentState == GameState.MESSAGE_TV) {
+            messageTV = "";
             gameStateModel.setCurrentState(GameState.HOUSE_STATE);
             return;
         }
@@ -263,11 +270,13 @@ public class GameController implements PlayerInputActions, Observer {
             System.out.println("Selected item: " + selectedItem.getName());
             playerModel.setEquippedItem(selectedItem);
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
             return;
         }
         if (currentState == GameState.RECIPE_STATE) {
             String selectedRecipe = recipes.get(selectedRecipeIndex);
             cookRecipe(selectedRecipe);
+            gameStateModel.setCurrentState(GameState.COOK_STATE);
             return;
         }
         else if (currentState == GameState.FISHING_STATE) {
@@ -304,7 +313,7 @@ public class GameController implements PlayerInputActions, Observer {
                             if (gamePanel != null) {
                                 gamePanel.clearFishingUIState();
                             }
-                            System.out.println("[GC] Entered FISHING_STATE. Ready to cast.");
+                            System.out.println("Entered FISHING_STATE. Ready to cast.");
                         } else {
                             if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!");
                         }
@@ -359,16 +368,19 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
-        if (gameStateModel.isSleeping()) return ;
-        int minutes = timeManager.getMinutes();
-        int twoAM = 2 * 60; 
-        if ((playerModel.getEnergy() < -20) || (minutes % 1440) == twoAM && !gameStateModel.isSleeping()) {
-            forceSleep();
-            timeManager.stop();
+        if (gameStateModel.isSleeping() || !gameStateModel.isPlaying()) {
             return;
         }
 
-        if (!gameStateModel.isPlaying()) return;
+        int currentMinutes = timeManager.getMinutes();
+        int minutesInDay = currentMinutes % 1440;
+        int twoAM_Minutes = 2 * 60;
+        if (playerModel.getEnergy() <= -20 || minutesInDay == twoAM_Minutes) {
+            System.out.println("Energy: " + playerModel.getEnergy() + ", Time (minutes in day): " + minutesInDay);
+            forceSleep();
+            return;
+        }
+
         int currentX = playerModel.getPosition().getX();
         int currentY = playerModel.getPosition().getY();
         int playerSpeed = playerModel.getSpeed();
@@ -400,24 +412,54 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
     }
+
     private void forceSleep() {
+        if (gameStateModel.isSleeping()) return;
+
+        System.out.println("Initiating force sleep sequence...");
+        timeManager.stop();
+
         int energyBeforeSleep = playerModel.getEnergy();
-        int maxEnergy = 100;
-        int energyRestored;
-        if (energyBeforeSleep == 0) {
-            playerModel.setEnergy(10);
-            energyRestored = 10;
-        } else if (energyBeforeSleep < maxEnergy * 0.1) {
-            playerModel.setEnergy(maxEnergy / 2);
-            energyRestored = (maxEnergy / 2) - energyBeforeSleep;
+        final int MAX_ENERGY = 100;
+        final int MIN_ENERGY_THRESHOLD = -20;
+        int energyToSet;
+        String sleepReasonMessage;
+
+        boolean isDueToTime = (timeManager.getMinutes() % 1440) == (2 * 60);
+        boolean isDueToExhaustion = energyBeforeSleep <= MIN_ENERGY_THRESHOLD;
+
+        if (isDueToExhaustion) {
+            energyToSet = MAX_ENERGY / 2;
+            sleepReasonMessage = "You collapsed from exhaustion! Energy restored to half.";
+        } else if (energyBeforeSleep == 0) {
+            energyToSet = 10;
+            sleepReasonMessage = "You were completely out of energy and went to sleep. Energy +10.";
+        } else if (energyBeforeSleep < (MAX_ENERGY * 0.10)) {
+            energyToSet = MAX_ENERGY / 2;
+            sleepReasonMessage = "You were too tired and went to sleep. Energy restored to half.";
         } else {
-            playerModel.setEnergy(maxEnergy);
-            energyRestored = maxEnergy - energyBeforeSleep;
+            energyToSet = MAX_ENERGY;
+            if (isDueToTime) {
+                sleepReasonMessage = "It's late! You automatically went to sleep. Energy fully restored.";
+            } else {
+                sleepReasonMessage = "You slept soundly. Energy fully restored.";
+            }
         }
-        if (playerModel.getEnergy() > maxEnergy) playerModel.setEnergy(maxEnergy);
-        transitionMessage = "You slept well. Energy +" + Math.max(0, energyRestored) + ".";
-        gameStateModel.setCurrentState(GameState.SLEEP_STATE);
+        playerModel.setEnergy(energyToSet);
+        transitionMessage = sleepReasonMessage;
+
         timeManager.setTimeToSixAM();
+
+        HouseObject houseInstance = farmMapModel.getHouseObject();
+        if (houseInstance != null) {
+            int spawnTileX = houseInstance.getX() + (HouseObject.HOUSE_WIDTH / 2);
+            int spawnTileY = houseInstance.getY() + HouseObject.HOUSE_HEIGHT;
+            playerModel.setPosition(spawnTileX * tileSize, spawnTileY * tileSize);
+        } else {
+            System.err.println("House object not found in FarmMap. Player position not reset to house.");
+            playerModel.setPosition(this.tileSize * 5, this.tileSize * 5);
+        }
+        gameStateModel.setCurrentState(GameState.SLEEP_STATE);
     }
 
     private void handleHouseAction(String action) {
@@ -517,28 +559,32 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     private void performWatchTV() {
-        if (playerModel.getEnergy() >= -15) {
+        if (playerModel.getEnergy() >= 5) {
             playerModel.setEnergy(playerModel.getEnergy() - 5);
             timeManager.addMinutes(15);
     
-            Weather currentWeather = weatherManager.getCurrentWeather();
-            if (currentWeather != null) {
-                messageForView = "Today's weather forecast: " + currentWeather.toString() + ".";
+            Weather tomorrowWeather = weatherManager.getNextDayWeather();
+    
+            String forecastMessage = "";
+            if (tomorrowWeather != null) {
+                forecastMessage += "\nTomorrow's forecast: " + tomorrowWeather.toString();
             } else {
-                messageForView = "Weather forecast is currently unavailable.";
+                forecastMessage += "\nTomorrow's forecast is uncertain.";
             }
-            System.out.println("[GameController] Watch TV: " + messageForView);
-            gameStateModel.setCurrentState(GameState.MESSAGE_DISPLAY_STATE);
+    
+            messageTV = forecastMessage + ".";
+            System.out.println("Watch TV: " + messageTV);
+            gameStateModel.setCurrentState(GameState.MESSAGE_TV);
         } else {
-            messageForView = "Not enough energy to watch TV.";
-            System.out.println("[GameController] Watch TV: " + messageForView);
-            gameStateModel.setCurrentState(GameState.MESSAGE_DISPLAY_STATE);
+            messageTV = "Not enough energy to watch TV.";
+            System.out.println("Watch TV: " + messageTV);
+            gameStateModel.setCurrentState(GameState.MESSAGE_TV);
         }
     }
 
 
-    public String getMessageForView() {
-        return messageForView;
+    public String getMessageTV() {
+        return messageTV;
     }    
 
     public void update(EventType type, Object message) {
@@ -578,7 +624,7 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         if (playerModel.getEnergy() < 5) {
-            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!\nPress Esc to continue.");
             if(gamePanel != null) gamePanel.endFishingSliderUI(false);
             return;
         }
@@ -599,10 +645,10 @@ public class GameController implements PlayerInputActions, Observer {
                 }
             }
         }
-        System.out.println("[GC] Fishable fish at " + location + "/" + season + "/" + weather + "/" + timeOfDayMinutes + ": " + fishableFish.size());
+        System.out.println("Fishable fish at " + location + "/" + season + "/" + weather + "/" + timeOfDayMinutes + ": " + fishableFish.size());
 
         if (fishableFish.isEmpty()) {
-            if (gamePanel != null) gamePanel.setFishingMessage("No fish are biting right now.\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.setFishingMessage("No fish are biting right now.\nPress Esc to continue.");
             if (gamePanel != null) gamePanel.endFishingSliderUI(false);
             return;
         }
@@ -621,7 +667,7 @@ public class GameController implements PlayerInputActions, Observer {
         currentFishingTargetNumber = fishingSliderMin + randomGenerator.nextInt(fishingSliderMax);
         fishingSliderCurrentValue = fishingSliderMin; // ato di tengah: fishingSliderMin + (fishingSliderMax - fishingSliderMin) / 2;
 
-        System.out.println("[GC] Fishing for: " + currentFishingTargetFish.getName() + " (Target: " + currentFishingTargetNumber + ")");
+        System.out.println("Fishing for: " + currentFishingTargetFish.getName() + " (Target: " + currentFishingTargetNumber + ")");
 
         gameStateModel.setCurrentState(GameState.FISH_GUESS_STATE);
         if (gamePanel != null) {
@@ -647,19 +693,19 @@ public class GameController implements PlayerInputActions, Observer {
         if (!gameStateModel.isGuessingFish() || gamePanel == null || !gamePanel.isFishingSliderActive()) {
             return;
         }
-        System.out.println("[GC] Confirming guess: " + fishingSliderCurrentValue + ". Target: " + currentFishingTargetNumber);
+        System.out.println("Confirming guess: " + fishingSliderCurrentValue + ". Target: " + currentFishingTargetNumber);
 
         int guess = fishingSliderCurrentValue;
         String resultMessage;
 
         if (guess == currentFishingTargetNumber) {
             playerModel.addItem(currentFishingTargetFish);
-            resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Enter/Esc to continue.";
-            if (gamePanel != null) gamePanel.endFishingSliderUI(true); // Sukses, nonaktifkan input slider
+            resultMessage = "Success! \n You caught a " + currentFishingTargetFish.getName() + "! \n Press Esc to Quit / E to Re-Fish";
+            if (gamePanel != null) gamePanel.endFishingSliderUI(true);
         } else {
             currentFishingTriesLeft--;
             if (currentFishingTriesLeft <= 0) {
-                resultMessage = "Failed! The " + currentFishingTargetFish.getName() + " got away.\nPress Enter/Esc to continue.";
+                resultMessage = "Failed! \n The " + currentFishingTargetFish.getName() + " got away. \n Press Esc to Quit / E to Re-Fish";
                 if (gamePanel != null) gamePanel.endFishingSliderUI(false);
             } else {
                 fishingSliderCurrentValue = fishingSliderMin;
@@ -673,7 +719,7 @@ public class GameController implements PlayerInputActions, Observer {
         if (gamePanel != null) gamePanel.setFishingMessage(resultMessage);
     }
     public void endFishingSession() {
-        System.out.println("[GC] Ending fishing session completely. Returning to PLAY_STATE.");
+        System.out.println("Ending fishing session completely. Returning to PLAY_STATE.");
         if (gamePanel != null) {
             gamePanel.clearFishingUIState();
         }
@@ -705,5 +751,10 @@ public class GameController implements PlayerInputActions, Observer {
         }
     }
 
-
+    private void resetMovementFlags() {
+        this.moveUpActive = false;
+        this.moveDownActive = false;
+        this.moveLeftActive = false;
+        this.moveRightActive = false;
+    }
 }

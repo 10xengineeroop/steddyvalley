@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class ShippingBin implements Placeable, Observer {
     private final Position position = new Position(0, 0);
-    private final Map<Item, Integer> items = new HashMap<>(); // Item and jumlah
+    private final Map<Item, Integer> items = new HashMap<>();
     private final Player owner;
 
     public ShippingBin(int x, int y, Player owner) {
