@@ -4,23 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GameState {
-    // Definisikan konstanta untuk berbagai state game
     public static final int HOUSE_STATE = 0;
     public static final int PLAY_STATE = 1;
     public static final int PAUSE_STATE = 2;
     public static final int INVENTORY_STATE = 3;
-    public static final int SLEEP_STATE = 4; // Contoh state lain
-    public static final int COOK_STATE = 5; // Jika ada menu awal
+    public static final int SLEEP_STATE = 4;
+    public static final int COOK_STATE = 5;
     public static final int RECIPE_STATE = 6;
     public static final int FISHING_STATE = 7;
     public static final int FISH_GUESS_STATE = 8;
-    // Tambahkan state lain sesuai kebutuhan game Anda
+    public static final int MESSAGE_TV = 9;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
 
     public GameState() {
-        this.currentState = PLAY_STATE; // Mulai game dalam PLAY_STATE (atau MENU_STATE jika Anda punya menu)
+        this.currentState = PLAY_STATE;
     }
 
     // --- Observer Methods ---

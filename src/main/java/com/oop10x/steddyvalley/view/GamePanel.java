@@ -44,17 +44,17 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     // --- FISHING GUESSING GAME STATE ---
     private boolean fishingGuessActive = false;
     private String fishingMessage = "";
-    private boolean isFishingSliderUIVisible = false; // Status apakah UI slider aktif
-    private String fishingUIMessage = "";             // Pesan yang ditampilkan di UI fishing
-    private int fishingSliderDisplayValue = 0;        // Nilai yang ditunjuk slider saat ini
-    private int fishingSliderMinDisplay = 0;          // Batas bawah nilai slider untuk ditampilkan
+    private boolean isFishingSliderUIVisible = false;
+    private String fishingUIMessage = "";
+    private int fishingSliderDisplayValue = 0;
+    private int fishingSliderMinDisplay = 0;
     private int fishingSliderMaxDisplay = 0;  
 
     public GamePanel(Player player, GameState gameState, GameController controller, FarmMap farmMap) {
         this.playerModel = player;
         this.gameStateModel = gameState;
         this.gameController = controller;
-        this.farmMapModel = farmMap; // Simpan FarmMap
+        this.farmMapModel = farmMap;
 
         this.playerModel.addObserver(this);
         this.gameStateModel.addObserver(this);
@@ -115,10 +115,38 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             drawFishingState(g2);
         }
         else if (currentGameState == GameState.FISH_GUESS_STATE) {
-            // Jika ada state khusus untuk fishing guessing game
             drawFishGuessState(g2);
+        } else if (currentGameState == GameState.MESSAGE_TV) {
+            drawMessageDisplayState(g2);
         }
         g2.dispose();
+    }
+
+    private void drawMessageDisplayState(Graphics2D g2) {
+        drawPlayState(g2);
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    
+        String message = gameController.getMessageTV();
+        if (message == null || message.isEmpty()) {
+            message = "Displaying message...";
+        }
+    
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        int yPos = SCREEN_HEIGHT / 2 - 30;
+        for (String line : message.split("\n")) {
+            int stringWidth = g2.getFontMetrics().stringWidth(line);
+            int xPos = (SCREEN_WIDTH - stringWidth) / 2;
+            g2.drawString(line, xPos, yPos);
+            yPos += 30;
+        }
+    
+        g2.setFont(new Font("Arial", Font.ITALIC, 18));
+        String continueMessage = "Press Escape to continue...";
+        int continueStringWidth = g2.getFontMetrics().stringWidth(continueMessage);
+        int continueXPos = (SCREEN_WIDTH - continueStringWidth) / 2;
+        g2.drawString(continueMessage, continueXPos, yPos + 20);
     }
 
     public void setManagers(com.oop10x.steddyvalley.model.TimeManager tm, com.oop10x.steddyvalley.model.SeasonManager sm, com.oop10x.steddyvalley.model.WeatherManager wm) {
@@ -128,34 +156,36 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     }
 
     private void drawPlayState(Graphics2D g2) {
-        // 1. Gambar Peta menggunakan FarmMap
         if (farmMapModel != null) {
             farmMapModel.draw(g2, TILE_SIZE); // Berikan tileSize ke FarmMap.draw
         }
 
-        // 2. Gambar Pemain
         int playerScreenX = playerModel.getPosition().getX();
         int playerScreenY = playerModel.getPosition().getY();
         g2.setColor(Color.BLUE);
         g2.fillRect(playerScreenX, playerScreenY, TILE_SIZE, TILE_SIZE);
 
         // --- HUD: Time, Weather, Season ---
-        g2.setColor(new Color(0,0,0,180));
-        g2.fillRoundRect(5, 5, 500, 38, 12, 12);
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        int hudPadding = 10;
+        Font hudFont = new Font("Arial", Font.BOLD, 16);
+        g2.setFont(hudFont);
+        int textHeight = g2.getFontMetrics().getHeight();
+        int singleLineHudHeight = textHeight + (hudPadding * 2);
+
         String timeStr = "Time: --:--";
         String seasonStr = "Season: -";
         String weatherStr = "Weather: -";
-        int mins = timeManager.getMinutes();
-        String days = String.format("Days: %d", mins / 1440 + 1);
+
         if (timeManager != null) {
             int hour = (mins / 60) % 24;
             int min = mins % 60;
-            String ampm = hour < 12 ? "AM" : "PM";
-            int hour12 = hour % 12;
-            if (hour12 == 0) hour12 = 12;
-            timeStr = String.format("Time: %02d:%02d %s", hour12, min, ampm);
+            String ampm = (hour < 12 || hour == 24) ? "AM" : "PM";
+            if (hour == 0) {
+                hour = 12;
+            } else if (hour > 12) {
+                hour -= 12;
+            }
+            timeStr = String.format("Time: %02d:%02d %s", hour, min, ampm);
         }
         if (seasonManager != null) {
             seasonStr = "Season: " + seasonManager.getCurrentSeason();
@@ -163,24 +193,74 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         if (weatherManager != null) {
             weatherStr = "Weather: " + weatherManager.getCurrentWeather();
         }
-        g2.drawString(timeStr, 15, 28);
-        g2.drawString(seasonStr, 140, 28);
-        g2.drawString(weatherStr, 283, 28);
-        g2.drawString(days, 418, 28);
+
+        int timeStrWidth = g2.getFontMetrics().stringWidth(timeStr);
+        int seasonStrWidth = g2.getFontMetrics().stringWidth(seasonStr);
+        int weatherStrWidth = g2.getFontMetrics().stringWidth(weatherStr);
+
+        int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth;
+        int interTextPadding = hudPadding * 2;
+        int hudWidth = totalTextWidth + (interTextPadding * 2) + (hudPadding * 2);
+
+        g2.setColor(new Color(0,0,0,180));
+        g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15, 15);
+
+        g2.setColor(Color.WHITE);
+        int textY = 5 + hudPadding + g2.getFontMetrics().getAscent();
+
+        int currentX = 5 + hudPadding;
+        g2.drawString(timeStr, currentX, textY);
+
+        currentX += timeStrWidth + interTextPadding;
+        g2.drawString(seasonStr, currentX, textY);
+
+        currentX += seasonStrWidth + interTextPadding;
+        g2.drawString(weatherStr, currentX, textY);
+        // Ghazy
 
         // Informasi Debug
-        g2.setColor(Color.WHITE);
-        g2.setFont(g2.getFont().deriveFont(14F));
-        g2.drawString("Player X: " + playerScreenX + " Y: " + playerScreenY, 10, 60);
-        g2.drawString("STATE: PLAYING (ESC:Pause, I:Inv, E:Action)", 10, 80);
-        g2.drawString("Gold: " + playerModel.getGold() + " Energy: " + playerModel.getEnergy(), 10, 100);
-        if (playerModel.getEquippedItem() != null) {
-            g2.drawString("Equipped: " + playerModel.getEquippedItem().getName(), 10, 120);
+        int debugStartX = 10;
+        int debugStartY = 70;
+        int debugLineHeight = 20;
+        int debugBgPadding = 5;
+        int cornerRadius = 10;
+
+        String line1 = "Player X: " + playerScreenX + " Y: " + playerScreenY;
+        String line2 = "STATE: PLAYING (ESC:Pause, I:Inventory, E:Action)";
+        String line3 = "Gold: " + playerModel.getGold() + " Energy: " + playerModel.getEnergy();
+        String line4 = playerModel.getEquippedItem() != null ? "Equipped: " + playerModel.getEquippedItem().getName() : "";
+
+        g2.setFont(g2.getFont().deriveFont(13F));
+        int ascent = g2.getFontMetrics().getAscent();
+        int maxWidth = g2.getFontMetrics().stringWidth(line1);
+        maxWidth = Math.max(maxWidth, g2.getFontMetrics().stringWidth(line2));
+        maxWidth = Math.max(maxWidth, g2.getFontMetrics().stringWidth(line3));
+        if (!line4.isEmpty()) {
+            maxWidth = Math.max(maxWidth, g2.getFontMetrics().stringWidth(line4));
+        }
+        int debugBgHeight = (line4.isEmpty() ? 3 : 4) * debugLineHeight - (debugLineHeight - ascent) + (debugBgPadding *2);
+
+        g2.setColor(new Color(255, 255, 255, 180));
+        g2.fillRoundRect(
+                debugStartX - debugBgPadding,
+                debugStartY - ascent - debugBgPadding,
+                maxWidth + (debugBgPadding * 2),
+                debugBgHeight,
+                cornerRadius,
+                cornerRadius
+        );
+
+        g2.setColor(Color.BLACK);
+        g2.drawString(line1, debugStartX, debugStartY);
+        g2.drawString(line2, debugStartX, debugStartY + debugLineHeight);
+        g2.drawString(line3, debugStartX, debugStartY + (debugLineHeight * 2));
+        if (!line4.isEmpty()) {
+            g2.drawString(line4, debugStartX, debugStartY + (debugLineHeight * 3));
         }
     }
 
     private void drawPauseState(Graphics2D g2) {
-        drawPlayState(g2); // Gambar game di belakang
+        drawPlayState(g2);
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         g2.setColor(Color.WHITE);
@@ -189,9 +269,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString(text, getXforCenteredText(text, g2), SCREEN_HEIGHT / 2);
     }
 
-    private int selectedInventoryIndex = 0;
+    int selectedInventoryIndex = 0;
     private void drawInventoryState(Graphics2D g2) {
-        drawPlayState(g2); // Gambar game di belakang
+        drawPlayState(g2);
         int pX = 50, pY = 50, pW = SCREEN_WIDTH - 100, pH = SCREEN_HEIGHT - 100;
         g2.setColor(new Color(0,0,0,200));
         g2.fillRect(pX,pY,pW,pH);
@@ -225,13 +305,13 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.drawString("W/S: Scroll  E: Equip  Esc: Exit", pX + 20, pY + pH - 20);
-        // Show equipped item
         if (playerModel.getEquippedItem() != null) {
             g2.drawString("Equipped: " + playerModel.getEquippedItem().getName(), pX + pW - 200, pY + 30);
         }
     }
+
     private void drawHouseState(Graphics2D g2) { 
-        drawPlayState(g2); // Gambar game di belakang
+        drawPlayState(g2);
 
         int panelX = SCREEN_WIDTH / 4;
         int panelY = SCREEN_HEIGHT / 4;
@@ -239,7 +319,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int panelHeight = SCREEN_HEIGHT / 2;
 
         // Latar belakang panel menu rumah
-        g2.setColor(new Color(30, 30, 70, 220)); // Biru tua semi-transparan
+        g2.setColor(new Color(30, 30, 70, 220));
         g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
         g2.drawRect(panelX, panelY, panelWidth, panelHeight);
@@ -272,8 +352,18 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                 }
             }
         }
+
+        String controllerMessage = gameController.getMessageTV();
+        if (controllerMessage != null && !controllerMessage.isEmpty()) {
+            g2.setFont(new Font("Arial", Font.ITALIC, 16));
+            g2.setColor(Color.CYAN);
+            int messageX = panelX + 20;
+            int messageY = panelY + panelHeight - 50;
+            g2.drawString(controllerMessage, messageX, messageY);
+        }
+
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2.drawString("W/S: Navigate | Enter: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+        g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
 
     }
     private int getXforCenteredText(String text, Graphics2D g2) {
@@ -290,9 +380,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         // Tampilkan pesan transisi
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
-        String message = gameController.getTransitionMessage(); // Ambil pesan dari controller
+        String message = gameController.getTransitionMessage();
         if (message == null || message.isEmpty()) {
-            message = "Processing..."; // Pesan default jika tidak ada
+            message = "Processing...";
         }
 
         int x = getXforCenteredText(message, g2);
@@ -300,7 +390,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString(message, x, y);
 
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        String continueMessage = "Press Enter or Esc to continue...";
+        String continueMessage = "Press Esc to continue...";
         x = getXforCenteredText(continueMessage, g2);
         g2.drawString(continueMessage, x, y + 50);
     }
@@ -313,9 +403,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         // Tampilkan pesan transisi
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
-        String message = gameController.getTransitionMessage(); // Ambil pesan dari controller
+        String message = gameController.getTransitionMessage();
         if (message == null || message.isEmpty()) {
-            message = "Processing..."; // Pesan default jika tidak ada
+            message = "Processing...";
         }
 
         int x = getXforCenteredText(message, g2);
@@ -323,25 +413,23 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString(message, x, y);
 
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
-        String continueMessage = "Press Enter or Esc to continue...";
+        String continueMessage = "Press Esc to continue...";
         x = getXforCenteredText(continueMessage, g2);
         g2.drawString(continueMessage, x, y + 50);
     }
     private void drawRecipeState(Graphics2D g2) {
-        drawPlayState(g2); // Gambar game di belakang
+        drawPlayState(g2);
 
         int panelX = SCREEN_WIDTH / 4;
         int panelY = SCREEN_HEIGHT / 4;
         int panelWidth = SCREEN_WIDTH / 2;
         int panelHeight = SCREEN_HEIGHT / 2  + 50;
 
-        // Latar belakang panel menu rumah
-        g2.setColor(new Color(30, 30, 70, 220)); // Biru tua semi-transparan
+        g2.setColor(new Color(30, 30, 70, 220));
         g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
         g2.drawRect(panelX, panelY, panelWidth, panelHeight);
 
-        // Judul
         g2.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "Recipe Book";
         int titleWidth = g2.getFontMetrics().stringWidth(title);
@@ -370,7 +458,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             }
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2.drawString("W/S: Navigate | Enter: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);        
+        g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);        
     }
     private void drawFishingState(Graphics2D g2) {
         drawPlayState(g2);
@@ -383,26 +471,27 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int y = 100;
         g2.drawString(title, x, y);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        if (fishingGuessActive) {
-            g2.drawString(fishingMessage, x, y + 40);
-            g2.drawString("Type your guess and press Enter.", x, y + 70);
+        if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
+            int lineY = y + 40;
+            for (String line : fishingUIMessage.split("\n")) {
+                g2.drawString(line, getXforCenteredText(line, g2), lineY);
+                lineY += 25;
+            }
         } else {
-            g2.drawString(fishingMessage, x, y + 70);
-            g2.drawString("Press E to cast your line! Esc to exit.", x, y + 40);
+            String defaultPrompt = "Press E to cast your line! Esc to exit.";
+            g2.drawString(defaultPrompt, getXforCenteredText(defaultPrompt, g2), y + 40);
         }
     }
 
-    // --- FISHING GUESSING GAME METHODS ---
-    // Call this to start the guessing game from GameController
     private void drawFishGuessState(Graphics2D g2) {
         drawPlayState(g2);
 
-        g2.setColor(new Color(0, 0, 60, 210)); // Overlay
+        g2.setColor(new Color(0, 0, 60, 210));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
-        String title = "GUESS THE NUMBER!"; // Judul lebih spesifik
+        String title = "GUESS THE NUMBER!";
         int titleX = getXforCenteredText(title, g2);
         int currentY = SCREEN_HEIGHT / 5;
         g2.drawString(title, titleX, currentY);
@@ -410,7 +499,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         g2.setFont(new Font("Arial", Font.PLAIN, 18));
 
-        // Tampilkan pesan (instruksi, sisa percobaan)
         if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
             for (String line : fishingUIMessage.split("\\n")) {
                 g2.drawString(line, getXforCenteredText(line, g2), currentY);
@@ -446,7 +534,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.ITALIC, 16));
-        g2.drawString("Use A/D or Left/Right. 'E' or Enter to confirm.", getXforCenteredText("Use A/D or Left/Right. 'E' or Enter to confirm.", g2), currentY);
+        g2.drawString("Use A/D or Left/Right. Click 'E' to confirm.", getXforCenteredText("Use A/D or Left/Right. Click 'E' to confirm.", g2), currentY);
     }
      public void setFishingMessage(String message) {
         this.fishingUIMessage = message;
@@ -456,31 +544,27 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         this.fishingMessage = message;
     }
 
-    // Dipanggil oleh GameController untuk memulai UI tebakan slider
     public void startFishingSliderUI(String initialMessage, int min, int max, int currentValue, int triesLeft) {
-        this.isFishingSliderUIVisible = true; // Aktifkan UI slider
+        this.isFishingSliderUIVisible = true;
         this.fishingUIMessage = initialMessage;
         this.fishingSliderMinDisplay = min;
         this.fishingSliderMaxDisplay = max;
         this.fishingSliderDisplayValue = currentValue;
-        // this.fishingTriesLeftForDisplay = triesLeft; // Biasanya info ini ada di initialMessage
+        // this.fishingTriesLeftForDisplay = triesLeft;
         System.out.println("[View] Starting fishing SLIDER UI. Value: " + currentValue + " Message: " + initialMessage);
         repaint();
     }
 
     public void updateFishingSliderDisplay(int value, String message, int triesLeft) {
         this.fishingSliderDisplayValue = value;
-        this.fishingUIMessage = message; // Pesan mungkin berisi sisa percobaan
+        this.fishingUIMessage = message;
         // this.fishingTriesLeftForDisplay = triesLeft;
         System.out.println("[View] Updating fishing SLIDER UI. Value: " + value + " Message: " + message);
         repaint();
     }
 
-    // Dipanggil oleh GameController setelah tebakan (salah satu tebakan) diproses
-    // atau semua percobaan habis. Ini menandakan mode input slider tidak aktif lagi.
     public void endFishingSliderUI(boolean success) {
-        this.isFishingSliderUIVisible = false; // Mode adjusment slider selesai
-        // Pesan hasil (sukses/gagal) akan di-set oleh GameController via setFishingMessage.
+        this.isFishingSliderUIVisible = false;
         System.out.println("[View] Ending fishing SLIDER input UI. Success: " + success);
         repaint();
     }
@@ -494,7 +578,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         repaint();
     }
 
-    // Dipanggil oleh KeyHandler
     public void signalFishingInteractionComplete() {
         System.out.println("[View] Signaling GameController to end fishing session.");
         if (gameController != null) {
