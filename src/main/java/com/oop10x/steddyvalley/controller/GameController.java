@@ -258,7 +258,6 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         else if (currentState == GameState.FISH_GUESS_STATE) {
-            System.out.println("Guessing game logic not implemented yet.");
             confirmFishingSliderGuess();
             return;
         }
@@ -527,7 +526,7 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         if (playerModel.getEnergy() < 5) { 
-            if (gamePanel != null) gamePanel.setFishingMessage2("Not enough energy to fish!\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.setFishingMessage2("Not enough energy to fish!\nPress Esc to back.");
             if(gamePanel != null) gamePanel.endFishingSliderUI(false); 
             return;
         }
@@ -551,7 +550,7 @@ public class GameController implements PlayerInputActions, Observer {
         System.out.println("[GC] Fishable fish at " + location + "/" + season + "/" + weather + "/" + timeOfDayMinutes + ": " + fishableFish.size());
 
         if (fishableFish.isEmpty()) {
-            if (gamePanel != null) gamePanel.setFishingMessage("No fish are biting right now.\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.setFishingMessage("No fish are biting right now.\nPress Esc to back.");
             if (gamePanel != null) gamePanel.endFishingSliderUI(false); 
             return;
         }
@@ -603,12 +602,12 @@ public class GameController implements PlayerInputActions, Observer {
 
         if (guess == currentFishingTargetNumber) {
             playerModel.addItem(currentFishingTargetFish); 
-            resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Enter/Esc to continue.";
+            resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Esc to continue.";
             if (gamePanel != null) gamePanel.endFishingSliderUI(true); 
         } else {
             currentFishingTriesLeft--;
             if (currentFishingTriesLeft <= 0) {
-                resultMessage = "Failed! The " + currentFishingTargetFish.getName() + " got away.\nPress Enter/Esc to continue.";
+                resultMessage = "Failed! The " + currentFishingTargetFish.getName() + " got away.\nPress Esc to continue.";
                 if (gamePanel != null) gamePanel.endFishingSliderUI(false); 
             } else {
                 String hint ;
@@ -620,13 +619,11 @@ public class GameController implements PlayerInputActions, Observer {
                 fishingSliderCurrentValue = fishingSliderMin; 
                 resultMessage = "Wrong! " + hint + "\n" + currentFishingTriesLeft + " tries left.\n" +
                                 "Adjust slider (Range: " + fishingSliderMin + "-" + fishingSliderMax + "). Value: " + fishingSliderCurrentValue;
-                // GamePanel akan diupdate oleh adjustFishingSlider jika pemain menggerakkan lagi,
-                // atau di sini jika ingin langsung update pesan dan nilai slider
                 if (gamePanel != null) gamePanel.updateFishingSliderDisplay(fishingSliderCurrentValue, resultMessage, currentFishingTriesLeft);
-                return; // Jangan pindah state dulu jika masih ada percobaan
+                return; 
             }
         }
-        gameStateModel.setCurrentState(GameState.FISHING_STATE); // Kembali ke state fishing umum untuk menampilkan hasil
+        gameStateModel.setCurrentState(GameState.FISHING_STATE); 
         if (gamePanel != null) gamePanel.setFishingMessage(resultMessage);
     }
     public void endFishingSession() {
@@ -635,7 +632,7 @@ public class GameController implements PlayerInputActions, Observer {
             gamePanel.clearFishingUIState();
         }
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        if (timeManager != null) timeManager.start(); // Lanjutkan waktu dunia [cite: 206]
+        if (timeManager != null) timeManager.start(); 
     }
 
     private String getFishingLocation() {
@@ -653,10 +650,10 @@ public class GameController implements PlayerInputActions, Observer {
         // if (farmMapModel.getCurrentMapName().equals("Forest River")) return "Forest River";
 
         System.out.println("[WARN] getFishingLocation() is defaulting to 'Pond'. Implement proper detection.");
-        return "Pond"; // Default sementara
+        return "Pond"; 
     }
     private void setFishingLocation(String location) {}
-    private int getUpperBoundForFish(FishRarity rarity) { // Helper untuk konsistensi
+    private int getUpperBoundForFish(FishRarity rarity) { 
         switch (rarity) {
             case COMMON: return 10;
             case REGULAR: return 100;
