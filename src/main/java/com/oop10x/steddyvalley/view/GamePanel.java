@@ -385,6 +385,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             g2.drawString(fishingMessage, x, y + 40);
             g2.drawString("Type your guess and press Enter.", x, y + 70);
         } else {
+            g2.drawString(fishingMessage, x, y + 70);
             g2.drawString("Press E to cast your line! Esc to exit.", x, y + 40);
         }
     }
@@ -448,6 +449,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
      public void setFishingMessage(String message) {
         this.fishingUIMessage = message;
         repaint();
+    }
+    public void setFishingMessage2(String message) {
+        this.fishingMessage = message;
     }
 
     // Dipanggil oleh GameController untuk memulai UI tebakan slider

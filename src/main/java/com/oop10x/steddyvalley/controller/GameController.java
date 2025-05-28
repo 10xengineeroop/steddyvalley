@@ -279,21 +279,8 @@ public class GameController implements PlayerInputActions, Observer {
                     return; 
                 } 
                 else if (adjacentObject instanceof PondObject) {
-                    Item equipped = playerModel.getEquippedItem();
-                    if (equipped != null && "Fishing Rod".equals(equipped.getName())) { 
-                        if (playerModel.getEnergy() >= 5) { 
-                            gameStateModel.setCurrentState(GameState.FISHING_STATE);
-                            if (gamePanel != null) {
-                                gamePanel.clearFishingUIState(); 
-                            }
-                            System.out.println("[GC] Entered FISHING_STATE. Ready to cast.");
-                        } else {
-                            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!");
-                        }
-                    } else {
-                        if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod!");
-                    }
-                    return; 
+                    gameStateModel.setCurrentState(GameState.FISHING_STATE);
+                    return;
                 }
                 else if (adjacentObject instanceof Actionable) {
                     ((Actionable) adjacentObject).onPlayerAction(playerModel);
@@ -302,6 +289,10 @@ public class GameController implements PlayerInputActions, Observer {
             }
 
             Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
+            // if (playerPixelX == 744 && playerPixelY == 744) {
+            //     gameStateModel.setCurrentState(VISIT_STATE) ;
+            //     handleVisitAction() ;
+            // }
             if (currentLand != null) {
                 Item equippedItem = playerModel.getEquippedItem();
                 boolean actionTaken = false;
@@ -532,11 +523,11 @@ public class GameController implements PlayerInputActions, Observer {
     private void handleFishingAction() {
         Item equipped = playerModel.getEquippedItem();
         if (equipped == null || !"Fishing Rod".equals(equipped.getName())) { 
-            if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod equipped!");
+            if (gamePanel != null) gamePanel.setFishingMessage2("You need a Fishing Rod equipped!");
             return;
         }
         if (playerModel.getEnergy() < 5) { 
-            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!\nPress Enter/Esc to continue.");
+            if (gamePanel != null) gamePanel.setFishingMessage2("Not enough energy to fish!\nPress Enter/Esc to continue.");
             if(gamePanel != null) gamePanel.endFishingSliderUI(false); 
             return;
         }
@@ -664,6 +655,7 @@ public class GameController implements PlayerInputActions, Observer {
         System.out.println("[WARN] getFishingLocation() is defaulting to 'Pond'. Implement proper detection.");
         return "Pond"; // Default sementara
     }
+    private void setFishingLocation(String location) {}
     private int getUpperBoundForFish(FishRarity rarity) { // Helper untuk konsistensi
         switch (rarity) {
             case COMMON: return 10;
