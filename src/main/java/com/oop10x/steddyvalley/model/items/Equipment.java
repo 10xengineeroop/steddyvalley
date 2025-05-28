@@ -20,6 +20,10 @@ public class Equipment extends Item {
         throw new IllegalArgumentException("No equipment with name " + name);
     }
 
+    public static Set<Equipment> getEquipmentSet() {
+        return equipmentSet;
+    }
+    
     static {
         new Equipment("Hoe");
         new Equipment("Watering Can");

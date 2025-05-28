@@ -36,14 +36,16 @@ public class Inventory {
         return total;
     }
 
+    public int countItem(Item item) {
+        return inventory.getOrDefault(item, 0);
+    }
+
     public int countItemsByType(String type) {
         int total = 0;
         for (Map.Entry<Item, Integer> entry : inventory.entrySet()) {
-            if (type.equalsIgnoreCase("Fish")) {
-                if (entry.getKey().getClass().getSimpleName().equals("Fish")) {
+            if (entry.getKey().getClass().getSimpleName().equalsIgnoreCase(type)) {// Check the class name for type{
                     total += entry.getValue();
                 }
-            }
             // Add more types if needed
         }
         return total;

@@ -29,9 +29,14 @@ public class Food extends Item {
         foodSet.add(food);
     }
 
+    public static Set<Food> getFoodSet() {
+        return foodSet;
+}
     public static void removeFood(Food food) {
         foodSet.remove(food);
     }
+
+    
     static {
         new Food(
                 "Fish n' Chips",

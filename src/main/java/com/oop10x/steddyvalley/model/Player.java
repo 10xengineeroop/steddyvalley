@@ -4,8 +4,7 @@ import com.oop10x.steddyvalley.model.items.*;
 import com.oop10x.steddyvalley.utils.Position;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class Player {
@@ -34,7 +33,10 @@ public class Player {
         this.energy = energy;
         this.currentTime = 0;
         this.speed = speed;
-
+        // Menambahkan peralatan awal
+        Set<Equipment> initialEquipment = Equipment.getEquipmentSet();
+        initialEquipment.forEach(equipment -> addItem(equipment));
+        addItem(Seed.getSeedByName("Parsnip Seeds"), 15);
     }
     public void addObserver(PlayerObserver observer) {
         if (observer != null && !observers.contains(observer)) {

@@ -33,6 +33,10 @@ public class Crop extends Item {
         cropSet.remove(crop);
     }
 
+    public static Set<Crop> getCropSet() {
+        return cropSet;
+    }
+
     static {
         new Crop("Parsnip", 50, 35, 1);
         new Crop("Cauliflower", 200, 150, 1);

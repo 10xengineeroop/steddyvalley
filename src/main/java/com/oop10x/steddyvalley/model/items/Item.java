@@ -8,9 +8,7 @@ public class Item {
     private Integer sellPrice;
 
     public Item(String name, Integer buyPrice) {
-        if (name == null) throw new NullPointerException("Name cannot be null");
-        this.name = name;
-        this.buyPrice = buyPrice;
+        this(name, buyPrice, null);
     }
 
     public Item(String name, Integer buyPrice, Integer sellPrice) {

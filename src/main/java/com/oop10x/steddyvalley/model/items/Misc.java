@@ -5,19 +5,13 @@ import java.util.Set;
 
 public class Misc extends Item {
     private static final Set<Misc> miscSet = new HashSet<>();
-    
-    private final Integer sellPrice;
+
     public static Set<Misc> getMiscset() {
         return miscSet;
     }
 
-    public Integer getSellPrice() {
-        return sellPrice;
-    }
-
     public Misc(String name, Integer sellPrice, Integer buyPrice) {
-        super(name,buyPrice, null);
-        this.sellPrice = sellPrice;
+        super(name,buyPrice, sellPrice);
         miscSet.add(this);
     }
 
