@@ -43,10 +43,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     // --- FISHING GUESSING GAME STATE ---
     private boolean fishingGuessActive = false;
-    private int fishingTriesLeft = 0;
-    private int fishingUpperBound = 0;
-    private int fishingTarget = 0;
-    private String fishingFishName = "";
     private String fishingMessage = "";
     private boolean isFishingSliderUIVisible = false; // Status apakah UI slider aktif
     private String fishingUIMessage = "";             // Pesan yang ditampilkan di UI fishing
