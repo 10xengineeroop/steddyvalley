@@ -14,6 +14,7 @@ public class GameState {
     public static final int FISHING_STATE = 7;
     public static final int FISH_GUESS_STATE = 8;
     public static final int MESSAGE_TV = 9;
+    public static final int SHOP_STATE =10;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -83,5 +84,11 @@ public class GameState {
     }
     public boolean isGuessingFish() {
         return currentState == FISH_GUESS_STATE;
+    }
+    public boolean isWatchingTV() {
+        return currentState == MESSAGE_TV;
+    }
+    public boolean isInShop() {
+        return currentState == SHOP_STATE;
     }
 }

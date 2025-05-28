@@ -23,6 +23,7 @@ import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.model.SeasonManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.view.GamePanel;
+import com.oop10x.steddyvalley.model.Store;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +50,7 @@ public class GameController implements PlayerInputActions, Observer {
     private int selectedRecipeIndex = 0;
     private String messageTV = "";
 
+    //fish punya
     private Fish currentFishingTargetFish;
     private int currentFishingTargetNumber;
     private int currentFishingTriesLeft;
@@ -56,7 +58,12 @@ public class GameController implements PlayerInputActions, Observer {
     private int fishingSliderMin;
     private int fishingSliderMax;
     private Random randomGenerator = new Random();
-
+    
+    //store punya
+    private List<Item> currentShopItems;
+    private int selectedShopItemIndex = 0;
+    private boolean showingShopFeedback = false;
+    private String shopFeedbackMessage = "";
 
     private boolean moveUpActive, moveDownActive, moveLeftActive, moveRightActive;
 
@@ -86,6 +93,11 @@ public class GameController implements PlayerInputActions, Observer {
         this.gamePanel = gamePanel;
     }
 
+    public void openShopForTesting() {
+        if(gameStateModel.isPlaying()) {
+            enterShopState();
+        }
+    }
     @Override 
     public void setMoveUp(boolean active) { 
         if (active) {
@@ -107,6 +119,14 @@ public class GameController implements PlayerInputActions, Observer {
                 selectedInventoryIndex-- ;
                 if (selectedInventoryIndex < 0) {
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; 
+                }
+            }
+            if (gameStateModel.isInShop() && !showingShopFeedback) {
+                if (currentShopItems != null && !currentShopItems.isEmpty()) {
+                    selectedShopItemIndex-- ;
+                    if (selectedShopItemIndex < 0) {
+                        selectedShopItemIndex = currentShopItems.size() - 1;
+                    }
                 }
             }
 
@@ -139,6 +159,14 @@ public class GameController implements PlayerInputActions, Observer {
                 selectedInventoryIndex++ ;
                 if (selectedInventoryIndex >= playerModel.getInventory().getAllItems().size()) {
                     selectedInventoryIndex = 0; 
+                }
+            }
+            if (gameStateModel.isInShop() && !showingShopFeedback) {
+                if (currentShopItems != null && !currentShopItems.isEmpty()) {
+                    selectedShopItemIndex++ ;
+                    if (selectedShopItemIndex >= currentShopItems.size()) {
+                        selectedShopItemIndex = 0;
+                    }
                 }
             }
         }
@@ -217,6 +245,14 @@ public class GameController implements PlayerInputActions, Observer {
         gameStateModel.setCurrentState(GameState.HOUSE_STATE);
         return;
     }
+    if (currentState == GameState.SHOP_STATE) {
+        if (showingShopFeedback) {
+            showingShopFeedback = false;
+            shopFeedbackMessage = "";
+        } else {
+            exitShopState();
+        }
+    }
     
 }
 
@@ -286,6 +322,29 @@ public class GameController implements PlayerInputActions, Observer {
             confirmFishingSliderGuess();
             return;
         }
+        else if (currentState == GameState.SHOP_STATE) {
+            if (currentShopItems != null && !currentShopItems.isEmpty() && selectedShopItemIndex >= 0 && selectedShopItemIndex < currentShopItems.size()) {
+                Item itemToBuy = currentShopItems.get(selectedShopItemIndex);
+                int quantityToBuy = 1; 
+                Integer itemPrice = itemToBuy.getBuyPrice();
+                if (itemPrice == null) {
+                    shopFeedbackMessage = itemToBuy.getName() + " tidak dapat dibeli." ;
+                }
+                else {
+                    int totalPrice = itemPrice * quantityToBuy;
+                    if (playerModel.getGold() >= totalPrice) {
+                        Store.getInstance().buyItem(playerModel, itemToBuy.getName(), quantityToBuy);
+                        shopFeedbackMessage = "Anda membeli " + quantityToBuy + " " + itemToBuy.getName() + ".";
+
+                    }
+                    else {
+                        shopFeedbackMessage = "Tidak cukup emas untuk membeli " + itemToBuy.getName() + ".";
+                    }
+                }
+                showingShopFeedback = true;
+            }
+            return;
+        }
 
         if (currentState == GameState.PLAY_STATE) {
             int playerPixelX = playerModel.getPosition().getX();
@@ -324,6 +383,8 @@ public class GameController implements PlayerInputActions, Observer {
                     return; 
                 }
             }
+
+            
 
             Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
             // if (playerPixelX == 744 && playerPixelY == 744) {
@@ -757,5 +818,30 @@ public class GameController implements PlayerInputActions, Observer {
         this.moveDownActive = false;
         this.moveLeftActive = false;
         this.moveRightActive = false;
+    }
+
+    public void enterShopState() {
+        this.currentShopItems = Store.getInstance().getItems(); 
+        this.selectedShopItemIndex = 0;
+        this.showingShopFeedback = false;
+        this.shopFeedbackMessage = "";
+        this.gameStateModel.setCurrentState(GameState.SHOP_STATE);
+    }
+
+    private void exitShopState() {
+        this.gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        this.currentShopItems = null;
+    }
+    public List<Item> getCurrentShopItems() {
+        return currentShopItems;
+    }
+    public int getSelectedShopItemIndex() {
+        return selectedShopItemIndex;
+    }
+    public boolean isShowingShopFeedback() {
+        return showingShopFeedback;
+    }
+    public String getShopFeedbackMessage() {
+        return shopFeedbackMessage;
     }
 }

@@ -5,6 +5,7 @@ import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.GameStateObserver;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.PlayerObserver;
+import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.controller.GameController;
 
 import javax.swing.JPanel;
@@ -119,7 +120,96 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         } else if (currentGameState == GameState.MESSAGE_TV) {
             drawMessageDisplayState(g2);
         }
+        else if (currentGameState == GameState.SHOP_STATE) {
+            drawShopState(g2);
+        }
+
         g2.dispose();
+    }
+
+    private void drawShopState(Graphics2D g2) {
+        drawPlayState(g2); 
+
+        int panelX = SCREEN_WIDTH / 8;
+        int panelY = SCREEN_HEIGHT / 8;
+        int panelWidth = SCREEN_WIDTH * 3 / 4;
+        int panelHeight = SCREEN_HEIGHT * 3 / 4;
+
+        g2.setColor(new Color(50, 30, 10, 230)); 
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
+        g2.setColor(Color.ORANGE); 
+        g2.setStroke(new java.awt.BasicStroke(2));
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        g2.setFont(new Font("Arial", Font.BOLD, 28));
+        g2.setColor(Color.YELLOW);
+        String title = "Toko Serba Ada Emily";
+        int titleX = getXforCenteredText(title, g2, panelX, panelWidth);
+        g2.drawString(title, titleX, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Gold: " + playerModel.getGold() + "g", panelX + panelWidth - 150, panelY + 40);
+
+
+        if (gameController.isShowingShopFeedback()) {
+            g2.setFont(new Font("Arial", Font.BOLD, 20));
+            g2.setColor(Color.CYAN);
+            String feedback = gameController.getShopFeedbackMessage();
+            int feedbackX = getXforCenteredText(feedback, g2, panelX, panelWidth);
+            g2.drawString(feedback, feedbackX, panelY + panelHeight / 2 - 10);
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("Tekan Esc untuk kembali", getXforCenteredText("Tekan Esc untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+        } else {
+            List<Item> shopItems = gameController.getCurrentShopItems();
+            int selectedIdx = gameController.getSelectedShopItemIndex();
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
+            int itemDrawY = panelY + 80; 
+            int itemDrawX = panelX + 30;
+            int itemLineHeight = 28;
+
+            int maxVisibleItems = (panelHeight - 120) / itemLineHeight; 
+            int scrollOffset = 0;
+            if (shopItems != null && shopItems.size() > maxVisibleItems) {
+                if (selectedIdx >= maxVisibleItems -1) { 
+                    scrollOffset = selectedIdx - (maxVisibleItems -1) +1;
+                }
+                scrollOffset = Math.max(0, Math.min(scrollOffset, shopItems.size() - maxVisibleItems));
+            }
+
+
+            if (shopItems == null || shopItems.isEmpty()) {
+                g2.setColor(Color.GRAY);
+                g2.drawString("Maaf, tidak ada item yang dijual saat ini.", itemDrawX, itemDrawY);
+            } else {
+                for (int i = 0; i < shopItems.size(); i++) {
+                    if (i < scrollOffset) continue;
+                    if (i - scrollOffset >= maxVisibleItems) break;
+
+                    Item currentItem = shopItems.get(i);
+                    Integer price = currentItem.getBuyPrice();
+                    String priceString = (price != null) ? price + "g" : "N/A";
+                    String itemText = currentItem.getName() + " - " + priceString;
+                    
+                    int currentItemY = itemDrawY + ((i - scrollOffset) * itemLineHeight);
+
+                    if (i == selectedIdx) {
+                        g2.setColor(Color.YELLOW);
+                        g2.drawString("> " + itemText, itemDrawX - 10, currentItemY); // Pointer sedikit ke kiri
+                    } else {
+                        g2.setColor(Color.WHITE);
+                        g2.drawString("  " + itemText, itemDrawX, currentItemY);
+                    }
+                }
+            }
+            // Petunjuk
+            g2.setFont(new Font("Arial", Font.ITALIC, 14));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("W/S: Pilih | E: Beli 1 | Esc: Keluar Toko", panelX + 20, panelY + panelHeight - 25);
+        }
     }
 
     private void drawMessageDisplayState(Graphics2D g2) {
@@ -595,6 +685,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         return gameStateModel.isGuessingFish();
     }
 
+    private int getXforCenteredText(String text, Graphics2D g2, int areaX, int areaWidth) {
+        int stringWidth = g2.getFontMetrics().stringWidth(text);
+        return areaX + (areaWidth - stringWidth) / 2;
+    }
 
 
     @Override public void onPlayerUpdated(Player player) { /* ... */ }

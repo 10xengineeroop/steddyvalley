@@ -35,6 +35,9 @@ public class KeyHandler implements KeyListener{
             case KeyEvent.VK_E:
                 inputActionsDelegate.performPrimaryAction();
                 break;
+            case KeyEvent.VK_F:
+                inputActionsDelegate.openShopForTesting();
+                break;
         }
     }
     public void keyReleased(KeyEvent e) {
