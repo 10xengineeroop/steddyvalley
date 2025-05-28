@@ -175,8 +175,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         String timeStr = "Time: --:--";
         String seasonStr = "Season: -";
         String weatherStr = "Weather: -";
+        String dayStr = "Day ";
 
         if (timeManager != null) {
+            int mins = timeManager.getMinutes();
             int hour = (mins / 60) % 24;
             int min = mins % 60;
             String ampm = (hour < 12 || hour == 24) ? "AM" : "PM";
@@ -186,6 +188,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                 hour -= 12;
             }
             timeStr = String.format("Time: %02d:%02d %s", hour, min, ampm);
+            dayStr = String.format("Day %d", (mins / 1440) + 1);
         }
         if (seasonManager != null) {
             seasonStr = "Season: " + seasonManager.getCurrentSeason();
@@ -197,8 +200,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int timeStrWidth = g2.getFontMetrics().stringWidth(timeStr);
         int seasonStrWidth = g2.getFontMetrics().stringWidth(seasonStr);
         int weatherStrWidth = g2.getFontMetrics().stringWidth(weatherStr);
+        int dayStrWidth = g2.getFontMetrics().stringWidth(dayStr);
 
-        int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth;
+        int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth + dayStrWidth;
         int interTextPadding = hudPadding * 2;
         int hudWidth = totalTextWidth + (interTextPadding * 2) + (hudPadding * 2);
 
@@ -216,6 +220,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         currentX += seasonStrWidth + interTextPadding;
         g2.drawString(weatherStr, currentX, textY);
+
+        currentX += weatherStrWidth + interTextPadding;
+        g2.drawString(dayStr, currentX, textY);
         // Ghazy
 
         // Informasi Debug
