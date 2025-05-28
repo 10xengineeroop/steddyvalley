@@ -222,13 +222,14 @@ public class GameController implements PlayerInputActions, Observer {
 
     @Override
     public void toggleInventory() {
+        // kalo buka Inv jadi Pause Time
+        // timeManager.stop();
+        // timeManager.start();
         if (gameStateModel.isPlaying() || gameStateModel.isFishing()) {
             timeManager.stop();
             gameStateModel.setCurrentState(GameState.INVENTORY_STATE);
         } else if (gameStateModel.isInInventory()) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
-            timeManager.start();
-            resetMovementFlags();
         }
     }
 
@@ -367,8 +368,13 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
-        if (gameStateModel.isSleeping()) return ;
+        if (gameStateModel.isSleeping()) return;
         if (!gameStateModel.isPlaying()) return;
+        if (playerModel.getEnergy() <= -20) {
+            forceSleep();
+            timeManager.stop();
+            return;
+        }
         int currentX = playerModel.getPosition().getX();
         int currentY = playerModel.getPosition().getY();
         int playerSpeed = playerModel.getSpeed();
@@ -415,7 +421,7 @@ public class GameController implements PlayerInputActions, Observer {
         String sleepReasonMessage;
 
         boolean isDueToTime = (timeManager.getMinutes() % 1440) == (2 * 60);
-        boolean isDueToExhaustion = energyBeforeSleep <= MIN_ENERGY_THRESHOLD;
+        boolean isDueToExhaustion = energyBeforeSleep == MIN_ENERGY_THRESHOLD;
 
         if (isDueToExhaustion) {
             energyToSet = MAX_ENERGY / 2;
