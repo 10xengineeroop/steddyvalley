@@ -266,6 +266,7 @@ public class GameController implements PlayerInputActions, Observer {
             gameStateModel.setCurrentState(GameState.INVENTORY_STATE);
         } else if (gameStateModel.isInInventory()) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            timeManager.start();
         }
     }
 
@@ -306,6 +307,7 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setEquippedItem(selectedItem);
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
+            timeManager.start();
             return;
         }
         if (currentState == GameState.RECIPE_STATE) {
