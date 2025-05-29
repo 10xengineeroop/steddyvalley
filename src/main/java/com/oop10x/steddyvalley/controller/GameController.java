@@ -51,6 +51,8 @@ public class GameController implements PlayerInputActions, Observer {
             "Fish Stew", "Spakbor Salad", "Fish Sandwich", "The Legends of Spakbor") ;
     private int selectedRecipeIndex = 0;
     private String messageTV = "";
+
+    //Visit sama NPC bonding
     private List<String> viewVisitActions = List.of("Emily's Store", "Mayor Tadi's Manor", "Caroline's Workshop", "Perry's Atelier", "Dasco's Casino", 
     "Abigail's House", "Forest River", "Mountain Lake", "Ocean");
     private List<String> visitActions = List.of("Emily", "Mayor Tadi", "Caroline", "Perry", "Dasco", "Abigail",
@@ -58,9 +60,12 @@ public class GameController implements PlayerInputActions, Observer {
     private List<Integer> proposedTime = List.of(0,0,0,0,0,0);
     private List<String> npcVisitActions = List.of("Chat", "Gift", "Propose");
     private List<String> storeOption = List.of("Meet Emily", "Shopping");
+    private List<String> giftOption = itemToString(playerModel.getInventory().getAllItems());
     private int selectedVisitActionIndex = 0;
+    private int npcVisitIndex = 0;
     private int selectedNPCVisitActionIndex = 0; 
     private int selectedStoreOptionIndex = 0;
+    private int selectedGiftIndex = 0;
 
     //fish punya
     private Fish currentFishingTargetFish;
@@ -70,6 +75,7 @@ public class GameController implements PlayerInputActions, Observer {
     private int fishingSliderMin;
     private int fishingSliderMax;
     private Random randomGenerator = new Random();
+    private String fishingLocation = "Pond";
     
     //store punya
     private List<Item> currentShopItems;
@@ -416,9 +422,28 @@ public class GameController implements PlayerInputActions, Observer {
         if (currentState == GameState.VISIT_STATE) {
             String selectedVisitAction = visitActions.get(selectedVisitActionIndex);
             System.out.println("Player selected visit action: " + selectedVisitAction);
+            npcVisitIndex = selectedVisitActionIndex;
             handleVisitAction(selectedVisitActionIndex);
             selectedVisitActionIndex = 0;
             return;
+        }
+
+        if (currentState == GameState.NPCVISIT_STATE) {
+            handleNPCVisit(npcVisitActions.get(selectedNPCVisitActionIndex), visitActions.get(npcVisitIndex));
+            selectedNPCVisitActionIndex = 0; 
+        }
+        if (currentState == GameState.STOREOPT_STATE) {
+            if(selectedStoreOptionIndex == 1) {
+                    gameStateModel.setCurrentState(GameState.SHOP_STATE);
+                }
+                else if (selectedStoreOptionIndex == 0) {
+                    gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+                }
+                selectedStoreOptionIndex = 0;
+            }
+
+        if (currentState == GameState.GIFT_STATE){
+            
         }
 
         if (currentState == GameState.PLAY_STATE) {
@@ -783,7 +808,7 @@ public class GameController implements PlayerInputActions, Observer {
         timeManager.stop(); 
         timeManager.addMinutes(15); 
 
-        String location = getFishingLocation(); 
+        String location = fishingLocation; 
         Season season = (seasonManager != null) ? seasonManager.getCurrentSeason() : Season.SPRING;
         Weather weather = (weatherManager != null) ? weatherManager.getCurrentWeather() : Weather.SUNNY;
         int timeOfDayMinutes = timeManager.getMinutes() % 1440; 
@@ -884,22 +909,10 @@ public class GameController implements PlayerInputActions, Observer {
         if (timeManager != null) timeManager.start(); 
     }
 
-    private String getFishingLocation() {
-
-        // Untuk FarmMap dan Pond:
-        // Anda perlu cara yang lebih baik untuk cek "1 tile DARI Pond"
-        // DeployedObject adjObj = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
-        // if (adjObj instanceof PondObject) {
-        //     return "Pond";
-        // }
-
-        // Untuk lokasi lain dari World Map
-        // if (farmMapModel.getCurrentMapName().equals("Forest River")) return "Forest River";
-
-        System.out.println("[WARN] getFishingLocation() is defaulting to 'Pond'. Implement proper detection.");
-        return "Pond"; 
+    public void setFishingLocation(String location) {
+        this.fishingLocation = location;
+        System.out.println("Fishing location set to: " + location);
     }
-    private void setFishingLocation(String location) {}
     private int getUpperBoundForFish(FishRarity rarity) { 
         switch (rarity) {
             case COMMON: return 10;
@@ -919,26 +932,21 @@ public class GameController implements PlayerInputActions, Observer {
     public void handleVisitAction(int index) {
         if (index == 0){
             gameStateModel.setCurrentState(GameState.STOREOPT_STATE);
-            if(selectedStoreOptionIndex == 1) {
-                gameStateModel.setCurrentState(GameState.SHOP_STATE);
-                enterShopState();
-            }
-            selectedStoreOptionIndex = 0;
         }
-        else if (index >= 0 && index <= 5) {
+        else if (index >= 1 && index <= 5) {
             gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
             playerModel.setEnergy(playerModel.getEnergy() - 10);
             timeManager.addMinutes(15);
-            handleNPCVisit(npcVisitActions.get(selectedNPCVisitActionIndex), visitActions.get(index));
-            selectedNPCVisitActionIndex = 0; 
         }
         else if (index >= 6 && index <= 8){
             timeManager.addMinutes(15);
             setFishingLocation(visitActions.get(index));
+            gameStateModel.setCurrentState(GameState.FISHING_STATE);
         }
         else{
             System.out.println("Unknown visit action: " + visitActions.get(index));
             }
+        selectedVisitActionIndex = 0;
         }
     
     public void handleNPCVisit(String action, String name) {
@@ -952,10 +960,12 @@ public class GameController implements PlayerInputActions, Observer {
                 break;
             case "Gift":
                 gameStateModel.setCurrentState(GameState.GIFT_STATE);
-                handleGifting(npc);
                 break;
             case "Propose":
-                handlePropose(npc);
+                if (!npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
+                    handlePropose(npc);
+                }
+                else{System.out.println("You've married " + npc.getName() + "!");}
                 break;
         } 
     }
@@ -984,6 +994,21 @@ public class GameController implements PlayerInputActions, Observer {
         }
     }
 
+    public List<String> itemToString(Map<Item, Integer> inventory) {
+        List<Item> itemList = new ArrayList<>(inventory.keySet());
+        List<String> newList = new ArrayList<>();
+        for (Item item : itemList){
+            newList.add(item.getName());
+        }
+        return newList;
+    }
+    public List<String> npcToString(List<NPC> npcList){
+        List<String> newList = new ArrayList<>();
+        for (NPC npc : npcList) {
+            newList.add(npc.getName());
+        }
+        return newList;
+    }
     public void enterShopState() {
         this.currentShopItems = Store.getInstance().getItems(); 
         this.selectedShopItemIndex = 0;
