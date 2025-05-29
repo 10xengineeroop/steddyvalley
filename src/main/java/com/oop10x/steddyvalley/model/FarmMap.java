@@ -7,6 +7,7 @@ import com.oop10x.steddyvalley.model.objects.PondObject;
 import com.oop10x.steddyvalley.model.objects.ShippingBinObject;
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.LandType;
+import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -21,9 +22,11 @@ public class FarmMap {
     public static final int MAP_HEIGHT_IN_TILES = 32;
     private Random random = new Random();
 
-    private HouseObject house; // Simpan referensi ke rumah untuk posisi bin
+    private HouseObject house;
+    private ShippingBin playerShippingBin;
+    private ShippingBinObject shippingBinMapObject;
 
-    public FarmMap(TimeManager timeManager) { // Terima TimeManager
+    public FarmMap(TimeManager timeManager, Player player) {
         this.landGrid = new Land[MAP_HEIGHT_IN_TILES][MAP_WIDTH_IN_TILES];
         this.deployedObjects = new ArrayList<>();
 
@@ -32,11 +35,11 @@ public class FarmMap {
                 this.landGrid[r][c] = new Land(c, r, timeManager);
             }
         }
-        placeDeployedObjects();
+        placeDeployedObjects(player);
     }
 
 
-    private void placeDeployedObjects() {
+    private void placeDeployedObjects(Player player) {
 
         int maxHouseX = MAP_WIDTH_IN_TILES - HouseObject.HOUSE_WIDTH;
         int maxHouseY = MAP_HEIGHT_IN_TILES - HouseObject.HOUSE_HEIGHT;
@@ -71,48 +74,54 @@ public class FarmMap {
         addDeployedObject(pond);
         System.out.println("Pond placed at tile: (" + pond.getX() + "," + pond.getY() + ")");
 
-        ShippingBinObject shippingBin = null;
+        int binPlacementX = -1;
+        int binPlacementY = -1;
+
         int[][] offsets = {
             {HouseObject.HOUSE_WIDTH + 1, 0},
             {-ShippingBinObject.BIN_WIDTH_IN_TILES - 1, 0},
             {0, HouseObject.HOUSE_HEIGHT + 1},
             {0, -ShippingBinObject.BIN_HEIGHT_IN_TILES - 1}
         };
+
         String[] offsetNames = {"Right of House", "Left of House", "Below House", "Above House"};
 
         for (int i = 0; i < offsets.length; i++) {
-            int binX = house.getX() + offsets[i][0];
-            if (offsets[i][0] < 0) binX = house.getX() + offsets[i][0];
-            int binY = house.getY() + offsets[i][1];
-            if (offsets[i][1] < 0) binY = house.getY() + offsets[i][1];
+            int currentBinX = house.getX() + offsets[i][0];
+            int currentBinY = house.getY() + offsets[i][1];
+            
+            if (currentBinX >= 0 && currentBinX + ShippingBinObject.BIN_WIDTH_IN_TILES <= MAP_WIDTH_IN_TILES &&
+                currentBinY >= 0 && currentBinY + ShippingBinObject.BIN_HEIGHT_IN_TILES <= MAP_HEIGHT_IN_TILES) {
 
-            if (binX >= 0 && binX + ShippingBinObject.BIN_WIDTH_IN_TILES <= MAP_WIDTH_IN_TILES &&
-                binY >= 0 && binY + ShippingBinObject.BIN_HEIGHT_IN_TILES <= MAP_HEIGHT_IN_TILES) {
+                Rectangle tempBinBounds = new Rectangle(currentBinX, currentBinY, ShippingBinObject.BIN_WIDTH_IN_TILES, ShippingBinObject.BIN_HEIGHT_IN_TILES);
 
-                ShippingBinObject tempBin = new ShippingBinObject(binX, binY);
-                Rectangle tempBinBounds = tempBin.getTileBounds();
-
-                if (!tempBinBounds.intersects(houseBounds) && !tempBinBounds.intersects(pondBounds)) {
-                    shippingBin = tempBin;
-                    System.out.println("Shipping Bin placed " + offsetNames[i] + " at tile: (" + binX + "," + binY + ")");
-                    break;
-                }
+                binPlacementX = currentBinX;
+                binPlacementY = currentBinY;
+                System.out.println("Shipping Bin will be placed " + offsetNames[i] + " at tile: (" + binPlacementX + "," + binPlacementY + ")");
+                break;
             }
         }
 
-        if (shippingBin != null) {
-            addDeployedObject(shippingBin);
+        if (binPlacementX != -1 && binPlacementY != -1) {
+            this.playerShippingBin = new ShippingBin(binPlacementX, binPlacementY, player);
+            this.shippingBinMapObject = new ShippingBinObject(binPlacementX, binPlacementY, this.playerShippingBin);
+            addDeployedObject(this.shippingBinMapObject);
+            System.out.println("Shipping Bin object created and added to map.");
         } else {
-
-            int fallbackBinX = 0;
+            int fallbackBinX = 0; 
             int fallbackBinY = MAP_HEIGHT_IN_TILES - ShippingBinObject.BIN_HEIGHT_IN_TILES;
-            ShippingBinObject fallbackBin = new ShippingBinObject(fallbackBinX, fallbackBinY);
-            Rectangle fallbackBinBounds = fallbackBin.getTileBounds();
-            if (!fallbackBinBounds.intersects(houseBounds) && !fallbackBinBounds.intersects(pondBounds)) {
-                addDeployedObject(fallbackBin);
+            Rectangle fallbackBinBoundsCheck = new Rectangle(fallbackBinX, fallbackBinY, ShippingBinObject.BIN_WIDTH_IN_TILES, ShippingBinObject.BIN_HEIGHT_IN_TILES);
+            boolean pondExistsAndIntersectsFallback = (pond != null && pondBounds != null && fallbackBinBoundsCheck.intersects(pondBounds));
+            if (!fallbackBinBoundsCheck.intersects(houseBounds) && !pondExistsAndIntersectsFallback) {
+                this.playerShippingBin = new ShippingBin(fallbackBinX, fallbackBinY, player);
+                this.shippingBinMapObject = new ShippingBinObject(fallbackBinX, fallbackBinY, this.playerShippingBin);
+                addDeployedObject(this.shippingBinMapObject);
                 System.out.println("Shipping Bin (fallback) placed at tile: (" + fallbackBinX + "," + fallbackBinY + ")");
             } else {
-                System.err.println("CRITICAL: Could not place Shipping Bin anywhere without overlap!");
+                this.playerShippingBin = new ShippingBin(0,0, player); 
+                this.shippingBinMapObject = new ShippingBinObject(0,0, this.playerShippingBin);
+                addDeployedObject(this.shippingBinMapObject);
+                System.err.println("CRITICAL: Could not place Shipping Bin ideally or fallback without overlap! Placed at (0,0) as emergency.");
             }
         }
     }
@@ -221,5 +230,9 @@ public class FarmMap {
 
     public List<DeployedObject> getDeployedObjects() {
         return deployedObjects;
+    }
+
+    public ShippingBin getPlayerShippingBin() {
+        return playerShippingBin;
     }
 }

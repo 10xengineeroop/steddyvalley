@@ -15,7 +15,6 @@ public class Main {
             final int TILE_SIZE = GamePanel.TILE_SIZE;
 
             // --- Inisialisasi Model ---
-
             TimeManager timeManager = TimeManager.getInstance();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             GameState gameStateModel = new GameState();
@@ -42,7 +41,7 @@ public class Main {
             playerModel.addItem(coal);
             //batas
 
-            FarmMap farmMapModel = new FarmMap(timeManager);
+            FarmMap farmMapModel = new FarmMap(timeManager, playerModel);
             SeasonManager seasonModel = seasonManager;
             WeatherManager weatherModel = weatherManager;
 

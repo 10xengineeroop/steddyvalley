@@ -1,31 +1,35 @@
 package com.oop10x.steddyvalley.view;
 
-import com.oop10x.steddyvalley.model.FarmMap; // Import FarmMap
+import com.oop10x.steddyvalley.model.FarmMap;
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.GameStateObserver;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.PlayerObserver;
+import com.oop10x.steddyvalley.model.TimeManager;
+import com.oop10x.steddyvalley.utils.Season;
+import com.oop10x.steddyvalley.utils.Weather;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.controller.GameController;
-
+// import com.oop10x.steddyvalley.model.items.Item;
+// import com.oop10x.steddyvalley.model.Inventory;
+// import java.util.Map;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-// Import Item dan Inventory jika mau menampilkan info item di inventory
-// import com.oop10x.steddyvalley.model.items.Item;
-// import com.oop10x.steddyvalley.model.Inventory;
-// import java.util.Map;
+import java.awt.RenderingHints;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
 
     public static final int TILE_SIZE = 24;
-    public final int MAX_SCREEN_COL = FarmMap.MAP_WIDTH_IN_TILES; // Ambil dari FarmMap
-    public final int MAX_SCREEN_ROW = FarmMap.MAP_HEIGHT_IN_TILES; // Ambil dari FarmMap
+    public final int MAX_SCREEN_COL = FarmMap.MAP_WIDTH_IN_TILES;
+    public final int MAX_SCREEN_ROW = FarmMap.MAP_HEIGHT_IN_TILES;
     public final int SCREEN_WIDTH = TILE_SIZE * MAX_SCREEN_COL;
     public final int SCREEN_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW;
 
@@ -35,7 +39,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     private Player playerModel;
     private GameState gameStateModel;
     private GameController gameController;
-    private FarmMap farmMapModel; // Referensi ke FarmMap
+    private FarmMap farmMapModel;
 
     // --- HUD fields ---
     private com.oop10x.steddyvalley.model.TimeManager timeManager;
@@ -68,7 +72,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     public void startGameThread() { if (gameThread == null) { gameThread = new Thread(this); gameThread.start(); }}
     public void stopGameThread() { if (gameThread != null) { gameThread = null; }}
-    @Override public void run() { /* ... game loop tetap sama ... */
+    @Override public void run() {
         double drawInterval = 1000000000.0 / FPS;
         double delta = 0;
         long lastTime = System.nanoTime();
@@ -119,102 +123,137 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         else if (currentGameState == GameState.FISH_GUESS_STATE) {
             drawFishGuessState(g2);
-        } else if (currentGameState == GameState.MESSAGE_TV) {
-            drawMessageDisplayState(g2);
+        } 
+        else if (currentGameState == GameState.MESSAGE_TV) {
+            drawMessageTV(g2);
+        } 
+        else if (currentGameState == GameState.SHIPPING_STATE) {
+            drawShippingState(g2);
         }
-        /* else if (currentGameState == GameState.SHOP_STATE) {
-            drawShopState(g2);
-        } */
 
         g2.dispose();
     }
 
-    private void drawShopState(Graphics2D g2) {
-        drawPlayState(g2); 
+        private void drawShippingState(Graphics2D g2) {
+        try {
+            drawPlayState(g2);
+            // -- Panel utama untuk shipping --
+            int pX = 30, pY = 30, pW = SCREEN_WIDTH - 60, pH = SCREEN_HEIGHT - 60;
+            g2.setColor(new Color(30, 30, 70, 220));
+            g2.fillRoundRect(pX, pY, pW, pH, 20, 20);
+            g2.setColor(Color.WHITE);
+            g2.drawRoundRect(pX, pY, pW, pH, 20, 20);
 
-        int panelX = SCREEN_WIDTH / 8;
-        int panelY = SCREEN_HEIGHT / 8;
-        int panelWidth = SCREEN_WIDTH * 3 / 4;
-        int panelHeight = SCREEN_HEIGHT * 3 / 4;
+            g2.setFont(new Font("Arial", Font.BOLD, 26));
+            g2.drawString("Shipping Bin\n", pX + 20, pY + 25);
 
-        g2.setColor(new Color(50, 30, 10, 230)); 
-        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
-        g2.setColor(Color.ORANGE); 
-        g2.setStroke(new java.awt.BasicStroke(2));
-        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+            int lineHeight = 25;
+            int itemStartY = pY + 80;
+            int itemStartXPlayer = pX + 30;
+            int itemStartXBin = pX + pW / 2 + 20;
 
-        g2.setFont(new Font("Arial", Font.BOLD, 28));
-        g2.setColor(Color.YELLOW);
-        String title = "Toko Serba Ada Emily";
-        int titleX = getXforCenteredText(title, g2, panelX, panelWidth);
-        g2.drawString(title, titleX, panelY + 40);
-
-        g2.setFont(new Font("Arial", Font.PLAIN, 16));
-        g2.setColor(Color.WHITE);
-        g2.drawString("Gold: " + playerModel.getGold() + "g", panelX + panelWidth - 150, panelY + 40);
-
-
-        if (gameController.isShowingShopFeedback()) {
-            g2.setFont(new Font("Arial", Font.BOLD, 20));
-            g2.setColor(Color.CYAN);
-            String feedback = gameController.getShopFeedbackMessage();
-            int feedbackX = getXforCenteredText(feedback, g2, panelX, panelWidth);
-            g2.drawString(feedback, feedbackX, panelY + panelHeight / 2 - 10);
+            // --- Tampilkan Inventory Pemain ---
+            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            g2.setColor(Color.WHITE);
+            g2.drawString("\nYour Inventory (W/S, E to Ship):", itemStartXPlayer, itemStartY - 30);
+            
+            Map<Item, Integer> playerItemsMap = playerModel.getInventory().getAllItems();
+            List<Item> playerItemList = new ArrayList<>(playerItemsMap.keySet());
+            int selectedPlayerItemIdx = gameController.getSelectedShippingInventoryIndex();
 
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("Tekan Esc untuk kembali", getXforCenteredText("Tekan Esc untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
-        } else {
-            List<Item> shopItems = gameController.getCurrentShopItems();
-            int selectedIdx = gameController.getSelectedShopItemIndex();
-
-            g2.setFont(new Font("Arial", Font.PLAIN, 18));
-            int itemDrawY = panelY + 80; 
-            int itemDrawX = panelX + 30;
-            int itemLineHeight = 28;
-
-            int maxVisibleItems = (panelHeight - 120) / itemLineHeight; 
-            int scrollOffset = 0;
-            if (shopItems != null && shopItems.size() > maxVisibleItems) {
-                if (selectedIdx >= maxVisibleItems -1) { 
-                    scrollOffset = selectedIdx - (maxVisibleItems -1) +1;
-                }
-                scrollOffset = Math.max(0, Math.min(scrollOffset, shopItems.size() - maxVisibleItems));
+            int maxVisibleItems = (pH - 180) / lineHeight;
+            int scrollOffsetPlayer = 0;
+            if (playerItemList.size() > 0 && selectedPlayerItemIdx >= maxVisibleItems) {
+                scrollOffsetPlayer = selectedPlayerItemIdx - maxVisibleItems + 1;
             }
 
+            for (int i = 0; i < playerItemList.size(); i++) {
+                if (i < scrollOffsetPlayer) continue;
+                if ((i - scrollOffsetPlayer) >= maxVisibleItems) break;
 
-            if (shopItems == null || shopItems.isEmpty()) {
+                Item item = playerItemList.get(i);
+                int amount = playerItemsMap.get(item);
+                String itemText = item.getName() + " x" + amount;
+                
+                Integer sellPrice = item.getSellPrice();
+                if (sellPrice != null && sellPrice > 0) {
+                    itemText += " (" + sellPrice + "g each)";
+                } else {
+                    itemText += " (Unsellable)";
+                }
+
+                if (i == selectedPlayerItemIdx) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + itemText, itemStartXPlayer, itemStartY + ((i - scrollOffsetPlayer) * lineHeight));
+                } else {
+                    g2.setColor(Color.WHITE);
+                    g2.drawString("  " + itemText, itemStartXPlayer, itemStartY + ((i - scrollOffsetPlayer) * lineHeight));
+                }
+            }
+            if (playerItemList.isEmpty()) {
                 g2.setColor(Color.GRAY);
-                g2.drawString("Maaf, tidak ada item yang dijual saat ini.", itemDrawX, itemDrawY);
-            } else {
-                for (int i = 0; i < shopItems.size(); i++) {
-                    if (i < scrollOffset) continue;
-                    if (i - scrollOffset >= maxVisibleItems) break;
+                g2.drawString("Inventory is empty.", itemStartXPlayer, itemStartY + 10);
+            }
 
-                    Item currentItem = shopItems.get(i);
-                    Integer price = currentItem.getBuyPrice();
-                    String priceString = (price != null) ? price + "g" : "N/A";
-                    String itemText = currentItem.getName() + " - " + priceString;
-                    
-                    int currentItemY = itemDrawY + ((i - scrollOffset) * itemLineHeight);
-
-                    if (i == selectedIdx) {
-                        g2.setColor(Color.YELLOW);
-                        g2.drawString("> " + itemText, itemDrawX - 10, currentItemY); // Pointer sedikit ke kiri
-                    } else {
-                        g2.setColor(Color.WHITE);
-                        g2.drawString("  " + itemText, itemDrawX, currentItemY);
+            // --- Tampilkan Isi Shipping Bin (Untuk Hari Ini) ---
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            g2.drawString("In Bin (Today):", itemStartXBin, itemStartY - 20);
+            com.oop10x.steddyvalley.model.ShippingBin currentBin = gameController.getActiveShippingBin();
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            if (currentBin != null) {
+                Map<Item, Integer> binItemsMap = currentBin.getItemsInBin();
+                List<Item> binItemList = new ArrayList<>(binItemsMap.keySet());
+                int displayCountBin = 0;
+                int currentBinY = itemStartY;
+                for (Item item : binItemList) {
+                    if (displayCountBin >= maxVisibleItems) {
+                        g2.setColor(Color.LIGHT_GRAY);
+                        g2.drawString("...and " + (binItemList.size() - maxVisibleItems) + " more...", itemStartXBin, currentBinY);
+                        break;
                     }
+                    int amount = binItemsMap.get(item);
+                    String itemText = item.getName() + " x" + amount;
+                    Integer itemSellPrice = item.getSellPrice();
+                    if (itemSellPrice != null) {
+                         itemText += " (Value: " + (itemSellPrice * amount) + "g)";
+                    }
+                    g2.setColor(Color.CYAN);
+                    g2.drawString(itemText, itemStartXBin, currentBinY);
+                    currentBinY += lineHeight;
+                    displayCountBin++;
+                }
+                if (binItemList.isEmpty()) {
+                    g2.setColor(Color.GRAY);
+                    g2.drawString("Bin is empty for today.", itemStartXBin, itemStartY);
                 }
             }
-            // Petunjuk
-            g2.setFont(new Font("Arial", Font.ITALIC, 14));
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("W/S: Pilih | E: Beli 1 | Esc: Keluar Toko", panelX + 20, panelY + panelHeight - 25);
+
+            // --- Pesan Transisi/Info dari Controller ---
+            String currentTransitionMessage = gameController.getTransitionMessage();
+            if (currentTransitionMessage != null && !currentTransitionMessage.isEmpty()) {
+                g2.setColor(Color.ORANGE);
+                g2.setFont(new Font("Arial", Font.ITALIC, 16));
+                int msgY = pY + pH - 50;
+                g2.drawString(currentTransitionMessage, pX + 20, msgY);
+            }
+
+            // --- Instruksi Umum ---
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.drawString("W/S: Select Item | E: Add to Bin | Esc: Finish Shipping", pX + 20, pY + pH - 20);
+
+        } catch (Exception e) {
+            System.err.println("RUNTIME ERROR in drawShippingState: " + e.getMessage());
+            e.printStackTrace();
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 16));
+            g2.drawString("Error rendering Shipping UI. Check console.", 50, SCREEN_HEIGHT / 2);
         }
     }
 
-    private void drawMessageDisplayState(Graphics2D g2) {
+    private void drawMessageTV(Graphics2D g2) {
         drawPlayState(g2);
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -249,7 +288,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     private void drawPlayState(Graphics2D g2) {
         if (farmMapModel != null) {
-            farmMapModel.draw(g2, TILE_SIZE); // Berikan tileSize ke FarmMap.draw
+            farmMapModel.draw(g2, TILE_SIZE);
         }
 
         int playerScreenX = playerModel.getPosition().getX();
@@ -280,7 +319,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                 hour -= 12;
             }
             timeStr = String.format("Time: %02d:%02d %s", hour, min, ampm);
-            dayStr = String.format("Day %d", (mins / 1440) + 1);
+            dayStr = String.format("Day: %d", (mins / 1440) + 1);
         }
         if (seasonManager != null) {
             seasonStr = "Season: " + seasonManager.getCurrentSeason();
@@ -294,12 +333,13 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int weatherStrWidth = g2.getFontMetrics().stringWidth(weatherStr);
         int dayStrWidth = g2.getFontMetrics().stringWidth(dayStr);
 
-        int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth + dayStrWidth;
-        int interTextPadding = hudPadding * 2;
-        int hudWidth = totalTextWidth + (interTextPadding * 2) + (hudPadding * 2);
+        int interTextPadding = 15;
+
+        int totalTextWidthWithPaddings = timeStrWidth + interTextPadding + seasonStrWidth + interTextPadding + weatherStrWidth + interTextPadding + dayStrWidth;
+        int hudWidth = totalTextWidthWithPaddings + (hudPadding * 2);
 
         g2.setColor(new Color(0,0,0,180));
-        g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15, 15);
+        g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15,   15);
 
         g2.setColor(Color.WHITE);
         int textY = 5 + hudPadding + g2.getFontMetrics().getAscent();
