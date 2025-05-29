@@ -793,16 +793,55 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+        String pojokkanan = String.format("Location: %s\n Currently With: %s\nHeartPoints: %d", gameController.getVisiting(),
+         gameController.getNpcNow(), gameController.getNpcHeartPoints());
+        g2.drawString(pojokkanan, panelX + 200, panelY + 30);
     }
 
     private void drawGiftingState(Graphics2D g2) {
         drawPlayState(g2);
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        int panelX = SCREEN_WIDTH / 4;
+        int panelY = SCREEN_HEIGHT / 4;
+        int panelWidth = SCREEN_WIDTH / 2;
+        int panelHeight = SCREEN_HEIGHT / 2 + 50;
+
+        // Latar belakang panel menu rumah
+        g2.setColor(new Color(30, 30, 70, 220));
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 50));
-        String text = "GIFTING";
-        g2.drawString(text, getXforCenteredText(text, g2), SCREEN_HEIGHT / 2);
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        // Judul
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        String title = "Where To Visit?";
+        int titleWidth = g2.getFontMetrics().stringWidth(title);
+        g2.drawString(title, panelX + (panelWidth - titleWidth) / 2, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        int actionY = panelY + 80;
+        int actionX = panelX + 30;
+        int lineHeight = 30;
+
+        List<String> actions = gameController.getGiftOption();
+        int selectedIndex = gameController.getSelectedGiftIndex();
+
+        if (actions.isEmpty()) {
+            g2.drawString("No actions available.", actionX, actionY);
+        } else {
+            for (int i = 0; i < actions.size(); i++) {
+                String actionText = actions.get(i);
+                if (i == selectedIndex) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                    g2.setColor(Color.WHITE);
+                } else {
+                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                }
+            }
+        }
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
     }
     
     private void drawStoreOptState(Graphics2D g2) {
