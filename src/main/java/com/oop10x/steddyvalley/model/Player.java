@@ -75,7 +75,7 @@ public class Player {
     public void setEnergy(int energy) {
         this.energy = energy;
         if (this.energy < -20) {
-            this.energy = -20; // Energi tidak boleh kurang dari -20
+            this.energy = -20;
         } else if (this.energy > 100) {
             this.energy = 100;
         }

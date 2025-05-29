@@ -16,11 +16,7 @@ public class Fish extends Item {
     private static final Set<Fish> fishSet = new HashSet<>();
 
     public Fish(String name, FishRarity rarity, Set<Season> seasonList, Set<TimeRange> timeList, Set<Weather> weatherList, Set<String> locationList) {
-<<<<<<< HEAD
         super(name, null, null);
-=======
-        super(name, 0, 0);
->>>>>>> 9a0ed4b (HUD)
         this.seasonList = seasonList;
         this.weatherList = weatherList;
         this.rarity = rarity;

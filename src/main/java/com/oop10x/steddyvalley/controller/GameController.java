@@ -386,7 +386,7 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
-        if (gameStateModel.isSleeping()) return ;
+        if (gameStateModel.isSleeping()) return;
         if (!gameStateModel.isPlaying()) return;
         int currentX = playerModel.getPosition().getX();
         int currentY = playerModel.getPosition().getY();

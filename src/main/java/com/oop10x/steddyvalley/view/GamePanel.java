@@ -86,7 +86,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             }
         }
     }
-    public void updateGame() { gameController.updateGameLogic(); }
+    public void updateGame() {
+        gameController.updateGameLogic();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {

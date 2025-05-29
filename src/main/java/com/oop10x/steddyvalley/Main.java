@@ -19,15 +19,33 @@ public class Main {
             TimeManager timeManager = TimeManager.getInstance();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             GameState gameStateModel = new GameState();
-            // Tambahkan SeasonManager dan WeatherManager
             SeasonManager seasonManager = SeasonManager.getInstance(timeManager);
             WeatherManager weatherManager = WeatherManager.getInstance(timeManager);
+
+            //Inisiasi Game tambahan Invent saja
+            com.oop10x.steddyvalley.model.items.Fish fish1 = new com.oop10x.steddyvalley.model.items.Fish("FishA", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
+            com.oop10x.steddyvalley.model.items.Fish fish2 = new com.oop10x.steddyvalley.model.items.Fish("FishB", com.oop10x.steddyvalley.utils.FishRarity.COMMON, new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>(), new java.util.HashSet<>());
+            playerModel.addItem(fish1);
+            playerModel.addItem(fish2);
+
+            com.oop10x.steddyvalley.model.items.Crop hotPepper = new com.oop10x.steddyvalley.model.items.Crop("Hot Pepper", 10, 20, 1);
+            playerModel.addItem(hotPepper);
+
+            com.oop10x.steddyvalley.model.items.Crop cauliflower1 = new com.oop10x.steddyvalley.model.items.Crop("Cauliflower", 10, 20, 1);
+            com.oop10x.steddyvalley.model.items.Crop cauliflower2 = new com.oop10x.steddyvalley.model.items.Crop("Cauliflower", 10, 20, 1);
+            playerModel.addItem(cauliflower1);
+            playerModel.addItem(cauliflower2);
+
+            com.oop10x.steddyvalley.model.items.Misc firewood = com.oop10x.steddyvalley.model.items.Misc.getMisc("Firewood");
+            com.oop10x.steddyvalley.model.items.Misc coal = com.oop10x.steddyvalley.model.items.Misc.getMisc("Coal");
+            playerModel.addItem(firewood);
+            playerModel.addItem(coal);
+            //batas
 
             FarmMap farmMapModel = new FarmMap(timeManager);
             SeasonManager seasonModel = seasonManager;
             WeatherManager weatherModel = weatherManager;
 
-            // TileManager masih diperlukan oleh CollisionChecker untuk tile dasar non-FarmMap
             TileManager tileManagerForCollision = new TileManager(TILE_SIZE, FarmMap.MAP_WIDTH_IN_TILES, FarmMap.MAP_HEIGHT_IN_TILES);
             CollisionChecker collisionChecker = new CollisionChecker(tileManagerForCollision, farmMapModel, TILE_SIZE);
 
