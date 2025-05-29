@@ -339,6 +339,7 @@ public class GameController implements PlayerInputActions, Observer {
             gameStateModel.setCurrentState(GameState.INVENTORY_STATE);
         } else if (gameStateModel.isInInventory()) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            timeManager.start();
         }
     }
 
@@ -379,6 +380,7 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setEquippedItem(selectedItem);
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
+            timeManager.start();
             return;
         }
         if (currentState == GameState.RECIPE_STATE) {
@@ -493,6 +495,7 @@ public class GameController implements PlayerInputActions, Observer {
                 boolean actionTaken = false;
 
                 if (equippedItem != null) {
+                    currentLand.harvest(playerModel, timeManager.getMinutes());
                     if ("Hoe".equals(equippedItem.getName())) {
                         if (currentLand.till(playerModel)) actionTaken = true;
                     } else if (equippedItem instanceof Seed) {
@@ -506,13 +509,6 @@ public class GameController implements PlayerInputActions, Observer {
                             currentLand.resetLand();
                             playerModel.setEnergy(playerModel.getEnergy() - 5);
                         }
-                    }
-                }
-                if (!actionTaken) { 
-                    Item harvestedCrop = currentLand.harvest(playerModel, timeManager.getMinutes());
-                    if (harvestedCrop != null) {
-                        // playerModel.getInventory().addItem(harvestedCrop);
-                        actionTaken = true;
                     }
                 }
 
@@ -913,15 +909,6 @@ public class GameController implements PlayerInputActions, Observer {
         this.fishingLocation = location;
         System.out.println("Fishing location set to: " + location);
     }
-    private int getUpperBoundForFish(FishRarity rarity) { 
-        switch (rarity) {
-            case COMMON: return 10;
-            case REGULAR: return 100;
-            case LEGENDARY: return 500;
-            default: return 10;
-        }
-    }
-
     private void resetMovementFlags() {
         this.moveUpActive = false;
         this.moveDownActive = false;
@@ -950,6 +937,8 @@ public class GameController implements PlayerInputActions, Observer {
         }
     
     public void handleNPCVisit(String action, String name) {
+        playerModel.setEnergy(playerModel.getEnergy() - 10);
+        timeManager.addMinutes(15);
         NPC npc = NPC.getNpcByName(name);
         switch (action) {
             case "Chat":
@@ -960,6 +949,9 @@ public class GameController implements PlayerInputActions, Observer {
                 break;
             case "Gift":
                 gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                handleGifting(npc);
+                playerModel.setEnergy(playerModel.getEnergy() - 5);
+                timeManager.addMinutes(10);
                 break;
             case "Propose":
                 if (!npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {

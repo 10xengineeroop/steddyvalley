@@ -58,7 +58,7 @@ public class PlayerTest {
     assertEquals(100, player.getEnergy(), "Energy should not exceed 100, should be capped at 100");
     
     player.setEnergy(-30);
-    assertEquals(-21, player.getEnergy(), "Energy should not be less than -21, should be capped at -21. Karena bakal forceSleep() di - 20");
+    assertEquals(-20, player.getEnergy(), "Energy should not be less than -20, should be capped at -20. Karena bakal forceSleep() di - 20");
   }
 
   @Test

@@ -19,7 +19,6 @@ public class Main {
             TimeManager timeManager = TimeManager.getInstance();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             GameState gameStateModel = new GameState();
-
             // Tambahkan SeasonManager dan WeatherManager
             SeasonManager seasonManager = SeasonManager.getInstance(timeManager);
             WeatherManager weatherManager = WeatherManager.getInstance(timeManager);
