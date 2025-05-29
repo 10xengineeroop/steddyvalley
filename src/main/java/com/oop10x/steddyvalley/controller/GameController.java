@@ -398,6 +398,7 @@ public class GameController implements PlayerInputActions, Observer {
                 boolean actionTaken = false;
 
                 if (equippedItem != null) {
+                    currentLand.harvest(playerModel, timeManager.getMinutes());
                     if ("Hoe".equals(equippedItem.getName())) {
                         if (currentLand.till(playerModel)) actionTaken = true;
                     } else if (equippedItem instanceof Seed) {
@@ -411,13 +412,6 @@ public class GameController implements PlayerInputActions, Observer {
                             currentLand.resetLand();
                             playerModel.setEnergy(playerModel.getEnergy() - 5);
                         }
-                    }
-                }
-                if (!actionTaken) { 
-                    Item harvestedCrop = currentLand.harvest(playerModel, timeManager.getMinutes());
-                    if (harvestedCrop != null) {
-                        // playerModel.getInventory().addItem(harvestedCrop);
-                        actionTaken = true;
                     }
                 }
 

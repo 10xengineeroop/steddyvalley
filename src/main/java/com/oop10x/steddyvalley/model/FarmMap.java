@@ -187,6 +187,7 @@ public class FarmMap {
                     Color landColor = Color.decode("#A4C639");
                     if (land.getLandType() == LandType.TILLED) landColor = Color.decode("#9B7653");
                     if (land.getLandType() == LandType.PLANTED) landColor = Color.decode("#228B22");
+                    if (land.getLandType() == LandType.HARVESTABLE) landColor = Color.decode("#228B22");
                     if (land.getIsWatered() && land.getLandType() != LandType.UNTILLED) landColor = landColor.darker();
 
                     g2.setColor(landColor);
@@ -196,6 +197,10 @@ public class FarmMap {
 
                     if (land.getLandType() == LandType.PLANTED && land.getSeed() != null) {
                         g2.setColor(Color.YELLOW);
+                        g2.fillOval(land.getX() * tileSize + tileSize / 3, land.getY() * tileSize + tileSize / 3, tileSize / 3, tileSize / 3);
+                    }
+                    if (land.getLandType() == LandType.HARVESTABLE && land.getSeed() != null) {
+                        g2.setColor(Color.BLUE);
                         g2.fillOval(land.getX() * tileSize + tileSize / 3, land.getY() * tileSize + tileSize / 3, tileSize / 3, tileSize / 3);
                     }
                 }
