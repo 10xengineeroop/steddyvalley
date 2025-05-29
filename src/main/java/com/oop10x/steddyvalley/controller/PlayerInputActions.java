@@ -9,9 +9,6 @@ public interface PlayerInputActions {
     void togglePause();
     void toggleInventory();
     void performPrimaryAction();
-<<<<<<< Updated upstream
-=======
     void openShopForTesting();
     void toggleVisit();
->>>>>>> Stashed changes
 }

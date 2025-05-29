@@ -132,6 +132,10 @@ public class FarmMap {
         }
     }
 
+    public HouseObject getHouseObject() {
+        return this.house;
+    }
+
 
     private void addDeployedObject(DeployedObject object) {
         deployedObjects.add(object);

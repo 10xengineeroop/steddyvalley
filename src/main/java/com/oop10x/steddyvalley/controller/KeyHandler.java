@@ -35,15 +35,12 @@ public class KeyHandler implements KeyListener{
             case KeyEvent.VK_E:
                 inputActionsDelegate.performPrimaryAction();
                 break;
-<<<<<<< Updated upstream
-=======
             case KeyEvent.VK_F:
                 inputActionsDelegate.openShopForTesting();
                 break;
             case KeyEvent.VK_V:
                 inputActionsDelegate.toggleVisit();
                 break;
->>>>>>> Stashed changes
         }
     }
     public void keyReleased(KeyEvent e) {
