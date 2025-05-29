@@ -14,7 +14,16 @@ public class GameState {
     public static final int RECIPE_STATE = 6;
     public static final int FISHING_STATE = 7;
     public static final int FISH_GUESS_STATE = 8;
+<<<<<<< Updated upstream
     // Tambahkan state lain sesuai kebutuhan game Anda
+=======
+    public static final int MESSAGE_TV = 9;
+    public static final int SHOP_STATE =10;
+    public static final int VISIT_STATE = 11;
+    public static final int NPCVISIT_STATE = 12;
+    public static final int STOREOPT_STATE = 13;
+    public static final int GIFT_STATE = 14;
+>>>>>>> Stashed changes
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -85,4 +94,25 @@ public class GameState {
     public boolean isGuessingFish() {
         return currentState == FISH_GUESS_STATE;
     }
+<<<<<<< Updated upstream
+=======
+    public boolean isWatchingTV() {
+        return currentState == MESSAGE_TV;
+    }
+    public boolean isInShop() {
+        return currentState == SHOP_STATE;
+    }
+    public boolean isVisiting() {
+        return currentState == VISIT_STATE;
+    }
+    public boolean isVisitingNPC() {
+        return currentState == NPCVISIT_STATE;
+    }
+    public boolean isInStore() {
+        return currentState == STOREOPT_STATE;
+    }
+    public boolean isGifting() {
+        return currentState == GIFT_STATE;
+    }
+>>>>>>> Stashed changes
 }

@@ -20,9 +20,15 @@ import com.oop10x.steddyvalley.utils.Season;
 import com.oop10x.steddyvalley.utils.Weather;
 import com.oop10x.steddyvalley.utils.EventType;
 import com.oop10x.steddyvalley.utils.FishRarity;
+import com.oop10x.steddyvalley.utils.RelStatus;
 import com.oop10x.steddyvalley.model.SeasonManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.view.GamePanel;
+<<<<<<< Updated upstream
+=======
+import com.oop10x.steddyvalley.model.Store;
+import com.oop10x.steddyvalley.model.NPC;
+>>>>>>> Stashed changes
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +53,20 @@ public class GameController implements PlayerInputActions, Observer {
     private List<String> recipes = List.of("Fish n' Chips", "Baguette", "Sashimi", "Fugu", "wine", "Pumpkin Pie", "Veggie Soup",
             "Fish Stew", "Spakbor Salad", "Fish Sandwich", "The Legends of Spakbor") ;
     private int selectedRecipeIndex = 0;
+<<<<<<< Updated upstream
+=======
+    private String messageTV = "";
+    private List<String> viewVisitActions = List.of("Emily's Store", "Mayor Tadi's Manor", "Caroline's Workshop", "Perry's Atelier", "Dasco's Casino", 
+    "Abigail's House", "Forest River", "Mountain Lake", "Ocean");
+    private List<String> visitActions = List.of("Emily", "Mayor Tadi", "Caroline", "Perry", "Dasco", "Abigail",
+     "Forest River", "Mountain Lake", "Ocean");
+    private List<Integer> proposedTime = List.of(0,0,0,0,0,0);
+    private List<String> npcVisitActions = List.of("Chat", "Gift", "Propose");
+    private List<String> storeOption = List.of("Meet Emily", "Shopping");
+    private int selectedVisitActionIndex = 0;
+    private int selectedNPCVisitActionIndex = 0; 
+    private int selectedStoreOptionIndex = 0;
+>>>>>>> Stashed changes
 
     private Fish currentFishingTargetFish;
     private int currentFishingTargetNumber; // Angka rahasia yang harus ditebak
@@ -108,6 +128,35 @@ public class GameController implements PlayerInputActions, Observer {
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; 
                 }
             }
+<<<<<<< Updated upstream
+=======
+            if (gameStateModel.getCurrentState() == GameState.VISIT_STATE) {
+                selectedVisitActionIndex-- ;
+                if (selectedVisitActionIndex < 0) {
+                    selectedVisitActionIndex = viewVisitActions.size()-1; 
+                }
+            }
+            if (gameStateModel.getCurrentState() == GameState.NPCVISIT_STATE) {
+                selectedNPCVisitActionIndex-- ;
+                if (selectedNPCVisitActionIndex < 0) {
+                    selectedNPCVisitActionIndex = 2; 
+                }
+            }
+            if (gameStateModel.getCurrentState() == GameState.STOREOPT_STATE) {
+                selectedStoreOptionIndex-- ;
+                if (selectedStoreOptionIndex < 0) {
+                    selectedStoreOptionIndex = 1; 
+                }
+            }
+            if (gameStateModel.isInShop() && !showingShopFeedback) {
+                if (currentShopItems != null && !currentShopItems.isEmpty()) {
+                    selectedShopItemIndex-- ;
+                    if (selectedShopItemIndex < 0) {
+                        selectedShopItemIndex = currentShopItems.size() - 1;
+                    }
+                }
+            }
+>>>>>>> Stashed changes
 
         }
         if (gameStateModel.isPlaying()) {
@@ -140,6 +189,35 @@ public class GameController implements PlayerInputActions, Observer {
                     selectedInventoryIndex = 0; 
                 }
             }
+<<<<<<< Updated upstream
+=======
+            if (gameStateModel.getCurrentState() == GameState.VISIT_STATE) {
+                selectedVisitActionIndex++ ;
+                if (selectedVisitActionIndex >= viewVisitActions.size()) {
+                    selectedVisitActionIndex = 0; 
+                }
+            }
+            if (gameStateModel.getCurrentState() == GameState.NPCVISIT_STATE) {
+                selectedNPCVisitActionIndex++ ;
+                if (selectedNPCVisitActionIndex >= 3) {
+                    selectedNPCVisitActionIndex = 0; 
+                }
+            }
+            if (gameStateModel.getCurrentState() == GameState.STOREOPT_STATE) {
+                selectedStoreOptionIndex++ ;
+                if (selectedStoreOptionIndex >= 2) {
+                    selectedStoreOptionIndex = 0; 
+                }
+            }
+            if (gameStateModel.isInShop() && !showingShopFeedback) {
+                if (currentShopItems != null && !currentShopItems.isEmpty()) {
+                    selectedShopItemIndex++ ;
+                    if (selectedShopItemIndex >= currentShopItems.size()) {
+                        selectedShopItemIndex = 0;
+                    }
+                }
+            }
+>>>>>>> Stashed changes
         }
         if (gameStateModel.isPlaying()) {
             this.moveDownActive = active; 
@@ -199,7 +277,48 @@ public class GameController implements PlayerInputActions, Observer {
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
         timeManager.start(); 
     }
+<<<<<<< Updated upstream
+=======
+    else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
+        endFishingSession();
+    } /*  else if (currentState == GameState.SHIPPING_MODE) {
+        playerFinishesShippingSession(); // Metode ini harus memanggil timeManager.start() setelah addMinutes(15)
+    } */
+    if (currentState == GameState.MESSAGE_TV) {
+        messageTV = "";
+        gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+        return;
+    }
+    if (currentState == GameState.SHOP_STATE) {
+        if (showingShopFeedback) {
+            showingShopFeedback = false;
+            shopFeedbackMessage = "";
+        } else {
+            exitShopState();
+        }
+    }
+    if (currentState == GameState.VISIT_STATE) {
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
+        timeManager.start();
+    }
+    else if (currentState == GameState.NPCVISIT_STATE) {
+        gameStateModel.setCurrentState(GameState.VISIT_STATE);
+        resetMovementFlags();
+    }
+    else if (currentState == GameState.STOREOPT_STATE) {
+        gameStateModel.setCurrentState(GameState.VISIT_STATE);
+        resetMovementFlags();
+    }
+    
+>>>>>>> Stashed changes
 }
+
+    public void toggleVisit() {
+        if (playerModel.getPosition().getX() == 744) {
+            gameStateModel.setCurrentState(GameState.VISIT_STATE);
+        }
+    }
 
     @Override
     public void toggleInventory() {
@@ -259,6 +378,14 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
 
+        if (currentState == GameState.VISIT_STATE) {
+            String selectedVisitAction = visitActions.get(selectedVisitActionIndex);
+            System.out.println("Player selected visit action: " + selectedVisitAction);
+            handleVisitAction(selectedVisitActionIndex);
+            selectedVisitActionIndex = 0;
+            return;
+        }
+
         if (currentState == GameState.PLAY_STATE) {
             int playerPixelX = playerModel.getPosition().getX();
             int playerPixelY = playerModel.getPosition().getY();
@@ -285,10 +412,7 @@ public class GameController implements PlayerInputActions, Observer {
             }
 
             Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
-            // if (playerPixelX == 744 && playerPixelY == 744) {
-            //     gameStateModel.setCurrentState(VISIT_STATE) ;
-            //     handleVisitAction() ;
-            // }
+            
             if (currentLand != null) {
                 Item equippedItem = playerModel.getEquippedItem();
                 boolean actionTaken = false;
@@ -494,12 +618,36 @@ public class GameController implements PlayerInputActions, Observer {
     public String getTransitionMessage() {
         return transitionMessage;
     }
-
+    public List<String> getVisitActions() {
+        return visitActions;
+    }
     public int getSelectedRecipeIndex() {
         return selectedRecipeIndex ;
     }
     public List<String> getRecipes() {
         return recipes;
+    }
+
+    public List<String> getViewVisitActions() {
+        return viewVisitActions;
+    }
+    public List<Integer> getProposedTime() {
+        return proposedTime;
+    }
+    public List<String> getNpcVisitActions() {
+        return npcVisitActions;
+    } 
+    public List<String> getStoreOption() {
+        return storeOption;
+    }
+    public int getSelectedVisitActionIndex() {
+        return selectedVisitActionIndex;
+    }
+    public int getSelectedNPCVisitActionIndex() {
+        return selectedNPCVisitActionIndex;
+    } 
+    public int getSelectedStoreOptionIndex() {
+        return selectedStoreOptionIndex;
     }
 
     private int selectedInventoryIndex = 0;
@@ -651,4 +799,102 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
 
+<<<<<<< Updated upstream
+=======
+    public void handleVisitAction(int index) {
+        if (index == 0){
+            gameStateModel.setCurrentState(GameState.STOREOPT_STATE);
+            if(selectedStoreOptionIndex == 1) {
+                gameStateModel.setCurrentState(GameState.SHOP_STATE);
+                enterShopState();
+            }
+            selectedStoreOptionIndex = 0;
+        }
+        else if (index >= 0 && index <= 5) {
+            gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+            playerModel.setEnergy(playerModel.getEnergy() - 10);
+            timeManager.addMinutes(15);
+            handleNPCVisit(npcVisitActions.get(selectedNPCVisitActionIndex), visitActions.get(index));
+            selectedNPCVisitActionIndex = 0; 
+        }
+        else if (index >= 6 && index <= 8){
+            timeManager.addMinutes(15);
+            setFishingLocation(visitActions.get(index));
+        }
+        else{
+            System.out.println("Unknown visit action: " + visitActions.get(index));
+            }
+        }
+    
+    public void handleNPCVisit(String action, String name) {
+        NPC npc = NPC.getNpcByName(name);
+        switch (action) {
+            case "Chat":
+                System.out.println("Chatting with " + name + ".");
+                npc.chat();
+                playerModel.setEnergy(playerModel.getEnergy() - 10);
+                timeManager.addMinutes(10);
+                break;
+            case "Gift":
+                gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                handleGifting(npc);
+                break;
+            case "Propose":
+                handlePropose(npc);
+                break;
+        } 
+    }
+
+    public void handleGifting(NPC npc) {
+
+    }
+    
+    public void handlePropose(NPC npc) {
+        boolean accepted = npc.propose(playerModel);
+        if(npc.getRelationshipStatus().equals(RelStatus.SPOUSE)){
+            System.out.println("Successfully married " + npc.getName() + "!");
+            playerModel.setEnergy(playerModel.getEnergy() - 80);
+            timeManager.setTimeToTenPM();
+        }
+        else{
+            if (accepted){
+                playerModel.setEnergy(playerModel.getEnergy() - 10);
+                System.out.println("Successfully become " + npc.getName() + "'s fiance!");
+            }
+            else{
+                playerModel.setEnergy(playerModel.getEnergy() - 20);
+                System.out.println("Failed to propose " + npc.getName() + ", Increase your heart points with her first");
+            }
+            timeManager.addMinutes(60);
+        }
+    }
+
+    public void enterShopState() {
+        this.currentShopItems = Store.getInstance().getItems(); 
+        this.selectedShopItemIndex = 0;
+        this.showingShopFeedback = false;
+        this.shopFeedbackMessage = "";
+        this.gameStateModel.setCurrentState(GameState.SHOP_STATE);
+    }
+    public void enterGiftingState() {
+        playerModel.getInventory().getAllItems();
+
+    }
+    private void exitShopState() {
+        this.gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        this.currentShopItems = null;
+    }
+    public List<Item> getCurrentShopItems() {
+        return currentShopItems;
+    }
+    public int getSelectedShopItemIndex() {
+        return selectedShopItemIndex;
+    }
+    public boolean isShowingShopFeedback() {
+        return showingShopFeedback;
+    }
+    public String getShopFeedbackMessage() {
+        return shopFeedbackMessage;
+    }
+>>>>>>> Stashed changes
 }
