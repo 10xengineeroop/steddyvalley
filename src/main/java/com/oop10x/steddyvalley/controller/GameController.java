@@ -896,14 +896,6 @@ public class GameController implements PlayerInputActions, Observer {
         return "Pond"; 
     }
     private void setFishingLocation(String location) {}
-    private int getUpperBoundForFish(FishRarity rarity) { 
-        switch (rarity) {
-            case COMMON: return 10;
-            case REGULAR: return 100;
-            case LEGENDARY: return 500;
-            default: return 10;
-        }
-    }
 
     private void resetMovementFlags() {
         this.moveUpActive = false;
@@ -938,6 +930,8 @@ public class GameController implements PlayerInputActions, Observer {
         }
     
     public void handleNPCVisit(String action, String name) {
+        playerModel.setEnergy(playerModel.getEnergy() - 10);
+        timeManager.addMinutes(15);
         NPC npc = NPC.getNpcByName(name);
         switch (action) {
             case "Chat":
@@ -949,6 +943,8 @@ public class GameController implements PlayerInputActions, Observer {
             case "Gift":
                 gameStateModel.setCurrentState(GameState.GIFT_STATE);
                 handleGifting(npc);
+                playerModel.setEnergy(playerModel.getEnergy() - 5);
+                timeManager.addMinutes(10);
                 break;
             case "Propose":
                 handlePropose(npc);

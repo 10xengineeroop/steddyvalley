@@ -62,6 +62,7 @@ public class Land implements Actionable, Placeable, Observer {
             // player.decreaseEnergy(COST_TILL);
             System.out.println("Land at (" + getX() + "," + getY() + ") tilled.");
             player.setEnergy(player.getEnergy() - 5);
+            TimeManager.getInstance().addMinutes(5);
             checkAndSetWatered();
             return true;
             // }
@@ -86,6 +87,8 @@ public class Land implements Actionable, Placeable, Observer {
             // player.decreaseEnergy(COST_PLANT);
             player.getInventory().removeItem(seedToPlant.getName(), 1);
             checkAndSetWatered();
+            player.setEnergy(player.getEnergy() - 5);
+            TimeManager.getInstance().addMinutes(5);
             return true;
             // }
         }
@@ -99,6 +102,8 @@ public class Land implements Actionable, Placeable, Observer {
             setWatered(true);
             // player.decreaseEnergy(COST_WATER);
             System.out.println("Land at (" + getX() + "," + getY() + ") watered.");
+            player.setEnergy(player.getEnergy() - 5);
+            TimeManager.getInstance().addMinutes(5);
             return true;
             // }
         }
@@ -111,6 +116,8 @@ public class Land implements Actionable, Placeable, Observer {
             Crop crop = seed.getGrowToCrop();
             int amount = seed.getHarvestAmount();
             player.getInventory().addItem(crop, amount);
+            player.setEnergy(player.getEnergy() - 5);
+            TimeManager.getInstance().addMinutes(5);
             resetLand();
             return true;
         }

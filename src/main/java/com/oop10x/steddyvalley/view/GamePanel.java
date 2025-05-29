@@ -271,7 +271,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         String timeStr = "Time: --:--";
         String seasonStr = "Season: -";
         String weatherStr = "Weather: -";
-        String dayStr = "Day ";
+        String dayStr = "Day xxx";
 
         if (timeManager != null) {
             int mins = timeManager.getMinutes();
@@ -284,7 +284,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                 hour -= 12;
             }
             timeStr = String.format("Time: %02d:%02d %s", hour, min, ampm);
-            dayStr = String.format("Day %d", (mins / 1440) + 1);
+            dayStr = String.format("Day %d ", (mins / 1440) + 1);
         }
         if (seasonManager != null) {
             seasonStr = "Season: " + seasonManager.getCurrentSeason();
@@ -300,7 +300,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth + dayStrWidth;
         int interTextPadding = hudPadding * 2;
-        int hudWidth = totalTextWidth + (interTextPadding * 2) + (hudPadding * 2);
+        int hudWidth = totalTextWidth + (interTextPadding * 3) + (hudPadding * 2);
 
         g2.setColor(new Color(0,0,0,180));
         g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15, 15);
