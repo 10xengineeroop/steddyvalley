@@ -1,20 +1,24 @@
 package com.oop10x.steddyvalley.view;
 
+import com.oop10x.steddyvalley.model.FarmMap; // Import FarmMap
+import com.oop10x.steddyvalley.model.GameState;
+import com.oop10x.steddyvalley.model.GameStateObserver;
+import com.oop10x.steddyvalley.model.Player;
+import com.oop10x.steddyvalley.model.PlayerObserver;
+import com.oop10x.steddyvalley.model.items.Item;
+import com.oop10x.steddyvalley.controller.GameController;
+
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+// Import Item dan Inventory jika mau menampilkan info item di inventory
+// import com.oop10x.steddyvalley.model.items.Item;
+// import com.oop10x.steddyvalley.model.Inventory;
+// import java.util.Map;
 import java.util.List;
-
-import javax.swing.JPanel;
-
-import com.oop10x.steddyvalley.controller.GameController;
-import com.oop10x.steddyvalley.model.FarmMap;
-import com.oop10x.steddyvalley.model.GameState;
-import com.oop10x.steddyvalley.model.GameStateObserver;
-import com.oop10x.steddyvalley.model.Player;
-import com.oop10x.steddyvalley.model.PlayerObserver;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
@@ -64,7 +68,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     public void startGameThread() { if (gameThread == null) { gameThread = new Thread(this); gameThread.start(); }}
     public void stopGameThread() { if (gameThread != null) { gameThread = null; }}
-    @Override public void run() {
+    @Override public void run() { /* ... game loop tetap sama ... */
         double drawInterval = 1000000000.0 / FPS;
         double delta = 0;
         long lastTime = System.nanoTime();
@@ -116,8 +120,96 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         } else if (currentGameState == GameState.MESSAGE_TV) {
             drawMessageDisplayState(g2);
         }
-        
+        /* else if (currentGameState == GameState.SHOP_STATE) {
+            drawShopState(g2);
+        } */
+
         g2.dispose();
+    }
+
+    private void drawShopState(Graphics2D g2) {
+        drawPlayState(g2); 
+
+        int panelX = SCREEN_WIDTH / 8;
+        int panelY = SCREEN_HEIGHT / 8;
+        int panelWidth = SCREEN_WIDTH * 3 / 4;
+        int panelHeight = SCREEN_HEIGHT * 3 / 4;
+
+        g2.setColor(new Color(50, 30, 10, 230)); 
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
+        g2.setColor(Color.ORANGE); 
+        g2.setStroke(new java.awt.BasicStroke(2));
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        g2.setFont(new Font("Arial", Font.BOLD, 28));
+        g2.setColor(Color.YELLOW);
+        String title = "Toko Serba Ada Emily";
+        int titleX = getXforCenteredText(title, g2, panelX, panelWidth);
+        g2.drawString(title, titleX, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Gold: " + playerModel.getGold() + "g", panelX + panelWidth - 150, panelY + 40);
+
+
+        if (gameController.isShowingShopFeedback()) {
+            g2.setFont(new Font("Arial", Font.BOLD, 20));
+            g2.setColor(Color.CYAN);
+            String feedback = gameController.getShopFeedbackMessage();
+            int feedbackX = getXforCenteredText(feedback, g2, panelX, panelWidth);
+            g2.drawString(feedback, feedbackX, panelY + panelHeight / 2 - 10);
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("Tekan Esc untuk kembali", getXforCenteredText("Tekan Esc untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+        } else {
+            List<Item> shopItems = gameController.getCurrentShopItems();
+            int selectedIdx = gameController.getSelectedShopItemIndex();
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
+            int itemDrawY = panelY + 80; 
+            int itemDrawX = panelX + 30;
+            int itemLineHeight = 28;
+
+            int maxVisibleItems = (panelHeight - 120) / itemLineHeight; 
+            int scrollOffset = 0;
+            if (shopItems != null && shopItems.size() > maxVisibleItems) {
+                if (selectedIdx >= maxVisibleItems -1) { 
+                    scrollOffset = selectedIdx - (maxVisibleItems -1) +1;
+                }
+                scrollOffset = Math.max(0, Math.min(scrollOffset, shopItems.size() - maxVisibleItems));
+            }
+
+
+            if (shopItems == null || shopItems.isEmpty()) {
+                g2.setColor(Color.GRAY);
+                g2.drawString("Maaf, tidak ada item yang dijual saat ini.", itemDrawX, itemDrawY);
+            } else {
+                for (int i = 0; i < shopItems.size(); i++) {
+                    if (i < scrollOffset) continue;
+                    if (i - scrollOffset >= maxVisibleItems) break;
+
+                    Item currentItem = shopItems.get(i);
+                    Integer price = currentItem.getBuyPrice();
+                    String priceString = (price != null) ? price + "g" : "N/A";
+                    String itemText = currentItem.getName() + " - " + priceString;
+                    
+                    int currentItemY = itemDrawY + ((i - scrollOffset) * itemLineHeight);
+
+                    if (i == selectedIdx) {
+                        g2.setColor(Color.YELLOW);
+                        g2.drawString("> " + itemText, itemDrawX - 10, currentItemY); // Pointer sedikit ke kiri
+                    } else {
+                        g2.setColor(Color.WHITE);
+                        g2.drawString("  " + itemText, itemDrawX, currentItemY);
+                    }
+                }
+            }
+            // Petunjuk
+            g2.setFont(new Font("Arial", Font.ITALIC, 14));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("W/S: Pilih | E: Beli 1 | Esc: Keluar Toko", panelX + 20, panelY + panelHeight - 25);
+        }
     }
 
     private void drawMessageDisplayState(Graphics2D g2) {
@@ -221,10 +313,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         currentX += weatherStrWidth + interTextPadding;
         g2.drawString(dayStr, currentX, textY);
-<<<<<<< HEAD
         // Ghazy
-=======
->>>>>>> 9a0ed4b (HUD)
 
         // Informasi Debug
         int debugStartX = 10;
@@ -265,7 +354,8 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         if (!line4.isEmpty()) {
             g2.drawString(line4, debugStartX, debugStartY + (debugLineHeight * 3));
         }
-    } 
+    }
+
     private void drawPauseState(Graphics2D g2) {
         drawPlayState(g2);
         g2.setColor(new Color(0, 0, 0, 150));
@@ -325,11 +415,13 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int panelWidth = SCREEN_WIDTH / 2;
         int panelHeight = SCREEN_HEIGHT / 2;
 
+        // Latar belakang panel menu rumah
         g2.setColor(new Color(30, 30, 70, 220));
         g2.fillRect(panelX, panelY, panelWidth, panelHeight);
         g2.setColor(Color.WHITE);
         g2.drawRect(panelX, panelY, panelWidth, panelHeight);
 
+        // Judul
         g2.setFont(new Font("Arial", Font.BOLD, 24));
         String title = "House Actions";
         int titleWidth = g2.getFontMetrics().stringWidth(title);
@@ -405,6 +497,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+        // Tampilkan pesan transisi
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 28));
         String message = gameController.getTransitionMessage();
@@ -421,7 +514,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         x = getXforCenteredText(continueMessage, g2);
         g2.drawString(continueMessage, x, y + 50);
     }
-
     private void drawRecipeState(Graphics2D g2) {
         drawPlayState(g2);
 
@@ -593,6 +685,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         return gameStateModel.isGuessingFish();
     }
 
+    private int getXforCenteredText(String text, Graphics2D g2, int areaX, int areaWidth) {
+        int stringWidth = g2.getFontMetrics().stringWidth(text);
+        return areaX + (areaWidth - stringWidth) / 2;
+    }
 
 
     @Override public void onPlayerUpdated(Player player) { /* ... */ }

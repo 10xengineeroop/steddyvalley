@@ -9,9 +9,7 @@ public class KeyHandler implements KeyListener{
     public KeyHandler(PlayerInputActions inputActionsDelegate) {
         this.inputActionsDelegate = inputActionsDelegate;
     }
-    public void keyTyped(KeyEvent e) {
-        // Not used
-    }
+
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W:

@@ -106,11 +106,8 @@ public class GameController implements PlayerInputActions, Observer {
             if (gameStateModel.getCurrentState() == GameState.INVENTORY_STATE) {
                 selectedInventoryIndex-- ;
                 if (selectedInventoryIndex < 0) {
-<<<<<<< HEAD
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; 
-=======
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1;
->>>>>>> 9a0ed4b (HUD)
                 }
             }
 
@@ -728,12 +725,8 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         fishingSliderCurrentValue += delta;
-<<<<<<< HEAD
         fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax)); 
-=======
         fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax));
->>>>>>> 9a0ed4b (HUD)
-
         String currentAttemptMessage = "Current value: " + fishingSliderCurrentValue +
                                      " (Range: " + fishingSliderMin + "-" + fishingSliderMax +"). Tries left: " + currentFishingTriesLeft;
         gamePanel.updateFishingSliderDisplay(fishingSliderCurrentValue, currentAttemptMessage, currentFishingTriesLeft);
@@ -779,12 +772,9 @@ public class GameController implements PlayerInputActions, Observer {
             gamePanel.clearFishingUIState();
         }
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
-<<<<<<< HEAD
         if (timeManager != null) timeManager.start(); 
-=======
         resetMovementFlags();
         if (timeManager != null) timeManager.start();
->>>>>>> 9a0ed4b (HUD)
     }
 
     private String getFishingLocation() {
