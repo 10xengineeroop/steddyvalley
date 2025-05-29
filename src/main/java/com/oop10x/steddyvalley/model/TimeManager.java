@@ -93,6 +93,14 @@ public class TimeManager implements Observable {
         start();
     }
 
+    public void setTimeToTenPM() {
+        stop();
+        int currentMinutes = minutes.get();
+        minutes.set(((currentMinutes - 1320 + 1439) / 1440) * 1440 + 1320);
+        notifyObservers(EventType.NEWDAY, minutes.get());
+        start();
+    }
+
     public void addMinutes(int delta) {
         minutes.addAndGet(delta);
         notifyObservers(EventType.TIMETICK, minutes.get());

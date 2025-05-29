@@ -15,6 +15,10 @@ public class GameState {
     public static final int FISH_GUESS_STATE = 8;
     public static final int MESSAGE_TV = 9;
     public static final int SHOP_STATE =10;
+    public static final int VISIT_STATE = 11;
+    public static final int NPCVISIT_STATE = 12;
+    public static final int STOREOPT_STATE = 13;
+    public static final int GIFT_STATE = 14;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -90,5 +94,17 @@ public class GameState {
     }
     public boolean isInShop() {
         return currentState == SHOP_STATE;
+    }
+    public boolean isVisiting() {
+        return currentState == VISIT_STATE;
+    }
+    public boolean isVisitingNPC() {
+        return currentState == NPCVISIT_STATE;
+    }
+    public boolean isInStore() {
+        return currentState == STOREOPT_STATE;
+    }
+    public boolean isGifting() {
+        return currentState == GIFT_STATE;
     }
 }

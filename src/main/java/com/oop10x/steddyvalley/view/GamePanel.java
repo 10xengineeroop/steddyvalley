@@ -123,6 +123,12 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         else if (currentGameState == GameState.SHOP_STATE) {
             drawShopState(g2);
         }
+        else if (currentGameState == GameState.VISIT_STATE) {
+            drawVisitState(g2);
+        }
+        else if (currentGameState == GameState.NPCVISIT_STATE) {
+            drawNPCVisitState(g2);
+        }
 
         g2.dispose();
     }
@@ -247,7 +253,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     private void drawPlayState(Graphics2D g2) {
         if (farmMapModel != null) {
-            farmMapModel.draw(g2, TILE_SIZE); // Berikan tileSize ke FarmMap.draw
+            farmMapModel.draw(g2, TILE_SIZE);
         }
 
         int playerScreenX = playerModel.getPosition().getX();
@@ -690,7 +696,119 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         return areaX + (areaWidth - stringWidth) / 2;
     }
 
+    private void drawVisitState(Graphics2D g2) { 
+        drawPlayState(g2);
 
+        int panelX = SCREEN_WIDTH / 4;
+        int panelY = SCREEN_HEIGHT / 4;
+        int panelWidth = SCREEN_WIDTH / 2;
+        int panelHeight = SCREEN_HEIGHT / 2 + 50;
+
+        // Latar belakang panel menu rumah
+        g2.setColor(new Color(30, 30, 70, 220));
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        // Judul
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        String title = "Where To Visit?";
+        int titleWidth = g2.getFontMetrics().stringWidth(title);
+        g2.drawString(title, panelX + (panelWidth - titleWidth) / 2, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        int actionY = panelY + 80;
+        int actionX = panelX + 30;
+        int lineHeight = 30;
+
+        List<String> actions = gameController.getViewVisitActions();
+        int selectedIndex = gameController.getSelectedVisitActionIndex();
+
+        if (actions.isEmpty()) {
+            g2.drawString("No actions available.", actionX, actionY);
+        } else {
+            for (int i = 0; i < actions.size(); i++) {
+                String actionText = actions.get(i);
+                if (i == selectedIndex) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                    g2.setColor(Color.WHITE);
+                } else {
+                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                }
+            }
+        }
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+
+    }
+
+    private void drawNPCVisitState(Graphics2D g2) { 
+        drawPlayState(g2);
+
+        int panelX = SCREEN_WIDTH / 4;
+        int panelY = SCREEN_HEIGHT / 4;
+        int panelWidth = SCREEN_WIDTH / 2;
+        int panelHeight = SCREEN_HEIGHT / 2;
+
+        // Latar belakang panel menu rumah
+        g2.setColor(new Color(30, 30, 70, 220));
+        g2.fillRect(panelX, panelY, panelWidth, panelHeight);
+        g2.setColor(Color.WHITE);
+        g2.drawRect(panelX, panelY, panelWidth, panelHeight);
+
+        // Judul
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        String title = "House Actions";
+        int titleWidth = g2.getFontMetrics().stringWidth(title);
+        g2.drawString(title, panelX + (panelWidth - titleWidth) / 2, panelY + 40);
+
+        g2.setFont(new Font("Arial", Font.PLAIN, 18));
+        int actionY = panelY + 80;
+        int actionX = panelX + 30;
+        int lineHeight = 30;
+
+        List<String> actions = gameController.getNpcVisitActions();
+        int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
+
+        if (actions.isEmpty()) {
+            g2.drawString("No actions available.", actionX, actionY);
+        } else {
+            for (int i = 0; i < actions.size(); i++) {
+                String actionText = actions.get(i);
+                if (i == selectedIndex) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                    g2.setColor(Color.WHITE);
+                } else {
+                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                }
+            }
+        }
+        g2.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+    }
+
+    private void drawGiftingState(Graphics2D g2) {
+        drawPlayState(g2);
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 50));
+        String text = "GIFTING";
+        g2.drawString(text, getXforCenteredText(text, g2), SCREEN_HEIGHT / 2);
+    }
+    
+    private void drawStoreOptState(Graphics2D g2) {
+        drawPlayState(g2);
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 50));
+        String text = "STORE OPTIONS";
+        g2.drawString(text, getXforCenteredText(text, g2), SCREEN_HEIGHT / 2);
+    }
+    
     @Override public void onPlayerUpdated(Player player) { /* ... */ }
     @Override public void onGameStateChanged(int newState, int oldState) { /* ... */ }
 }
