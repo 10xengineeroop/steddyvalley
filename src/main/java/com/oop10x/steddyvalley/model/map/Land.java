@@ -159,7 +159,11 @@ public class Land implements Actionable, Placeable, Observer {
             checkAndSetWatered();
             if (getLandType() == LandType.PLANTED) {
                 if (isWatered) {
-                    setLandType(LandType.HARVESTABLE);
+                    int currentDay = (TimeManager.getInstance().getMinutes() / 1440) + 1;
+                    if (currentDay >= endPlantDate) {
+                        setLandType(LandType.HARVESTABLE);
+                    }
+                    System.out.println(eventType);
                 } else {
                     witherCrop();
                 }
