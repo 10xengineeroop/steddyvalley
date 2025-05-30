@@ -19,6 +19,7 @@ public class GameState {
     public static final int NPCVISIT_STATE = 12;
     public static final int STOREOPT_STATE = 13;
     public static final int GIFT_STATE = 14;
+    public static final int GIFTED_STATE = 15;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -106,5 +107,8 @@ public class GameState {
     }
     public boolean isGifting() {
         return currentState == GIFT_STATE;
+    }
+    public boolean isGifted() {
+        return currentState == GIFTED_STATE;
     }
 }
