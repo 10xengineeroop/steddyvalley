@@ -117,11 +117,6 @@ public class GameController implements PlayerInputActions, Observer {
         this.gamePanel = gamePanel;
     }
 
-    public void openShopForTesting() {
-        if(gameStateModel.isPlaying()) {
-            enterShopState();
-        }
-    }
     @Override 
     public void setMoveUp(boolean active) { 
         if (active) {
@@ -466,7 +461,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         if (currentState == GameState.STOREOPT_STATE) {
             if(selectedStoreOptionIndex == 1) {
-                    gameStateModel.setCurrentState(GameState.SHOP_STATE);
+                    enterShopState();
                 }
                 else if (selectedStoreOptionIndex == 0) {
                     gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);

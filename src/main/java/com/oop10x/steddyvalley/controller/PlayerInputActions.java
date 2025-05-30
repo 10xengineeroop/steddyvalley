@@ -9,6 +9,5 @@ public interface PlayerInputActions {
     void togglePause();
     void toggleInventory();
     void performPrimaryAction();
-    void openShopForTesting();
     void toggleVisit();
 }

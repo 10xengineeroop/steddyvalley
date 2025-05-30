@@ -35,9 +35,6 @@ public class KeyHandler implements KeyListener{
             case KeyEvent.VK_E:
                 inputActionsDelegate.performPrimaryAction();
                 break;
-            case KeyEvent.VK_F:
-                inputActionsDelegate.openShopForTesting();
-                break;
             case KeyEvent.VK_V:
                 inputActionsDelegate.toggleVisit();
                 break;
