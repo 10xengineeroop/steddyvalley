@@ -1,6 +1,7 @@
 package com.oop10x.steddyvalley.model.map; // Sesuaikan paket
 
 import com.oop10x.steddyvalley.model.Player;
+import com.oop10x.steddyvalley.model.SeasonManager;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.items.Crop;
@@ -9,6 +10,7 @@ import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.utils.EventType;
 import com.oop10x.steddyvalley.utils.Observer;
 import com.oop10x.steddyvalley.utils.Position; // Asumsi Position ada di utils
+import com.oop10x.steddyvalley.utils.Season;
 import com.oop10x.steddyvalley.utils.Weather;
 
 public class Land implements Actionable, Placeable, Observer {
@@ -96,7 +98,7 @@ public class Land implements Actionable, Placeable, Observer {
     }
 
     public boolean water(Player player) {
-        if (landType == LandType.PLANTED || landType == LandType.TILLED) {
+        if ((landType == LandType.PLANTED || landType == LandType.TILLED) && !isWatered) {
             // Cek apakah pemain punya WateringCan dan energi (logika di Controller)
             // if (player.getEquippedItem() instanceof WateringCanTool && player.hasEnoughEnergy(COST_WATER)) {
             setWatered(true);
@@ -118,6 +120,7 @@ public class Land implements Actionable, Placeable, Observer {
             player.getInventory().addItem(crop, amount);
             player.setEnergy(player.getEnergy() - 5);
             TimeManager.getInstance().addMinutes(5);
+            Player.setTotalCropsHarvested(Player.getTotalCropsHarvested() + amount);
             resetLand();
             return true;
         }
@@ -129,37 +132,39 @@ public class Land implements Actionable, Placeable, Observer {
     public void resetLand() {
         this.startPlantDate = null;
         this.endPlantDate = null;
-        this.isWatered = false; // Reset status siram setelah panen
-        // Kembali ke tilled setelah panen, atau untilled tergantung aturan game Anda
+        this.seed = null;
         setLandType(LandType.UNTILLED);
         checkAndSetWatered();
-        this.seed = null;
+
     }
 
     private void witherCrop() {
         System.out.println("Crop withered at (" + getX() + "," + getY() + ")");
-        resetLand();
+        this.startPlantDate = null;
+        this.endPlantDate = null;
+        this.seed = null;
+        setLandType(LandType.TILLED);
+        checkAndSetWatered();
     }
 
     // --- Implementasi Observer ---
     @Override
     public void update(EventType eventType, Object message) {
         if (eventType == EventType.NEWDAY) {
+            Season currentSeason = SeasonManager.getInstance(TimeManager.getInstance()).getCurrentSeason();
+            if (currentSeason == Season.WINTER && getLandType() == LandType.PLANTED) {
+                witherCrop(); // Tanaman mati di musim dingin
+                return;
+            }
             checkAndSetWatered();
             if (getLandType() == LandType.PLANTED) {
                 if (isWatered) {
                     setLandType(LandType.HARVESTABLE);
-                    System.out.println("Land ("+getX()+","+getY()+") is now harvestable.");
-                    setWatered(false);
-                    System.out.println("Land ("+getX()+","+getY()+") is no longer watered (new day).");
                 } else {
                     witherCrop();
                 }
-            } else if (getLandType() == LandType.TILLED || getLandType() == LandType.UNTILLED) {
-                // Reset tanah yang tidak ditanami atau sudah ditanami tapi tidak disiram
-                if (isWatered) {
-                    setWatered(false);
-                }
+            } else if (isWatered) {
+                setWatered(false);
             }
             checkAndSetWatered();
         }

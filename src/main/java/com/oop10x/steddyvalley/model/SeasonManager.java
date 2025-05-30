@@ -17,6 +17,7 @@ public class SeasonManager implements Observer, Observable {
     private Season currentSeason;
     private final List<Observer> observers;
     private Integer daysUntilNextSeason;
+    private int seasonsPassed = 0;
 
     private SeasonManager(TimeManager timeManager) {
         seasons = new LinkedList<Season>();
@@ -24,6 +25,7 @@ public class SeasonManager implements Observer, Observable {
         observers = new ArrayList<Observer>();
         daysUntilNextSeason = 10;
         timeManager.addObserver(this);
+        setSeasonsPassed(getSeasonsPassed() + 1);
     }
 
     public static SeasonManager getInstance(TimeManager timeManager) {
@@ -49,6 +51,7 @@ public class SeasonManager implements Observer, Observable {
         currentSeason = seasons.poll();
         seasons.add(currentSeason);
         daysUntilNextSeason = 10;
+        setSeasonsPassed(getSeasonsPassed() + 1);
         notifyObservers(EventType.NEWSEASON, getCurrentSeason().toString());
     }
 
@@ -80,4 +83,14 @@ public class SeasonManager implements Observer, Observable {
             nextSeason();
         }
     }
+
+    public int getSeasonsPassed() {
+        return seasonsPassed;
+    }
+
+    public void setSeasonsPassed(int seasonsPassed) {
+        this.seasonsPassed = seasonsPassed;
+    }
+
+    
 }

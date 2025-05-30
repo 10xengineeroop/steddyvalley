@@ -2,6 +2,7 @@ package com.oop10x.steddyvalley.model;
 
 import java.util.*;
 
+import com.oop10x.steddyvalley.controller.GameController;
 import com.oop10x.steddyvalley.model.items.*;
 
 public class Store {
@@ -34,7 +35,9 @@ public class Store {
     items.stream()
         .filter(item -> item.getName().equalsIgnoreCase(itemName))
         .findFirst()
-        .ifPresent(item -> buyItem(player, item, quantity)); 
+        .ifPresent(item -> {
+          buyItem(player, item, quantity);
+        }); 
   }
 
   public void buyItem(Player player, Item item, Integer quantity) {

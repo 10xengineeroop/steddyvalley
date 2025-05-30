@@ -846,7 +846,8 @@ public class GameController implements PlayerInputActions, Observer {
         String resultMessage;
 
         if (guess == currentFishingTargetNumber) {
-            playerModel.addItem(currentFishingTargetFish); 
+            playerModel.addItem(currentFishingTargetFish);
+            Player.setTotalFishCaught(Player.getTotalFishCaught() + 1);
             resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Esc to continue.";
             if (gamePanel != null) gamePanel.endFishingSliderUI(true); 
         } else {

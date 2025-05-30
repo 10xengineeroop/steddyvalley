@@ -14,7 +14,7 @@ public class TimeManager implements Observable {
 
     private static final int SIXAM_MINUTES = 6 * 60;
     private static final int GAME_MINUTES_PER_REAL_SECOND = 5;
-    private static final int TICK_INTERVAL_MS = 1000; // 5 game minutes per 1 real second
+    private static final int TICK_INTERVAL_MS = 200; // 5 game minutes per 1 real second
 
     private static final TimeManager INSTANCE = new TimeManager();
 

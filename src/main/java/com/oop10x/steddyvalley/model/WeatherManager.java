@@ -88,6 +88,9 @@ public class WeatherManager implements Observable, Observer {
         notifyObservers(EventType.NEWWEATHER, currentWeather.toString());
     }
     public Weather getNextDayWeather() {
+        if (weatherSchedule.isEmpty()) {
+            populateWeather();
+        }
         return weatherSchedule.peek();
     }
 }

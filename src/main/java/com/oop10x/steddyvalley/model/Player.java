@@ -17,6 +17,46 @@ public class Player {
     private int speed;
     private RelStatus relationshipStatus = RelStatus.SINGLE;
 
+    // End Game Statistics
+    private static int totalIncome = 0;
+    private static int totalExpenditure = 0;
+    private static int totalCropsHarvested = 0;
+    private static int totalFishCaught = 0;
+
+    
+
+    public static int getTotalIncome() {
+        return totalIncome;
+    }
+    public static void setTotalIncome(int totalIncome) {
+        Player.totalIncome = totalIncome;
+    }
+    public static int getTotalExpenditure() {
+        return totalExpenditure;
+    }
+    public static void setTotalExpenditure(int totalExpenditure) {
+        Player.totalExpenditure = totalExpenditure;
+    }
+
+    public static int getIncomePerSeason() {
+        return getTotalIncome() / SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed();
+    }
+    public static int getExpenditurePerSeason() {
+        return getTotalExpenditure() / SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed();
+    }
+
+    public static int getTotalCropsHarvested() {
+        return totalCropsHarvested;
+    }
+    public static void setTotalCropsHarvested(int totalCropsHarvested) {
+        Player.totalCropsHarvested = totalCropsHarvested;
+    }
+    public static int getTotalFishCaught() {
+        return totalFishCaught;
+    }
+    public static void setTotalFishCaught(int totalFishCaught) {
+        Player.totalFishCaught = totalFishCaught;
+    }
     public RelStatus getRelationshipStatus() {
         return relationshipStatus;
     }
@@ -66,6 +106,11 @@ public class Player {
 
     public void setGold(int gold) {
         this.gold = gold;
+        if (gold > this.gold) {
+            totalIncome += (gold - this.gold);
+        } else if (gold < this.gold) {
+            totalExpenditure += (this.gold - gold);
+        }
         notifyObservers();
     }
 
