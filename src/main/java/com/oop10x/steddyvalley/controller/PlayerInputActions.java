@@ -10,4 +10,5 @@ public interface PlayerInputActions {
     void toggleInventory();
     void performPrimaryAction();
     void toggleVisit();
+    void scrollDisplay(int direction);
 }

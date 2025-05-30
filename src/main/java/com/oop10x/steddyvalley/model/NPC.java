@@ -20,6 +20,9 @@ public class NPC {
     private RelStatus relationshipStatus;
     private static Set<NPC> npcSet = new HashSet<>();
 
+    private int chatCountWithPlayer = 0; 
+    private int giftsReceivedCount = 0; 
+    private int timesVisitedByPlayer = 0; 
     // CONSTRUCTOR
     public NPC(String name, Set<Item> lovedItems, Set<Item> likedItems, Set<Item> hatedItems) {
         this.name = name;
@@ -79,6 +82,7 @@ public class NPC {
         } else if (getHeartPoints() < 0) {
             setHeartPoints(0); // Minimal heart points
         }
+        this.giftsReceivedCount++;
     }
 
     public boolean propose(Player player) {
@@ -114,6 +118,7 @@ public class NPC {
         // Implementasi chat dengan NPC
         // Misalnya, bisa menampilkan dialog atau interaksi lainnya
         setHeartPoints(getHeartPoints() + 10);
+        chatCountWithPlayer++;
     }
 
     public static Set<NPC> getNpcSet() {
@@ -137,4 +142,12 @@ public class NPC {
         new NPC("Emily", new HashSet<>(Seed.getSeedSet()), Set.of(Fish.getFishbyName("Catfish"), Fish.getFishbyName("Salmon"), Fish.getFishbyName("Sardine")), Set.of(Misc.getMisc("Coal"), Misc.getMisc("Firewood")));
         new NPC("Abigail", Set.of(Crop.getCropByName("Blueberry"), Crop.getCropByName("Melon"), Crop.getCropByName("Pumpkin"), Crop.getCropByName("Grape"), Crop.getCropByName("Cranberry")), Set.of(Food.getFoodbyName("Baguette"), Food.getFoodbyName("Pumpkin Pie"), Food.getFoodbyName("Wine")), Set.of(Crop.getCropByName("Hot Pepper"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Parsnip"), Crop.getCropByName("Wheat")));
     }
+    public int getChatCountWithPlayer() { return chatCountWithPlayer; }
+    public int getGiftsReceivedCount() { return giftsReceivedCount; }
+    public int getTimesVisitedByPlayer() { return timesVisitedByPlayer; }
+    public void recordPlayerVisit() {
+        timesVisitedByPlayer++;
+    }
+
+
 }

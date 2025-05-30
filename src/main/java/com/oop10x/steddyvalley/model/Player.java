@@ -1,6 +1,7 @@
 package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.items.*;
+import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.utils.Position;
 import com.oop10x.steddyvalley.utils.RelStatus;
 
@@ -22,6 +23,7 @@ public class Player {
     private static int totalExpenditure = 0;
     private static int totalCropsHarvested = 0;
     private static int totalFishCaught = 0;
+    private static Map<FishRarity, Integer> fishCaughtByRarity = new EnumMap<>(FishRarity.class);
 
     
 
@@ -57,12 +59,78 @@ public class Player {
     public static void setTotalFishCaught(int totalFishCaught) {
         Player.totalFishCaught = totalFishCaught;
     }
+     public static void incrementFishCaughtByRarity(FishRarity rarity) {
+        fishCaughtByRarity.put(rarity, fishCaughtByRarity.getOrDefault(rarity, 0) + 1);
+        System.out.println("[Player DEBUG] Incremented " + rarity + " fish. New count: " + fishCaughtByRarity.get(rarity));
+    }
+
+    public static Map<FishRarity, Integer> getFishCaughtByRarity() {
+        return Collections.unmodifiableMap(fishCaughtByRarity);
+    }
+
     public RelStatus getRelationshipStatus() {
         return relationshipStatus;
     }
     public void setRelationshipStatus(RelStatus relationshipStatus) {
         this.relationshipStatus = relationshipStatus;
         notifyObservers();
+    }
+    public static int getTotalDaysPlayed() {
+        return TimeManager.getInstance().getTotalDaysPlayed();
+    }
+
+    public static List<String> getNPCsRelationshipDetails() {
+        List<String> details = new ArrayList<>();
+        Set<NPC> npcSet = NPC.getNpcSet(); 
+
+        if (npcSet == null || npcSet.isEmpty()) {
+            details.add("No NPC data available.");
+            return details;
+        }
+        for (NPC npc : npcSet) {
+            details.add(String.format("%s: %s (%d Hearts)",
+                    npc.getName(),
+                    npc.getRelationshipStatus().toString(), 
+                    npc.getHeartPoints()));
+        }
+        return details;
+    }
+    public static List<String> getNPCChattingFrequencyDetails() {
+        List<String> details = new ArrayList<>();
+        Set<NPC> npcSet = NPC.getNpcSet();
+        if (npcSet == null || npcSet.isEmpty()) {
+            details.add("No NPC chat data available.");
+            return details;
+        }
+        for (NPC npc : npcSet) {
+            details.add(String.format("%s: Chatted %d times", npc.getName(), npc.getChatCountWithPlayer()));
+        }
+        return details;
+    }
+    public static List<String> getNPCGiftingFrequencyDetails() {
+        List<String> details = new ArrayList<>();
+        Set<NPC> npcSet = NPC.getNpcSet();
+        if (npcSet == null || npcSet.isEmpty()) {
+            details.add("No NPC gifting data available.");
+            return details;
+        }
+        for (NPC npc : npcSet) {
+            details.add(String.format("%s: Received %d gifts", npc.getName(), npc.getGiftsReceivedCount()));
+        }
+        return details;
+    }
+
+    public static List<String> getNPCVisitingFrequencyDetails() {
+        List<String> details = new ArrayList<>();
+        Set<NPC> npcSet = NPC.getNpcSet();
+        if (npcSet == null || npcSet.isEmpty()) {
+            details.add("No NPC visiting data available.");
+            return details;
+        }
+        for (NPC npc : npcSet) {
+            details.add(String.format("%s: Visited by player %d times", npc.getName(), npc.getTimesVisitedByPlayer()));
+        }
+        return details;
     }
 
     private final transient List<PlayerObserver> observers = new ArrayList<>();

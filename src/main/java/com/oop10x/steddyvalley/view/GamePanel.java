@@ -3,11 +3,15 @@ package com.oop10x.steddyvalley.view;
 import com.oop10x.steddyvalley.model.FarmMap; // Import FarmMap
 import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.GameStateObserver;
+import com.oop10x.steddyvalley.model.NPC;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.PlayerObserver;
 import com.oop10x.steddyvalley.model.items.Item;
+import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.controller.GameController;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -16,11 +20,14 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.FontMetrics;
+import java.awt.RenderingHints;
 // Import Item dan Inventory jika mau menampilkan info item di inventory
 // import com.oop10x.steddyvalley.model.items.Item;
 // import com.oop10x.steddyvalley.model.Inventory;
 // import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
@@ -38,6 +45,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
     private GameState gameStateModel;
     private GameController gameController;
     private FarmMap farmMapModel; // Referensi ke FarmMap
+
+    private int endGameStatsScrollY = 0;
+    private int endGameStatsTotalContentHeight = 0;
+    private int statAreaVisibleHeight = 0;
 
     // --- HUD fields ---
     private com.oop10x.steddyvalley.model.TimeManager timeManager;
@@ -140,9 +151,14 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         else if (currentGameState == GameState.GIFTED_STATE) {
             drawGiftedState(g2);
         }
+        else if (currentGameState == GameState.ENDGAME_STATE) {
+            drawEndGameState(g2);
+        }
 
         g2.dispose();
     }
+
+
 
     private void drawShopState(Graphics2D g2) {
         drawPlayState(g2); 
@@ -664,22 +680,17 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         this.fishingSliderMinDisplay = min;
         this.fishingSliderMaxDisplay = max;
         this.fishingSliderDisplayValue = currentValue;
-        // this.fishingTriesLeftForDisplay = triesLeft;
-        System.out.println("[View] Starting fishing SLIDER UI. Value: " + currentValue + " Message: " + initialMessage);
         repaint();
     }
 
     public void updateFishingSliderDisplay(int value, String message, int triesLeft) {
         this.fishingSliderDisplayValue = value;
         this.fishingUIMessage = message;
-        // this.fishingTriesLeftForDisplay = triesLeft;
-        System.out.println("[View] Updating fishing SLIDER UI. Value: " + value + " Message: " + message);
         repaint();
     }
 
     public void endFishingSliderUI(boolean success) {
         this.isFishingSliderUIVisible = false;
-        System.out.println("[View] Ending fishing SLIDER input UI. Success: " + success);
         repaint();
     }
     public void clearFishingUIState() {
@@ -688,12 +699,10 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         this.fishingSliderDisplayValue = 0;
         this.fishingSliderMinDisplay = 0;
         this.fishingSliderMaxDisplay = 0;
-        System.out.println("[View] All Fishing UI state (slider) cleared.");
         repaint();
     }
 
     public void signalFishingInteractionComplete() {
-        System.out.println("[View] Signaling GameController to end fishing session.");
         if (gameController != null) {
             gameController.endFishingSession();
         }
@@ -938,6 +947,217 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
+    }
+
+    public void adjustEndGameStatsScroll(int amount) {
+        if (gameStateModel.isEndGame()) { 
+            int newScrollY = endGameStatsScrollY + amount;
+
+            if (this.statAreaVisibleHeight == 0) { 
+                 this.statAreaVisibleHeight = SCREEN_HEIGHT - (SCREEN_HEIGHT / 10 + 90) - 80; 
+            }
+            int maxScroll = Math.max(0, endGameStatsTotalContentHeight - this.statAreaVisibleHeight);
+            this.endGameStatsScrollY = Math.max(0, Math.min(newScrollY, maxScroll));
+            repaint();
+        }
+    }
+    public void resetEndGameStatsScroll() {
+        this.endGameStatsScrollY = 0;
+        this.endGameStatsTotalContentHeight = 0;
+        System.out.println("[View Panel] EndGameScrollY Reset.");
+    }
+
+    private void drawEndGameState(Graphics2D g2) {
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.setColor(new Color(20, 20, 50)); 
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // 2. Judul Utama
+        g2.setFont(new Font("Serif", Font.BOLD, 38));
+        g2.setColor(new Color(255, 215, 0)); 
+        String title = "Steddy Valley Chronicle";
+        int titleX = getXforCenteredText(title, g2);
+        int topMargin = SCREEN_HEIGHT / 12;
+        if (topMargin < 50) topMargin = 50;
+        g2.drawString(title, titleX, topMargin);
+
+        g2.setFont(new Font("Serif", Font.ITALIC, 20));
+        g2.setColor(Color.LIGHT_GRAY);
+        String subTitle = "Your Journey So Far...";
+        int subTitleX = getXforCenteredText(subTitle, g2);
+        g2.drawString(subTitle, subTitleX, topMargin + 35);
+
+        // 3. Pengaturan Font dan Posisi untuk Statistik
+        int currentY_logical = topMargin + 90; 
+        final int initialLogicalY = currentY_logical; 
+        int lineHeight = 26;
+        int sectionSpacing = lineHeight + (lineHeight / 2); 
+        int indentX1 = SCREEN_WIDTH / 10;
+        int valueOffsetX = 300; 
+        Font statSectionFont = new Font("Serif", Font.BOLD | Font.ITALIC, 20);
+        Font statLabelFont = new Font("Arial", Font.BOLD, 17);
+        Font statValueFont = new Font("Arial", Font.PLAIN, 17);
+        Color sectionColor = new Color(173, 216, 230); 
+        Color labelColor = new Color(220, 220, 255);   
+        Color valueColor = Color.WHITE;
+
+        // --- Area Scrollable ---
+        int statAreaX = indentX1 - 20;
+        int statAreaY = initialLogicalY - (lineHeight / 2); 
+        int statAreaWidth = SCREEN_WIDTH - (statAreaX * 2);
+        this.statAreaVisibleHeight = SCREEN_HEIGHT - statAreaY - 80; 
+
+        
+        java.awt.Shape originalClip = g2.getClip();
+        g2.setClip(statAreaX, statAreaY, SCREEN_WIDTH - (statAreaX * 2), this.statAreaVisibleHeight);
+
+        //FINANSIAL & WAKTU
+        g2.setFont(statSectionFont); g2.setColor(sectionColor);
+        g2.drawString("Financial & Time Summary", indentX1, currentY_logical - endGameStatsScrollY);
+        currentY_logical += sectionSpacing;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Total Income:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(Player.getTotalIncome() + "g", indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Total Expenditure:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(Player.getTotalExpenditure() + "g", indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Avg. Season Income:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(Player.getIncomePerSeason() + "g", indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Avg. Season Expenditure:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(Player.getExpenditurePerSeason() + "g", indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Total Days Played:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(String.valueOf(Player.getTotalDaysPlayed()), indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += sectionSpacing;
+
+
+        //PRODUKSI 
+        g2.setFont(statSectionFont); g2.setColor(sectionColor);
+        g2.drawString("Production Statistics", indentX1, currentY_logical - endGameStatsScrollY);
+        currentY_logical += sectionSpacing;
+
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Crops Harvested:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(String.valueOf(Player.getTotalCropsHarvested()), indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+        
+        g2.setFont(statLabelFont); g2.setColor(labelColor);
+        g2.drawString("Total Fish Caught:", indentX1, currentY_logical - endGameStatsScrollY);
+        g2.setFont(statValueFont); g2.setColor(valueColor);
+        g2.drawString(String.valueOf(Player.getTotalFishCaught()), indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight;
+        
+        g2.setFont(statValueFont); 
+        Map<FishRarity, Integer> fishByRarity = Player.getFishCaughtByRarity();
+        if (fishByRarity != null && !fishByRarity.isEmpty()) {
+            for (FishRarity rarity : FishRarity.values()) { 
+                Integer count = fishByRarity.getOrDefault(rarity, 0);
+                g2.setColor(labelColor); 
+                g2.drawString("  - " + rarity.toString() + " Fish:", indentX1 + 20, currentY_logical - endGameStatsScrollY);
+                g2.setColor(valueColor); 
+                g2.drawString(String.valueOf(count), indentX1 + valueOffsetX, currentY_logical - endGameStatsScrollY);
+                currentY_logical += lineHeight;
+            }
+        } else {
+            g2.drawString("  - No specific fish rarity data.", indentX1 + 20, currentY_logical - endGameStatsScrollY);
+            currentY_logical += lineHeight;
+        }
+        currentY_logical += sectionSpacing;
+
+
+        //INTERAKSI NPC
+        g2.setFont(statSectionFont); g2.setColor(sectionColor);
+        g2.drawString("NPC Interactions & Relationships", indentX1, currentY_logical - endGameStatsScrollY);
+        currentY_logical += lineHeight; 
+        List<String> npcRelationshipDetails = Player.getNPCsRelationshipDetails();
+        List<String> npcChatDetails = Player.getNPCChattingFrequencyDetails();
+        List<String> npcGiftDetails = Player.getNPCGiftingFrequencyDetails();
+        List<String> npcVisitDetails = Player.getNPCVisitingFrequencyDetails();
+
+        Set<NPC> npcSet = NPC.getNpcSet(); 
+        if (npcSet != null && !npcSet.isEmpty()) {
+            List<NPC> sortedNpcList = new ArrayList<>(npcSet);
+            Collections.sort(sortedNpcList, Comparator.comparing(NPC::getName));
+
+            for (NPC npc : sortedNpcList) {
+                g2.setFont(statLabelFont); g2.setColor(labelColor);
+                g2.drawString(npc.getName() + ":", indentX1, currentY_logical - endGameStatsScrollY);
+                currentY_logical += lineHeight;
+
+                g2.setFont(statValueFont); g2.setColor(valueColor);
+                
+                String relInfo = String.format("  Status: %s (%d Hearts)", npc.getRelationshipStatus().toString(), npc.getHeartPoints());
+                g2.drawString(relInfo, indentX1 + 15, currentY_logical - endGameStatsScrollY);
+                currentY_logical += lineHeight;
+
+                String chatInfo = String.format("  Chatted: %d times", npc.getChatCountWithPlayer()); 
+                g2.drawString(chatInfo, indentX1 + 15, currentY_logical - endGameStatsScrollY);
+                currentY_logical += lineHeight;
+
+                String giftInfo = String.format("  Gifts Given To: %d times", npc.getGiftsReceivedCount());
+                g2.drawString(giftInfo, indentX1 + 15, currentY_logical - endGameStatsScrollY);
+                currentY_logical += lineHeight;
+
+                String visitInfo = String.format("  Visited: %d times", npc.getTimesVisitedByPlayer()); 
+                g2.drawString(visitInfo, indentX1 + 15, currentY_logical - endGameStatsScrollY);
+                currentY_logical += sectionSpacing; 
+            }
+        } else {
+             g2.setFont(statValueFont); g2.setColor(valueColor);
+             g2.drawString("  No NPC data available.", indentX1 + 10, currentY_logical - endGameStatsScrollY);
+             currentY_logical += lineHeight;
+        }
+        this.endGameStatsTotalContentHeight = currentY_logical - initialLogicalY;
+
+        g2.setClip(originalClip);
+        if (endGameStatsTotalContentHeight > statAreaVisibleHeight) {
+            int scrollbarAreaX = statAreaX + statAreaWidth + 5; 
+            int scrollbarTrackHeight = statAreaVisibleHeight;
+            g2.setColor(new Color(100, 100, 100, 150)); 
+            g2.fillRect(scrollbarAreaX, statAreaY, 8, scrollbarTrackHeight); 
+
+            float thumbPercentageHeight = Math.max(0.1f, (float) statAreaVisibleHeight / endGameStatsTotalContentHeight); 
+            int thumbHeight = (int) (scrollbarTrackHeight * thumbPercentageHeight);
+            
+            int maxScrollActual = endGameStatsTotalContentHeight - statAreaVisibleHeight;
+            float scrollRatio = (maxScrollActual > 0) ? (float) endGameStatsScrollY / maxScrollActual : 0;
+            
+            int thumbY = statAreaY + (int) (scrollRatio * (scrollbarTrackHeight - thumbHeight));
+
+            g2.setColor(new Color(200, 200, 200, 200)); 
+            g2.fillRect(scrollbarAreaX, thumbY, 8, thumbHeight);
+        }
+
+        g2.setFont(new Font("Arial", Font.BOLD, 22));
+        g2.setColor(Color.ORANGE);
+        String continueMessage = "Press Esc to Continue Your Journey";
+        int continueMsgWidth = g2.getFontMetrics().stringWidth(continueMessage);
+        int continueX = (SCREEN_WIDTH - continueMsgWidth) / 2;
+        
+        g2.setColor(new Color(0,0,0,190)); 
+        g2.fillRoundRect(continueX - 20, SCREEN_HEIGHT - 75 - g2.getFontMetrics().getAscent() + 5, continueMsgWidth + 40, g2.getFontMetrics().getHeight() + 20, 15,15);
+        
+        g2.setColor(Color.ORANGE);
+        g2.drawString(continueMessage, continueX, SCREEN_HEIGHT - 70);
     }
     
     @Override public void onPlayerUpdated(Player player) { /* ... */ }

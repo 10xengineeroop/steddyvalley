@@ -38,6 +38,12 @@ public class KeyHandler implements KeyListener{
             case KeyEvent.VK_V:
                 inputActionsDelegate.toggleVisit();
                 break;
+            case KeyEvent.VK_UP:
+                inputActionsDelegate.scrollDisplay(-1);
+                break;
+            case KeyEvent.VK_DOWN:
+                inputActionsDelegate.scrollDisplay(1);
+                break;
         }
     }
     public void keyReleased(KeyEvent e) {

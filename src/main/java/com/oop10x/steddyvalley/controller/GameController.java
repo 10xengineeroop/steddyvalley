@@ -45,6 +45,8 @@ public class GameController implements PlayerInputActions, Observer {
     private String transitionMessage;
     private GamePanel gamePanel;
 
+    private boolean endGameStatisticsTriggered = false;
+
     //house punya
     private List<String> houseActions = List.of("Sleep", "Cook", "Watch TV") ;
     private int selectedHouseActionIndex = 0; 
@@ -115,6 +117,14 @@ public class GameController implements PlayerInputActions, Observer {
     }
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
+    }
+    public void scrollDisplay(int direction) {
+        if (gameStateModel.isEndGame()) { // Hanya berlaku jika di ENDGAME_STATE
+            if (gamePanel != null) {
+                int scrollAmount = direction * 20; // Jumlah pixel untuk scroll, bisa disesuaikan
+                gamePanel.adjustEndGameStatsScroll(scrollAmount);
+            }
+        }
     }
 
     @Override 
@@ -273,80 +283,84 @@ public class GameController implements PlayerInputActions, Observer {
 
     @Override
     public void togglePause() {
-    int currentState = gameStateModel.getCurrentState();
-    if (currentState == GameState.PLAY_STATE) {
-        gameStateModel.setCurrentState(GameState.PAUSE_STATE);
-        timeManager.stop();
-    } else if (currentState == GameState.PAUSE_STATE) {
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        resetMovementFlags();
-        timeManager.start();
-    } else if (currentState == GameState.INVENTORY_STATE) {
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        resetMovementFlags();
-    } else if (currentState == GameState.HOUSE_STATE) {
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        resetMovementFlags();
-    } else if (currentState == GameState.SLEEP_STATE) {
-        gameStateModel.setCurrentState(GameState.HOUSE_STATE);
-        resetMovementFlags();
-        transitionMessage = "";
-        timeManager.start();
-    }
-    else if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
-        gameStateModel.setCurrentState(GameState.HOUSE_STATE);
-        resetMovementFlags();
-    } 
-    else if (currentState == GameState.FISHING_STATE) {
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        resetMovementFlags();
-        timeManager.start();
-    }
-    else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
-        endFishingSession();
-    } /*  else if (currentState == GameState.SHIPPING_MODE) {
-        playerFinishesShippingSession(); // Metode ini harus memanggil timeManager.start() setelah addMinutes(15)
-    } */
-    if (currentState == GameState.MESSAGE_TV) {
-        messageTV = "";
-        gameStateModel.setCurrentState(GameState.HOUSE_STATE);
-        return;
-    }
-    if (currentState == GameState.SHOP_STATE) {
-        if (showingShopFeedback) {
-            showingShopFeedback = false;
-            shopFeedbackMessage = "";
-        } else {
-            exitShopState();
+        int currentState = gameStateModel.getCurrentState();
+        if (currentState == GameState.PLAY_STATE) {
+            gameStateModel.setCurrentState(GameState.PAUSE_STATE);
+            timeManager.stop();
+        } else if (currentState == GameState.PAUSE_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+            timeManager.start();
+        } else if (currentState == GameState.INVENTORY_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+        } else if (currentState == GameState.HOUSE_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+        } else if (currentState == GameState.SLEEP_STATE) {
+            gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+            resetMovementFlags();
+            transitionMessage = "";
+            timeManager.start();
+        }
+        else if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
+            gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+            resetMovementFlags();
+        } 
+        else if (currentState == GameState.FISHING_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+            timeManager.start();
+        }
+        else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
+            endFishingSession();
+        } /*  else if (currentState == GameState.SHIPPING_MODE) {
+            playerFinishesShippingSession(); // Metode ini harus memanggil timeManager.start() setelah addMinutes(15)
+        } */
+        if (currentState == GameState.MESSAGE_TV) {
+            messageTV = "";
+            gameStateModel.setCurrentState(GameState.HOUSE_STATE);
+            return;
+        }
+        if (currentState == GameState.SHOP_STATE) {
+            if (showingShopFeedback) {
+                showingShopFeedback = false;
+                shopFeedbackMessage = "";
+            } else {
+                exitShopState();
+            }
+        }
+        if (currentState == GameState.VISIT_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+            timeManager.start();
+            selectedVisitActionIndex = 0;
+        }
+        else if (currentState == GameState.NPCVISIT_STATE) {
+            gameStateModel.setCurrentState(GameState.VISIT_STATE);
+            resetMovementFlags();
+            selectedNPCVisitActionIndex = 0;
+        }
+        else if (currentState == GameState.STOREOPT_STATE) {
+            gameStateModel.setCurrentState(GameState.VISIT_STATE);
+            resetMovementFlags();
+            selectedStoreOptionIndex = 0;
+        }
+        else if (currentState == GameState.GIFT_STATE) {
+            gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+            resetMovementFlags();
+            selectedGiftIndex = 0;
+        }
+        else if (currentState == GameState.GIFTED_STATE) {
+            gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+            resetMovementFlags();
+        }
+        else if (currentState == GameState.ENDGAME_STATE) {
+            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+            resetMovementFlags();
+            timeManager.start();
         }
     }
-    if (currentState == GameState.VISIT_STATE) {
-        gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        resetMovementFlags();
-        timeManager.start();
-        selectedVisitActionIndex = 0;
-    }
-    else if (currentState == GameState.NPCVISIT_STATE) {
-        gameStateModel.setCurrentState(GameState.VISIT_STATE);
-        resetMovementFlags();
-        selectedNPCVisitActionIndex = 0;
-    }
-    else if (currentState == GameState.STOREOPT_STATE) {
-        gameStateModel.setCurrentState(GameState.VISIT_STATE);
-        resetMovementFlags();
-        selectedStoreOptionIndex = 0;
-    }
-    else if (currentState == GameState.GIFT_STATE) {
-        gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
-        resetMovementFlags();
-        selectedGiftIndex = 0;
-    }
-    else if (currentState == GameState.GIFTED_STATE) {
-        gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
-        resetMovementFlags();
-    }
-    }
-
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
             gameStateModel.setCurrentState(GameState.VISIT_STATE);
@@ -550,8 +564,17 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
+        if (gameStateModel.isEndGame() || endGameStatisticsTriggered) {
+            return ;
+        }
         if (gameStateModel.isSleeping()) return;
-        if (!gameStateModel.isPlaying()) return;
+        
+        if (gameStateModel.isPlaying() || gameStateModel.isInHouse()) { // Atau state aktif lainnya yang relevan
+            checkAndTriggerEndGameStatistics();
+            if (gameStateModel.isEndGame()) {
+                return;
+            }
+        }
         if (playerModel.getEnergy() <= -20) {
             forceSleep();
             timeManager.stop();
@@ -939,6 +962,7 @@ public class GameController implements PlayerInputActions, Observer {
         if (guess == currentFishingTargetNumber) {
             playerModel.addItem(currentFishingTargetFish);
             Player.setTotalFishCaught(Player.getTotalFishCaught() + 1);
+            Player.incrementFishCaughtByRarity(currentFishingTargetFish.getRarity());
             resultMessage = "Success! You caught a " + currentFishingTargetFish.getName() + "!\nPress Esc to continue.";
             if (gamePanel != null) gamePanel.endFishingSliderUI(true); 
         } else {
@@ -988,12 +1012,16 @@ public class GameController implements PlayerInputActions, Observer {
             visiting = viewVisitActions.get(selectedVisitActionIndex);
             npcNow = visitActions.get(selectedVisitActionIndex);
             npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
+            NPC emily = NPC.getNpcByName(npcNow);
+            emily.recordPlayerVisit();
             gameStateModel.setCurrentState(GameState.STOREOPT_STATE);
         }
         else if (index >= 1 && index <= 5) {
             visiting = viewVisitActions.get(selectedVisitActionIndex);
             npcNow = visitActions.get(selectedVisitActionIndex);
             npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
+            NPC npc = NPC.getNpcByName(npcNow);
+            npc.recordPlayerVisit();
             gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
             playerModel.setEnergy(playerModel.getEnergy() - 10);
             timeManager.addMinutes(15);
@@ -1109,5 +1137,27 @@ public class GameController implements PlayerInputActions, Observer {
     }
     public String getShopFeedbackMessage() {
         return shopFeedbackMessage;
+    }
+
+    public void checkAndTriggerEndGameStatistics() {
+        if (endGameStatisticsTriggered) {
+            return;
+        }
+
+        boolean goldMilestoneMet = playerModel.getGold() >= 17209;
+        boolean marriageMilestoneMet = playerModel.getRelationshipStatus() == RelStatus.SPOUSE; 
+        if (goldMilestoneMet || marriageMilestoneMet) {
+            endGameStatisticsTriggered = true; 
+             
+            if (timeManager != null) {
+                timeManager.stop(); 
+            }
+            if (gamePanel != null) {
+                gamePanel.resetEndGameStatsScroll();
+            }
+            gameStateModel.setCurrentState(GameState.ENDGAME_STATE);
+
+            if (gamePanel != null) gamePanel.repaint();
+        }
     }
 }

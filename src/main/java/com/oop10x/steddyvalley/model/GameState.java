@@ -20,6 +20,7 @@ public class GameState {
     public static final int STOREOPT_STATE = 13;
     public static final int GIFT_STATE = 14;
     public static final int GIFTED_STATE = 15;
+    public static final int ENDGAME_STATE = 16;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -110,5 +111,8 @@ public class GameState {
     }
     public boolean isGifted() {
         return currentState == GIFTED_STATE;
+    }
+    public boolean isEndGame() {
+        return currentState == ENDGAME_STATE;
     }
 }

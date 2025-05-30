@@ -105,4 +105,7 @@ public class TimeManager implements Observable {
         minutes.addAndGet(delta);
         notifyObservers(EventType.TIMETICK, minutes.get());
     }
+    public int getTotalDaysPlayed() {
+        return minutes.get() / 1440; 
+    }
 }
