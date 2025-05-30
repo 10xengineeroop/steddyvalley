@@ -69,6 +69,8 @@ public class GameController implements PlayerInputActions, Observer {
     private String visiting = "";
     private String npcNow = "";
     private int npcHeartPoints = 0;
+    private List<Item> giftOption;
+    private String heartEarned;
 
     //fish punya
     private Fish currentFishingTargetFish;
@@ -109,6 +111,7 @@ public class GameController implements PlayerInputActions, Observer {
         this.weatherManager = weatherManager;
         this.gamePanel = gamePanel;
         this.timeManager.addObserver(this); 
+        this.giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
     }
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -157,7 +160,7 @@ public class GameController implements PlayerInputActions, Observer {
             if (gameStateModel.getCurrentState() == GameState.GIFT_STATE) {
                 selectedGiftIndex-- ;
                 if (selectedGiftIndex < 0) {
-                    selectedGiftIndex = itemToString(playerModel.getInventory().getAllItems()).size()-1; 
+                    selectedGiftIndex = getGiftOption().size()-1; 
                 }
             }
             if (gameStateModel.getCurrentState() == GameState.STOREOPT_STATE) {
@@ -220,7 +223,7 @@ public class GameController implements PlayerInputActions, Observer {
             }
             if (gameStateModel.getCurrentState() == GameState.GIFT_STATE) {
                 selectedGiftIndex++ ;
-                if (selectedGiftIndex >= itemToString(playerModel.getInventory().getAllItems()).size()) {
+                if (selectedGiftIndex >= getGiftOption().size()) {
                     selectedGiftIndex = 0; 
                 }
             }
@@ -342,6 +345,10 @@ public class GameController implements PlayerInputActions, Observer {
         gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
         resetMovementFlags();
         selectedGiftIndex = 0;
+    }
+    else if (currentState == GameState.GIFTED_STATE) {
+        gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+        resetMovementFlags();
     }
     }
 
@@ -787,9 +794,14 @@ public class GameController implements PlayerInputActions, Observer {
     public List<String> getRecipes() {
         return recipes;
     }
-
-    public List<String> getGiftOption() {
-        return itemToString(playerModel.getInventory().getAllItems());
+    public List<Item> getGiftOption() {
+        List<Item> items = new ArrayList<>();
+        for (Item item : giftOption) {
+            if (!(item instanceof Equipment)){
+                items.add(item);
+            }
+        }
+        return items;
     }
     public List<String> getViewVisitActions() {
         return viewVisitActions;
@@ -835,6 +847,12 @@ public class GameController implements PlayerInputActions, Observer {
             status = "Married";
         }
         return status;
+    }
+    public String getHeartMessage() {
+        return heartEarned;
+    }
+    public void setHeartMessage(String message) {
+        this.heartEarned = message;
     }
 
     private int selectedInventoryIndex = 0;
@@ -1021,8 +1039,20 @@ public class GameController implements PlayerInputActions, Observer {
     public void handleGifting(NPC npc) {
         playerModel.setEnergy(playerModel.getEnergy() - 5);
         timeManager.addMinutes(10);
-        npc.getItem(playerModel.getInventory().getItemByName(itemToString(playerModel.getInventory().getAllItems()).get(selectedGiftIndex)));
-        System.out.println("Gifting " + itemToString(playerModel.getInventory().getAllItems()).get(selectedGiftIndex) + " to " + npc.getName() + ".");
+        Item giftItem = getGiftOption().get(selectedGiftIndex);
+        npc.getItem(giftItem);
+        System.out.println("Gifting " + getGiftOption().get(selectedGiftIndex) + " to " + npc.getName() + ".");
+        if(npc.getLovedItems().contains(giftItem)) {
+            heartEarned = "You earned 25 heart points with " + npc.getName() + "!";
+        } else if (npc.getLikedItems().contains(giftItem)) {
+            heartEarned = "You earned 20 heart points with " + npc.getName() + "!";
+        } else if (npc.getHatedItems().contains(giftItem)) {
+            heartEarned = "You lost 25 heart points with " + npc.getName() + ".";
+        } else {
+            heartEarned = "No change in heart points with " + npc.getName() + ".";
+        }
+        gameStateModel.setCurrentState(GameState.GIFTED_STATE);
+        playerModel.getInventory().removeItem(itemToString(getGiftOption()).get(selectedGiftIndex), 1);
     }
     
     public void handlePropose(NPC npc) {
@@ -1045,16 +1075,14 @@ public class GameController implements PlayerInputActions, Observer {
         }
     }
 
-    public List<String> itemToString(Map<Item, Integer> inventory) {
-        List<Item> itemList = new ArrayList<>(inventory.keySet());
+    public List<String> itemToString(List<Item> inventory) {
         List<String> newList = new ArrayList<>();
-        for (Item item : itemList){
-            if (!(item instanceof Equipment)){
+        for (Item item : inventory){
             newList.add(item.getName());
-            }
         }
         return newList;
     }
+    
     public List<String> npcToString(List<NPC> npcList){
         List<String> newList = new ArrayList<>();
         for (NPC npc : npcList) {
@@ -1062,6 +1090,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         return newList;
     }
+    
     public void enterShopState() {
         this.currentShopItems = Store.getInstance().getItems(); 
         this.selectedShopItemIndex = 0;

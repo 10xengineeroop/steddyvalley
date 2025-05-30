@@ -7,6 +7,7 @@ import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.PlayerObserver;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.controller.GameController;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -14,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.FontMetrics;
 // Import Item dan Inventory jika mau menampilkan info item di inventory
 // import com.oop10x.steddyvalley.model.items.Item;
 // import com.oop10x.steddyvalley.model.Inventory;
@@ -134,6 +136,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         else if (currentGameState == GameState.GIFT_STATE) {
             drawGiftingState(g2);
+        }
+        else if (currentGameState == GameState.GIFTED_STATE) {
+            drawGiftedState(g2);
         }
 
         g2.dispose();
@@ -335,7 +340,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int cornerRadius = 10;
 
         String line1 = "Player X: " + playerScreenX + " Y: " + playerScreenY;
-        String line2 = "STATE: PLAYING (ESC:Pause, I:Inventory, E:Action)";
+        String line2 = "STATE: PLAYING (ESC:Pause, I:Inventory, E:Action, V: Visit)";
         String line3 = "Gold: " + playerModel.getGold() + " Energy: " + playerModel.getEnergy();
         String line4 = playerModel.getEquippedItem() != null ? "Equipped: " + playerModel.getEquippedItem().getName() : "";
 
@@ -389,9 +394,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.setFont(new Font("Arial", Font.BOLD, 20));
         g2.drawString("Inventory", pX + 10, pY + 30);
 
-        // Ambil semua item dan jumlahnya
+
         var itemsMap = playerModel.getInventory().getAllItems();
-        java.util.List<com.oop10x.steddyvalley.model.items.Item> items = new java.util.ArrayList<>(itemsMap.keySet());
+        List<Item> items = new ArrayList<>(itemsMap.keySet());
         int lineHeight = 28;
         int startY = pY + 60;
         int maxVisible = (pH - 80) / lineHeight;
@@ -793,9 +798,27 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
-        String pojokkanan = String.format("Location: %s\n Currently With: %s\nHeartPoints: %d", gameController.getVisiting(),
-         gameController.getNpcNow(), gameController.getNpcHeartPoints());
-        g2.drawString(pojokkanan, panelX + 200, panelY + 30);
+
+
+        String locationText = "Location: " + gameController.getVisiting();
+        String currentlyWithText = "Currently With: " + gameController.getNpcNow();
+        String heartPointsText = "HeartPoints: " + gameController.getNpcHeartPoints();
+        String npcStatusText = "Status: " + gameController.getNpcRelStatus();
+
+        Font npcInfoFont = new Font("Arial", Font.PLAIN, 12);
+        g2.setFont(npcInfoFont);
+        FontMetrics fm = g2.getFontMetrics();
+        int infoX = panelX + panelWidth - 10;
+        int infoY = panelY + 60;
+        int infoLineHeight = fm.getHeight() + 5;
+        int locationWidth = fm.stringWidth(locationText);
+        g2.drawString(locationText, infoX - locationWidth, infoY);
+        int currentlyWidth = fm.stringWidth(currentlyWithText);
+        g2.drawString(currentlyWithText, infoX - currentlyWidth, infoY + infoLineHeight);
+        int heartPointsWidth = fm.stringWidth(heartPointsText);
+        g2.drawString(heartPointsText, infoX - heartPointsWidth, infoY + 2 * infoLineHeight);
+        int npcStatusWidth = fm.stringWidth(npcStatusText);
+        g2.drawString(npcStatusText, infoX - npcStatusWidth, infoY + 3 * infoLineHeight);
     }
 
     private void drawGiftingState(Graphics2D g2) {
@@ -814,7 +837,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
         // Judul
         g2.setFont(new Font("Arial", Font.BOLD, 24));
-        String title = "Where To Visit?";
+        String title = "What To Give?";
         int titleWidth = g2.getFontMetrics().stringWidth(title);
         g2.drawString(title, panelX + (panelWidth - titleWidth) / 2, panelY + 40);
 
@@ -823,14 +846,14 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int actionX = panelX + 30;
         int lineHeight = 30;
 
-        List<String> actions = gameController.getGiftOption();
+        List<Item> actions = gameController.getGiftOption();
         int selectedIndex = gameController.getSelectedGiftIndex();
 
         if (actions.isEmpty()) {
             g2.drawString("No actions available.", actionX, actionY);
         } else {
             for (int i = 0; i < actions.size(); i++) {
-                String actionText = actions.get(i);
+                String actionText = actions.get(i).getName();
                 if (i == selectedIndex) {
                     g2.setColor(Color.YELLOW);
                     g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
@@ -844,6 +867,33 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
     }
     
+    private void drawGiftedState(Graphics2D g2) {
+        drawPlayState(g2);
+        g2.setColor(new Color(0, 0, 0, 180));
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    
+        String message = gameController.getHeartMessage();
+        if (message == null || message.isEmpty()) {
+            message = "Displaying message...";
+        }
+    
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("Arial", Font.BOLD, 24));
+        int yPos = SCREEN_HEIGHT / 2 - 30;
+        for (String line : message.split("\n")) {
+            int stringWidth = g2.getFontMetrics().stringWidth(line);
+            int xPos = (SCREEN_WIDTH - stringWidth) / 2;
+            g2.drawString(line, xPos, yPos);
+            yPos += 30;
+        }
+    
+        g2.setFont(new Font("Arial", Font.ITALIC, 18));
+        String continueMessage = "Press Escape to continue...";
+        int continueStringWidth = g2.getFontMetrics().stringWidth(continueMessage);
+        int continueXPos = (SCREEN_WIDTH - continueStringWidth) / 2;
+        g2.drawString(continueMessage, continueXPos, yPos + 20);
+    }
+
     private void drawStoreOptState(Graphics2D g2) {
         drawPlayState(g2);
 
