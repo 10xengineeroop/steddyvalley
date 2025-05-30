@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TimeManager implements Observable {
 
     private static final int SIXAM_MINUTES = 6 * 60;
-    private static final int GAME_MINUTES_PER_REAL_SECOND = 5;
     private static final int TICK_INTERVAL_MS = 200; // 5 game minutes per 1 real second
 
     private static final TimeManager INSTANCE = new TimeManager();
@@ -106,6 +105,6 @@ public class TimeManager implements Observable {
         notifyObservers(EventType.TIMETICK, minutes.get());
     }
     public int getTotalDaysPlayed() {
-        return minutes.get() / 1440; 
+        return minutes.get() / 1440 + 1;
     }
 }

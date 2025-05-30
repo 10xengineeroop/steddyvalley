@@ -2,7 +2,6 @@ package com.oop10x.steddyvalley.model;
 
 import java.util.*;
 
-import com.oop10x.steddyvalley.controller.GameController;
 import com.oop10x.steddyvalley.model.items.*;
 
 public class Store {
