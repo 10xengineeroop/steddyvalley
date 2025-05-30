@@ -8,6 +8,7 @@ import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.PlayerObserver;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.FishRarity;
+import com.oop10x.steddyvalley.utils.RelStatus;
 import com.oop10x.steddyvalley.controller.GameController;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -789,6 +790,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int lineHeight = 30;
 
         List<String> actions = gameController.getNpcVisitActions();
+        if (gameController.getNpcRelation().equals(RelStatus.FIANCE)){
+             actions = List.of("Chat", "Gift", "Marry");
+        }
         int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
 
         if (actions.isEmpty()) {

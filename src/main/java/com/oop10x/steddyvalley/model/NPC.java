@@ -141,6 +141,7 @@ public class NPC {
         new NPC("Dasco",Set.of(Food.getFoodbyName("The Legends of Spakbor"), Food.getFoodbyName("Cooked Pig's Head"), Food.getFoodbyName("Wine"), Food.getFoodbyName("Fugu"), Food.getFoodbyName("Spakbor Salad")),Set.of(Food.getFoodbyName("Fish Sandwich"), Food.getFoodbyName("Fish Stew"), Food.getFoodbyName("Baguette"), Food.getFoodbyName("Fish n' Chips")),Set.of(Fish.getFishbyName("Legend"), Crop.getCropByName("Grape"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Wheat"), Fish.getFishbyName("Pufferfish"), Fish.getFishbyName("Salmon")));
         new NPC("Emily", new HashSet<>(Seed.getSeedSet()), Set.of(Fish.getFishbyName("Catfish"), Fish.getFishbyName("Salmon"), Fish.getFishbyName("Sardine")), Set.of(Misc.getMisc("Coal"), Misc.getMisc("Firewood")));
         new NPC("Abigail", Set.of(Crop.getCropByName("Blueberry"), Crop.getCropByName("Melon"), Crop.getCropByName("Pumpkin"), Crop.getCropByName("Grape"), Crop.getCropByName("Cranberry")), Set.of(Food.getFoodbyName("Baguette"), Food.getFoodbyName("Pumpkin Pie"), Food.getFoodbyName("Wine")), Set.of(Crop.getCropByName("Hot Pepper"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Parsnip"), Crop.getCropByName("Wheat")));
+        new NPC("LittleLucy", new HashSet<>(Food.getFoodSet()), Set.of(), Set.of());
     }
     public int getChatCountWithPlayer() { return chatCountWithPlayer; }
     public int getGiftsReceivedCount() { return giftsReceivedCount; }
