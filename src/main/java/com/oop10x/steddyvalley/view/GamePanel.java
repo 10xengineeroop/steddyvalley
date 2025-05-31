@@ -10,6 +10,7 @@ import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.utils.RelStatus;
 import com.oop10x.steddyvalley.controller.GameController;
+import com.oop10x.steddyvalley.model.ShippingBin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -229,7 +230,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Arial", Font.BOLD, 18));
             g2.drawString("In Bin (Today):", itemStartXBin, itemStartY - 20);
-            com.oop10x.steddyvalley.model.ShippingBin currentBin = gameController.getActiveShippingBin();
+            ShippingBin currentBin = gameController.getActiveShippingBin();
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             if (currentBin != null) {
                 Map<Item, Integer> binItemsMap = currentBin.getItemsInBin();
@@ -723,9 +724,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int y = 100;
         g2.drawString(title, x, y);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
+        if (fishingMessage != null && !fishingMessage.isEmpty()) {
             int lineY = y + 40;
-            for (String line : fishingUIMessage.split("\n")) {
+            for (String line : fishingMessage.split("\n")) {
                 g2.drawString(line, getXforCenteredText(line, g2), lineY);
                 lineY += 25;
             }

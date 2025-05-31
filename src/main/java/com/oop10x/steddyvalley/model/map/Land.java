@@ -142,15 +142,12 @@ public class Land implements Actionable, Placeable, Observer {
             Season currentSeason = SeasonManager.getInstance(TimeManager.getInstance()).getCurrentSeason();
             if (currentSeason == Season.WINTER && (getLandType() == LandType.PLANTED) || (getLandType() == LandType.HARVESTABLE)) {
                 witherCrop(); 
-                return;
             }
             if (getLandType() == LandType.UNTILLED) {
-                return; // Tidak ada yang perlu dilakukan jika tanah belum diolah
             }
             if (getLandType() == LandType.TILLED) {
                 if (isWatered) {
                     setWatered(false);
-                    return;
                 }
             }
             if (getLandType() == LandType.PLANTED) {

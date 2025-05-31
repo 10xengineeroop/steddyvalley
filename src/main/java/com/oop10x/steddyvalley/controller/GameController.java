@@ -400,7 +400,7 @@ public class GameController implements PlayerInputActions, Observer {
     }
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
-            if (playerModel.getEnergy() >= 15) {
+            if (playerModel.getEnergy() >= 0) {
                 gameStateModel.setCurrentState(GameState.VISIT_STATE);
                 timeManager.stop();
             }
@@ -601,19 +601,9 @@ public class GameController implements PlayerInputActions, Observer {
                     return;
                 } 
                 else if (adjacentObject instanceof PondObject) {
-                    Item equipped = playerModel.getEquippedItem();
-                    if (equipped != null && "Fishing Rod".equals(equipped.getName())) {
-                        if (playerModel.getEnergy() >= 5) {
-                            gameStateModel.setCurrentState(GameState.FISHING_STATE);
-                            if (gamePanel != null) {
-                                gamePanel.clearFishingUIState();
-                            }
-                            System.out.println("Entered FISHING_STATE. Ready to cast.");
-                        } else {
-                            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!");
-                        }
-                    } else {
-                        if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod!");
+                    gameStateModel.setCurrentState(GameState.FISHING_STATE);
+                    if (gamePanel != null) {
+                        gamePanel.clearFishingUIState();
                     }
                     return;
                 }
@@ -893,15 +883,14 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
         System.out.println("[DEBUG] Removing Fuel, quantity: " + recipe.fuelNeeded);
-        inventory.removeItem("Fuel", recipe.fuelNeeded);
+        inventory.removeItem("Coal", recipe.fuelNeeded);
 
-        com.oop10x.steddyvalley.model.items.Food cookedFood = null;
+        Food cookedFood = null;
         try {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50); 
             cookedFood = Food.getFoodbyName(recipe.name);
             System.out.println("[DEBUG] Found Food object for: " + recipe.name);
         } catch (Exception e) {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50);
+            //cookedFood = new Food(recipe.name, 20, 100, 50);
             System.out.println("[DEBUG] Created fallback Food object for: " + recipe.name);
         }
         playerModel.addItem(cookedFood);
@@ -910,7 +899,7 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     private void performWatchTV() {
-        if (playerModel.getEnergy() >= 5) {
+        if (playerModel.getEnergy() >= 0) {
             playerModel.setEnergy(playerModel.getEnergy() - 5);
             timeManager.addMinutes(15);
     
@@ -1202,7 +1191,7 @@ public class GameController implements PlayerInputActions, Observer {
         NPC npc = NPC.getNpcByName(name);
         switch (action) {
             case "Chat":
-                if (playerModel.getEnergy() >= 10) {
+                if (playerModel.getEnergy() >= 0) {
                     npcFeedbackMessage = "Chatting with " + name + ". You had a great time.";
                     npc.chat();
                     npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
@@ -1215,7 +1204,7 @@ public class GameController implements PlayerInputActions, Observer {
                 npcFeedbackStatus = true;
                 break;
             case "Gift":
-                if (playerModel.getEnergy() >= 5) {
+                if (playerModel.getEnergy() >= 0) {
                     gameStateModel.setCurrentState(GameState.GIFT_STATE);
                 }
                 else{
@@ -1265,7 +1254,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         else{
             if(npc.getRelationshipStatus().equals(RelStatus.FIANCE)){
-                if (playerModel.getEnergy() >= 80) {
+                if (playerModel.getEnergy() >= 60) {
                     if (getDay(timeManager.getMinutes()) > proposedTime.get(selectedVisitActionIndex)) {
                         boolean accepted = npc.propose(playerModel);
                         npcFeedbackMessage = "Successfully married " + npc.getName() + "!";
@@ -1279,7 +1268,7 @@ public class GameController implements PlayerInputActions, Observer {
                     npcFeedbackMessage = "Not enough energy to marry!";
                 }}
             else{
-                if (playerModel.getEnergy() >= 10) {
+                if (playerModel.getEnergy() >= 0) {
                     boolean accepted = npc.propose(playerModel);
                     if (accepted){
                             playerModel.setEnergy(playerModel.getEnergy() - 10);
