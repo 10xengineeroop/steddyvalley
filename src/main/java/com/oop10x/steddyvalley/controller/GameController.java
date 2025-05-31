@@ -1073,12 +1073,13 @@ public class GameController implements PlayerInputActions, Observer {
         if(!npc.getName().equals("LittleLucy")){
             boolean accepted = npc.propose(playerModel);
             if(npc.getRelationshipStatus().equals(RelStatus.SPOUSE)){
-                if (getDay(playerModel.getCurrentTime()) > proposedTime.get(selectedVisitActionIndex)) {
+                if (getDay(timeManager.getMinutes()) > proposedTime.get(selectedVisitActionIndex)) {
                     System.out.println("Successfully married " + npc.getName() + "!");
                     playerModel.setEnergy(playerModel.getEnergy() - 80);
                     timeManager.setTimeToTenPM();
                 }
                 else{System.out.println("You need to wait for the next day before marrying " + npc.getName() + "!");
+                    System.out.println(getDay(playerModel.getCurrentTime()));
                     npc.setRelationshipStatus(RelStatus.FIANCE);
                     playerModel.setRelationshipStatus(RelStatus.FIANCE);
                 }
@@ -1087,7 +1088,7 @@ public class GameController implements PlayerInputActions, Observer {
                 if (accepted){
                     playerModel.setEnergy(playerModel.getEnergy() - 10);
                     System.out.println("Successfully become " + npc.getName() + "'s fiance!");
-                    proposedTime.set(selectedVisitActionIndex, getDay(playerModel.getCurrentTime()));
+                    proposedTime.set(selectedVisitActionIndex, getDay(timeManager.getMinutes()));
                 }
                 else{
                     playerModel.setEnergy(playerModel.getEnergy() - 20);

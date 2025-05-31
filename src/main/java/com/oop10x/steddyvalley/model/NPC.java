@@ -83,7 +83,7 @@ public class NPC {
 
     public boolean propose(Player player) {
         // Cek apakah player memiliki Proposal Ring
-        if (player == null || player.getInventory().getItemByName("Proposal Ring") != null) {
+        if (player == null || player.getInventory().getItemByName("Proposal Ring") == null) {
             return false; // Tidak ada Proposal Ring
         } else if (heartPoints == 150 && (player.getRelationshipStatus().equals(RelStatus.SINGLE) || player.getRelationshipStatus().equals(RelStatus.FIANCE))) {
             // Jika heart points cukup dan status hubungan player adalah SINGLE
