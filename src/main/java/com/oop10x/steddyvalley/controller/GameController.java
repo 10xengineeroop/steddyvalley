@@ -71,6 +71,9 @@ public class GameController implements PlayerInputActions, Observer {
     private int npcHeartPoints = 0;
     private List<Item> giftOption;
     private String heartEarned;
+    private String proposeBilek;
+    private String chatting;
+    private String failChatMessage = "";
 
     //fish punya
     private Fish currentFishingTargetFish;
@@ -345,17 +348,34 @@ public class GameController implements PlayerInputActions, Observer {
         gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
         resetMovementFlags();
         selectedGiftIndex = 0;
+        failChatMessage = "";
     }
     else if (currentState == GameState.GIFTED_STATE) {
         giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
         gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
         resetMovementFlags();
     }
+    else if (currentState == GameState.CHAT_STATE) {
+        gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+        resetMovementFlags();
+        failChatMessage = "";
+    }
+    else if (currentState == GameState.PROPOSE_STATE) {
+        gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+        resetMovementFlags();
+        failChatMessage = "";
+    }
     }
 
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
-            gameStateModel.setCurrentState(GameState.VISIT_STATE);
+            if (playerModel.getEnergy() >= 15) {
+                gameStateModel.setCurrentState(GameState.VISIT_STATE);
+                timeManager.stop();
+            }
+            else{
+                System.out.println("Not enough energy to visit!");
+            }
         }
     }
 
@@ -468,14 +488,15 @@ public class GameController implements PlayerInputActions, Observer {
         }
         if (currentState == GameState.STOREOPT_STATE) {
             if(selectedStoreOptionIndex == 1) {
-                    gameStateModel.setCurrentState(GameState.SHOP_STATE);
-                }
-                else if (selectedStoreOptionIndex == 0) {
-                    gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
-                }
-                selectedStoreOptionIndex = 0;
-                return;
+                enterShopState();
             }
+            else if (selectedStoreOptionIndex == 0) {
+                gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+            }
+            playerModel.setEnergy(playerModel.getEnergy() - 10);
+            selectedStoreOptionIndex = 0;
+            return;
+        }
 
         if (currentState == GameState.GIFT_STATE){
             handleGifting(NPC.getNpcByName(visitActions.get(npcVisitIndex)));
@@ -850,6 +871,9 @@ public class GameController implements PlayerInputActions, Observer {
         }
         return status;
     }
+    public String getFailMessage() {
+        return failChatMessage;
+    }
 
     public RelStatus getNpcRelation(){
         return NPC.getNpcByName(npcNow).getRelationshipStatus();
@@ -1031,14 +1055,24 @@ public class GameController implements PlayerInputActions, Observer {
         NPC npc = NPC.getNpcByName(name);
         switch (action) {
             case "Chat":
-                System.out.println("Chatting with " + name + ".");
-                npc.chat();
-                npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
-                playerModel.setEnergy(playerModel.getEnergy() - 10);
-                timeManager.addMinutes(10);
+                if (playerModel.getEnergy() >= 10) {
+                    chatting = "Chatting with " + name + ".";
+                    npc.chat();
+                    npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
+                    playerModel.setEnergy(playerModel.getEnergy() - 10);
+                    timeManager.addMinutes(10);
+                    gameStateModel.setCurrentState(GameState.CHAT_STATE);
+                }
+                else {
+                    failChatMessage = "Not enough energy to chat with " + name + ".";
+                    System.out.println(chatting);
+                }
                 break;
             case "Gift":
-                gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                if (playerModel.getEnergy() >= 5) {
+                    gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                }
+                else{failChatMessage = "Not enough energy to gift!";}
                 break;
             case "Propose":
                 if (!npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
@@ -1066,42 +1100,62 @@ public class GameController implements PlayerInputActions, Observer {
         }
         gameStateModel.setCurrentState(GameState.GIFTED_STATE);
         npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
-        {playerModel.getInventory().removeItem(getGiftOption().get(selectedGiftIndex).getName(), 1);}
+        playerModel.getInventory().removeItem(getGiftOption().get(selectedGiftIndex).getName(), 1);
     }
     
     public void handlePropose(NPC npc) {
         if(!npc.getName().equals("LittleLucy")){
-            boolean accepted = npc.propose(playerModel);
-            if(npc.getRelationshipStatus().equals(RelStatus.SPOUSE)){
-                if (getDay(timeManager.getMinutes()) > proposedTime.get(selectedVisitActionIndex)) {
-                    System.out.println("Successfully married " + npc.getName() + "!");
-                    playerModel.setEnergy(playerModel.getEnergy() - 80);
-                    timeManager.setTimeToTenPM();
-                }
-                else{System.out.println("You need to wait for the next day before marrying " + npc.getName() + "!");
-                    System.out.println(getDay(playerModel.getCurrentTime()));
-                    npc.setRelationshipStatus(RelStatus.FIANCE);
-                    playerModel.setRelationshipStatus(RelStatus.FIANCE);
-                }
-                }
-            else{
-                if (accepted){
-                    playerModel.setEnergy(playerModel.getEnergy() - 10);
-                    System.out.println("Successfully become " + npc.getName() + "'s fiance!");
-                    proposedTime.set(selectedVisitActionIndex, getDay(timeManager.getMinutes()));
+            if(npc.getRelationshipStatus().equals(RelStatus.FIANCE)){
+                if (playerModel.getEnergy() >= 80) {
+                    if (getDay(timeManager.getMinutes()) > proposedTime.get(selectedVisitActionIndex)) {
+                        boolean accepted = npc.propose(playerModel);
+                        proposeBilek = "Successfully married " + npc.getName() + "!";
+                        playerModel.setEnergy(playerModel.getEnergy() - 80);
+                        timeManager.setTimeToTenPM();
+                    }
+                    else{proposeBilek = "You need to wait for the next day before marrying " + npc.getName() + "!";
+                    }
+                    gameStateModel.setCurrentState(GameState.PROPOSE_STATE);
                 }
                 else{
-                    playerModel.setEnergy(playerModel.getEnergy() - 20);
-                    System.out.println("Failed to propose " + npc.getName() + ", Increase your heart points with her first");
+                    failChatMessage = "Not enough energy to marry!";
+                }}
+            else{
+                if (playerModel.getEnergy() >= 10) {
+                    boolean accepted = npc.propose(playerModel);
+                    if (accepted){
+                            playerModel.setEnergy(playerModel.getEnergy() - 10);
+                            proposeBilek = "Successfully become " + npc.getName() + "'s fiance!";
+                            proposedTime.set(selectedVisitActionIndex, getDay(timeManager.getMinutes()));
+                    }
+                    else{
+                        if (npc.getHeartPoints() < 150) {
+                            proposeBilek = "Increase your heart point with " + npc.getName() + "first.";
+                        }
+                        else if (playerModel.getInventory().getItemByName("Proposal Ring") == null) {
+                            proposeBilek = "You need a Proposal Ring to propose!";
+                        }
+                        playerModel.setEnergy(playerModel.getEnergy() - 20);
+                    }
+                    timeManager.addMinutes(60);
+                    gameStateModel.setCurrentState(GameState.PROPOSE_STATE);
                 }
-                timeManager.addMinutes(60);
+                else{
+                    failChatMessage = "Not enough energy to propose!";
+                }
             }
         }
         else{
-            System.out.println("You cannot propose to LittleLucy, she is a child!");
+            proposeBilek = "Bro? Why are you trying to propose to a child?";
         }
     }
 
+    public String getProposeMessage() {
+        return proposeBilek;
+    }
+    public String getChatMessage() {
+        return chatting;
+    }
     public int getDay(int time) {
         int days = (time - (time % 1440)) / 1440;
         return days;

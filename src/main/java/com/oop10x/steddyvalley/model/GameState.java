@@ -20,6 +20,8 @@ public class GameState {
     public static final int STOREOPT_STATE = 13;
     public static final int GIFT_STATE = 14;
     public static final int GIFTED_STATE = 15;
+    public static final int CHAT_STATE = 16;
+    public static final int PROPOSE_STATE = 17;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -110,5 +112,11 @@ public class GameState {
     }
     public boolean isGifted() {
         return currentState == GIFTED_STATE;
+    }
+    public boolean isChatting() {
+        return currentState == CHAT_STATE;
+    }
+    public boolean isProposing() {
+        return currentState == PROPOSE_STATE;
     }
 }
