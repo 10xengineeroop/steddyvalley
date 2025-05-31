@@ -1,4 +1,4 @@
-package com.oop10x.steddyvalley.model;
+package com.oop10x.steddyvalley.model; // Sesuaikan paket
 
 import com.oop10x.steddyvalley.model.map.Land;
 import com.oop10x.steddyvalley.model.objects.DeployedObject;
@@ -7,6 +7,7 @@ import com.oop10x.steddyvalley.model.objects.PondObject;
 import com.oop10x.steddyvalley.model.objects.ShippingBinObject;
 import com.oop10x.steddyvalley.model.map.Actionable;
 import com.oop10x.steddyvalley.model.map.LandType;
+import java.awt.Font;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -21,9 +22,11 @@ public class FarmMap {
     public static final int MAP_HEIGHT_IN_TILES = 32;
     private Random random = new Random();
 
-    private HouseObject house; 
+    private HouseObject house;
+    private ShippingBin playerShippingBin;
+    private ShippingBinObject shippingBinMapObject;
 
-    public FarmMap(TimeManager timeManager) { 
+    public FarmMap(TimeManager timeManager, Player player) {
         this.landGrid = new Land[MAP_HEIGHT_IN_TILES][MAP_WIDTH_IN_TILES];
         this.deployedObjects = new ArrayList<>();
 
@@ -32,11 +35,11 @@ public class FarmMap {
                 this.landGrid[r][c] = new Land(c, r, timeManager);
             }
         }
-        placeDeployedObjects();
+        placeDeployedObjects(player);
     }
 
 
-    private void placeDeployedObjects() {
+    private void placeDeployedObjects(Player player) {
 
         int maxHouseX = MAP_WIDTH_IN_TILES - HouseObject.HOUSE_WIDTH;
         int maxHouseY = MAP_HEIGHT_IN_TILES - HouseObject.HOUSE_HEIGHT;
@@ -45,7 +48,7 @@ public class FarmMap {
         int houseY = (maxHouseY > 0) ? random.nextInt(maxHouseY + 1) : 0;
         this.house = new HouseObject(houseX, houseY);
         addDeployedObject(this.house);
-        System.out.println("House placed tile: (" + houseX + "," + houseY + ")");
+        System.out.println("House placed at tile: (" + houseX + "," + houseY + ")");
 
         PondObject pond;
         Rectangle houseBounds = this.house.getTileBounds();
@@ -62,54 +65,63 @@ public class FarmMap {
             attempts++;
             if (attempts > 100) {
                 System.err.println("Could not place pond without overlapping after 100 attempts. Placing at default or skipping.");
+                // Penempatan pond di posisi default atau tidak menempatkannya sama sekali
+                // pond = new PondObject(0, 0);
+                // pondBounds = pond.getTileBounds();
                 break;
             }
         } while (houseBounds.intersects(pondBounds));
         addDeployedObject(pond);
         System.out.println("Pond placed at tile: (" + pond.getX() + "," + pond.getY() + ")");
 
-        ShippingBinObject shippingBin = null;
+        int binPlacementX = -1;
+        int binPlacementY = -1;
+
         int[][] offsets = {
             {HouseObject.HOUSE_WIDTH + 1, 0},
             {-ShippingBinObject.BIN_WIDTH_IN_TILES - 1, 0},
             {0, HouseObject.HOUSE_HEIGHT + 1},
             {0, -ShippingBinObject.BIN_HEIGHT_IN_TILES - 1}
         };
+
         String[] offsetNames = {"Right of House", "Left of House", "Below House", "Above House"};
 
         for (int i = 0; i < offsets.length; i++) {
-            int binX = house.getX() + offsets[i][0];
-            if (offsets[i][0] < 0) binX = house.getX() + offsets[i][0];
-            int binY = house.getY() + offsets[i][1];
-            if (offsets[i][1] < 0) binY = house.getY() + offsets[i][1];
+            int currentBinX = house.getX() + offsets[i][0];
+            int currentBinY = house.getY() + offsets[i][1];
+            
+            if (currentBinX >= 0 && currentBinX + ShippingBinObject.BIN_WIDTH_IN_TILES <= MAP_WIDTH_IN_TILES &&
+                currentBinY >= 0 && currentBinY + ShippingBinObject.BIN_HEIGHT_IN_TILES <= MAP_HEIGHT_IN_TILES) {
 
-            if (binX >= 0 && binX + ShippingBinObject.BIN_WIDTH_IN_TILES <= MAP_WIDTH_IN_TILES &&
-                binY >= 0 && binY + ShippingBinObject.BIN_HEIGHT_IN_TILES <= MAP_HEIGHT_IN_TILES) {
+                Rectangle tempBinBounds = new Rectangle(currentBinX, currentBinY, ShippingBinObject.BIN_WIDTH_IN_TILES, ShippingBinObject.BIN_HEIGHT_IN_TILES);
 
-                ShippingBinObject tempBin = new ShippingBinObject(binX, binY);
-                Rectangle tempBinBounds = tempBin.getTileBounds();
-
-                if (!tempBinBounds.intersects(houseBounds) && !tempBinBounds.intersects(pondBounds)) {
-                    shippingBin = tempBin;
-                    System.out.println("Shipping Bin placed " + offsetNames[i] + " at tile: (" + binX + "," + binY + ")");
-                    break;
-                }
+                binPlacementX = currentBinX;
+                binPlacementY = currentBinY;
+                System.out.println("Shipping Bin will be placed " + offsetNames[i] + " at tile: (" + binPlacementX + "," + binPlacementY + ")");
+                break;
             }
         }
 
-        if (shippingBin != null) {
-            addDeployedObject(shippingBin);
+        if (binPlacementX != -1 && binPlacementY != -1) {
+            this.playerShippingBin = new ShippingBin(binPlacementX, binPlacementY, player);
+            this.shippingBinMapObject = new ShippingBinObject(binPlacementX, binPlacementY, this.playerShippingBin);
+            addDeployedObject(this.shippingBinMapObject);
+            System.out.println("Shipping Bin object created and added to map.");
         } else {
-
-            int fallbackBinX = 0;
+            int fallbackBinX = 0; 
             int fallbackBinY = MAP_HEIGHT_IN_TILES - ShippingBinObject.BIN_HEIGHT_IN_TILES;
-            ShippingBinObject fallbackBin = new ShippingBinObject(fallbackBinX, fallbackBinY);
-            Rectangle fallbackBinBounds = fallbackBin.getTileBounds();
-            if (!fallbackBinBounds.intersects(houseBounds) && !fallbackBinBounds.intersects(pondBounds)) {
-                addDeployedObject(fallbackBin);
+            Rectangle fallbackBinBoundsCheck = new Rectangle(fallbackBinX, fallbackBinY, ShippingBinObject.BIN_WIDTH_IN_TILES, ShippingBinObject.BIN_HEIGHT_IN_TILES);
+            boolean pondExistsAndIntersectsFallback = (pond != null && pondBounds != null && fallbackBinBoundsCheck.intersects(pondBounds));
+            if (!fallbackBinBoundsCheck.intersects(houseBounds) && !pondExistsAndIntersectsFallback) {
+                this.playerShippingBin = new ShippingBin(fallbackBinX, fallbackBinY, player);
+                this.shippingBinMapObject = new ShippingBinObject(fallbackBinX, fallbackBinY, this.playerShippingBin);
+                addDeployedObject(this.shippingBinMapObject);
                 System.out.println("Shipping Bin (fallback) placed at tile: (" + fallbackBinX + "," + fallbackBinY + ")");
             } else {
-                System.err.println("CRITICAL: Could not place Shipping Bin anywhere without overlap!");
+                this.playerShippingBin = new ShippingBin(0,0, player); 
+                this.shippingBinMapObject = new ShippingBinObject(0,0, this.playerShippingBin);
+                addDeployedObject(this.shippingBinMapObject);
+                System.err.println("CRITICAL: Could not place Shipping Bin ideally or fallback without overlap! Placed at (0,0) as emergency.");
             }
         }
     }
@@ -124,8 +136,14 @@ public class FarmMap {
         for (int r = bounds.y; r < bounds.y + bounds.height; r++) {
             for (int c = bounds.x; c < bounds.x + bounds.width; c++) {
                 if (c >= 0 && c < MAP_WIDTH_IN_TILES && r >= 0 && r < MAP_HEIGHT_IN_TILES) {
-
-                    if (landGrid[r][c] != null) {}
+                    // landGrid[r][c] = null; // Opsi 1: Hapus Land
+                    // jika Land punya state:
+                    if (landGrid[r][c] != null) {
+                        // landGrid[r][c].setOccupied(true, object.getObjectName());
+                        // Untuk sekarang, kita bisa biarkan Land apa adanya,
+                        // CollisionChecker akan menangani solid-nya DeployedObject.
+                        // GamePanel akan menggambar DeployedObject di atas Land.
+                    }
                 }
             }
         }
@@ -134,6 +152,7 @@ public class FarmMap {
 
     public Land getLandAt(int tileX, int tileY) {
         if (tileX >= 0 && tileX < MAP_WIDTH_IN_TILES && tileY >= 0 && tileY < MAP_HEIGHT_IN_TILES) {
+            // Cek apakah ada DeployedObject solid di sini dulu
             for (DeployedObject obj : deployedObjects) {
                 if (obj.isSolid() && obj.containsTile(tileX, tileY)) {
                     return null;
@@ -158,6 +177,7 @@ public class FarmMap {
                 for (DeployedObject obj : deployedObjects) {
 
                     if (obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY)) {
+                        // System.out.println("DEBUG FarmMap: Found interactable " + obj.getObjectName() + " at adjacent tile (" + checkTileX + "," + checkTileY + ")");
                         return obj;
                     }
                 }
@@ -176,7 +196,6 @@ public class FarmMap {
                     Color landColor = Color.decode("#A4C639");
                     if (land.getLandType() == LandType.TILLED) landColor = Color.decode("#9B7653");
                     if (land.getLandType() == LandType.PLANTED) landColor = Color.decode("#228B22");
-                    if (land.getLandType() == LandType.HARVESTABLE) landColor = Color.decode("#228B22");
                     if (land.getIsWatered() && land.getLandType() != LandType.UNTILLED) landColor = landColor.darker();
 
                     g2.setColor(landColor);
@@ -188,17 +207,13 @@ public class FarmMap {
                         g2.setColor(Color.YELLOW);
                         g2.fillOval(land.getX() * tileSize + tileSize / 3, land.getY() * tileSize + tileSize / 3, tileSize / 3, tileSize / 3);
                     }
-                    if (land.getLandType() == LandType.HARVESTABLE && land.getSeed() != null) {
-                        g2.setColor(Color.BLUE);
-                        g2.fillOval(land.getX() * tileSize + tileSize / 3, land.getY() * tileSize + tileSize / 3, tileSize / 3, tileSize / 3);
-                    }
                 }
             }
         }
     
         for (DeployedObject obj : deployedObjects) {
 
-            Color objColor = Color.GRAY; 
+            Color objColor = Color.GRAY; // Default
             if (obj.getObjectName().equals("House")) objColor = Color.RED;
             else if (obj.getObjectName().equals("Pond")) objColor = Color.CYAN;
             else if (obj.getObjectName().equals("ShippingBin")) objColor = Color.MAGENTA;
@@ -215,5 +230,9 @@ public class FarmMap {
 
     public List<DeployedObject> getDeployedObjects() {
         return deployedObjects;
+    }
+
+    public ShippingBin getPlayerShippingBin() {
+        return playerShippingBin;
     }
 }

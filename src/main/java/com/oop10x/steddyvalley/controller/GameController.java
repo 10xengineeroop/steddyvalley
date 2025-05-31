@@ -27,6 +27,7 @@ import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.view.GamePanel;
 import com.oop10x.steddyvalley.model.Store;
 import com.oop10x.steddyvalley.model.NPC;
+import com.oop10x.steddyvalley.model.ShippingBin;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +45,8 @@ public class GameController implements PlayerInputActions, Observer {
     private int tileSize;
     private String transitionMessage;
     private GamePanel gamePanel;
+    private ShippingBin activeShippingBin = null;
+    private int selectedShippingInventoryIndex = 0;
 
     private boolean endGameStatisticsTriggered = false;
 
@@ -182,6 +185,17 @@ public class GameController implements PlayerInputActions, Observer {
                     }
                 }
             }
+            if (gameStateModel.getCurrentState() == GameState.SHIPPING_STATE) {
+                if (!playerModel.getInventory().getAllItems().isEmpty()) {
+                    selectedShippingInventoryIndex--;
+                    int invSize = playerModel.getInventory().getAllItems().size();
+                    if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
+                        selectedShippingInventoryIndex = 0;
+                    } else if (invSize == 0) {
+                        selectedShippingInventoryIndex = 0;
+                    }
+                }
+            }
 
         }
         if (gameStateModel.isPlaying()) {
@@ -243,6 +257,17 @@ public class GameController implements PlayerInputActions, Observer {
                     selectedShopItemIndex++ ;
                     if (selectedShopItemIndex >= currentShopItems.size()) {
                         selectedShopItemIndex = 0;
+                    }
+                }
+            }
+            if (gameStateModel.getCurrentState() == GameState.SHIPPING_STATE) {
+                if (!playerModel.getInventory().getAllItems().isEmpty()) {
+                    selectedShippingInventoryIndex++;
+                    int invSize = playerModel.getInventory().getAllItems().size();
+                    if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
+                        selectedShippingInventoryIndex = 0;
+                    } else if (invSize == 0) {
+                        selectedShippingInventoryIndex = 0;
                     }
                 }
             }
@@ -360,6 +385,9 @@ public class GameController implements PlayerInputActions, Observer {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
             timeManager.start();
+        }
+        else if (currentState == GameState.SHIPPING_STATE) {
+            finishShippingSession();
         }
     }
     public void toggleVisit() {
@@ -491,6 +519,43 @@ public class GameController implements PlayerInputActions, Observer {
             selectedGiftIndex = 0;
             return;
         }
+        if (currentState == GameState.SHIPPING_STATE) {
+            Map<Item, Integer> playerItemsMap = playerModel.getInventory().getAllItems();
+            List<Item> playerItemList = new ArrayList<>(playerItemsMap.keySet());
+
+            if (activeShippingBin == null) {
+                transitionMessage = "Shipping Bin error! Exiting.";
+                System.err.println("[GameController] CRITICAL: activeShippingBin is null in SHIPPING_STATE action.");
+                finishShippingSession();
+                return;
+            }
+
+            if (!playerItemList.isEmpty() && selectedShippingInventoryIndex >= 0 && selectedShippingInventoryIndex < playerItemList.size()) {
+                Item itemToShip = playerItemList.get(selectedShippingInventoryIndex);
+                int quantityToShip = 1;
+
+                if (itemToShip.getSellPrice() != null && itemToShip.getSellPrice() > 0) {
+                    if (activeShippingBin.putItem(itemToShip, quantityToShip)) {
+                        playerModel.getInventory().removeItem(itemToShip.getName(), quantityToShip);
+                        transitionMessage = "Shipped " + quantityToShip + " " + itemToShip.getName() + ".";
+                        if (playerModel.getInventory().countItem(itemToShip.getName()) == 0) {
+                            if (selectedShippingInventoryIndex >= playerModel.getInventory().getAllItems().size()) {
+                                 selectedShippingInventoryIndex = Math.max(0, playerModel.getInventory().getAllItems().size() - 1);
+                            }
+                        }
+                    } else {
+                        transitionMessage = "Cannot ship " + itemToShip.getName() + ". Bin full of unique items or item not sellable.";
+                    }
+                } else {
+                    transitionMessage = itemToShip.getName() + " cannot be sold or has no sell price.";
+                }
+            } else if (playerItemList.isEmpty()) {
+                transitionMessage = "Inventory is empty. Press Esc to finish shipping.";
+            } else {
+                transitionMessage = "No item selected. Press Esc to finish shipping.";
+            }
+            return;
+        }
 
         if (currentState == GameState.PLAY_STATE) {
             int playerPixelX = playerModel.getPosition().getX();
@@ -524,10 +589,25 @@ public class GameController implements PlayerInputActions, Observer {
                     }
                     return;
                 }
+                else if (adjacentObject instanceof ShippingBinObject) {
+                        this.activeShippingBin = ((ShippingBinObject) adjacentObject).getLogicalBin();
+                    if (this.activeShippingBin != null) {
+                        timeManager.stop();
+                        gameStateModel.setCurrentState(GameState.SHIPPING_STATE);
+                        selectedShippingInventoryIndex = 0;
+                        transitionMessage = "Select item to ship (E) / Esc to Finish.";
+                        System.out.println("Player entered SHIPPING_STATE.");
+                    } else {
+                        System.err.println("Logical Shipping Bin not found for ShippingBinObject interaction.");
+                        transitionMessage = "Shipping Bin is not working.";
+                    }
+                    return;
+                }
                 else if (adjacentObject instanceof Actionable) {
                     ((Actionable) adjacentObject).onPlayerAction(playerModel);
                     return; 
                 }
+                
             }
 
             
@@ -1188,5 +1268,33 @@ public class GameController implements PlayerInputActions, Observer {
 
             if (gamePanel != null) gamePanel.repaint();
         }
+    }
+    public ShippingBin getActiveShippingBin() {
+        return activeShippingBin;
+    }
+    public int getSelectedShippingInventoryIndex() {
+        int inventorySize = (playerModel != null && playerModel.getInventory() != null) ? playerModel.getInventory().getAllItems().size() : 0;
+        if (inventorySize == 0) {
+            selectedShippingInventoryIndex = 0;
+            return selectedShippingInventoryIndex;
+        }
+        if (selectedShippingInventoryIndex >= inventorySize) {
+            selectedShippingInventoryIndex = inventorySize - 1;
+        }
+        if (selectedShippingInventoryIndex < 0) {
+            selectedShippingInventoryIndex = 0;
+        }
+        return selectedShippingInventoryIndex;
+    }
+    private void finishShippingSession() {
+        if (timeManager != null) {
+            timeManager.addMinutes(15);
+            timeManager.start();
+        }
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        resetMovementFlags();
+        transitionMessage = "Finished shipping for the day.";
+        activeShippingBin = null;
+        System.out.println("Player finished shipping session.");
     }
 }

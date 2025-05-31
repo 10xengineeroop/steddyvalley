@@ -155,11 +155,132 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         else if (currentGameState == GameState.ENDGAME_STATE) {
             drawEndGameState(g2);
         }
+        else if (currentGameState == GameState.SHIPPING_STATE) {
+            drawShippingState(g2);
+        }
 
         g2.dispose();
     }
 
 
+    private void drawShippingState(Graphics2D g2) {
+        try {
+            drawPlayState(g2);
+            // -- Panel utama untuk shipping --
+            int pX = 30, pY = 30, pW = SCREEN_WIDTH - 60, pH = SCREEN_HEIGHT - 60;
+            g2.setColor(new Color(30, 30, 70, 220));
+            g2.fillRoundRect(pX, pY, pW, pH, 20, 20);
+            g2.setColor(Color.WHITE);
+            g2.drawRoundRect(pX, pY, pW, pH, 20, 20);
+
+            g2.setFont(new Font("Arial", Font.BOLD, 26));
+            g2.drawString("Shipping Bin\n", pX + 20, pY + 25);
+
+            int lineHeight = 25;
+            int itemStartY = pY + 80;
+            int itemStartXPlayer = pX + 30;
+            int itemStartXBin = pX + pW / 2 + 20;
+
+            // --- Tampilkan Inventory Pemain ---
+            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            g2.setColor(Color.WHITE);
+            g2.drawString("\nYour Inventory (W/S, E to Ship):", itemStartXPlayer, itemStartY - 30);
+            
+            Map<Item, Integer> playerItemsMap = playerModel.getInventory().getAllItems();
+            List<Item> playerItemList = new ArrayList<>(playerItemsMap.keySet());
+            int selectedPlayerItemIdx = gameController.getSelectedShippingInventoryIndex();
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            int maxVisibleItems = (pH - 180) / lineHeight;
+            int scrollOffsetPlayer = 0;
+            if (playerItemList.size() > 0 && selectedPlayerItemIdx >= maxVisibleItems) {
+                scrollOffsetPlayer = selectedPlayerItemIdx - maxVisibleItems + 1;
+            }
+
+            for (int i = 0; i < playerItemList.size(); i++) {
+                if (i < scrollOffsetPlayer) continue;
+                if ((i - scrollOffsetPlayer) >= maxVisibleItems) break;
+
+                Item item = playerItemList.get(i);
+                int amount = playerItemsMap.get(item);
+                String itemText = item.getName() + " x" + amount;
+                
+                Integer sellPrice = item.getSellPrice();
+                if (sellPrice != null && sellPrice > 0) {
+                    itemText += " (" + sellPrice + "g each)";
+                } else {
+                    itemText += " (Unsellable)";
+                }
+
+                if (i == selectedPlayerItemIdx) {
+                    g2.setColor(Color.YELLOW);
+                    g2.drawString("> " + itemText, itemStartXPlayer, itemStartY + ((i - scrollOffsetPlayer) * lineHeight));
+                } else {
+                    g2.setColor(Color.WHITE);
+                    g2.drawString("  " + itemText, itemStartXPlayer, itemStartY + ((i - scrollOffsetPlayer) * lineHeight));
+                }
+            }
+            if (playerItemList.isEmpty()) {
+                g2.setColor(Color.GRAY);
+                g2.drawString("Inventory is empty.", itemStartXPlayer, itemStartY + 10);
+            }
+
+            // --- Tampilkan Isi Shipping Bin (Untuk Hari Ini) ---
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            g2.drawString("In Bin (Today):", itemStartXBin, itemStartY - 20);
+            com.oop10x.steddyvalley.model.ShippingBin currentBin = gameController.getActiveShippingBin();
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            if (currentBin != null) {
+                Map<Item, Integer> binItemsMap = currentBin.getItemsInBin();
+                List<Item> binItemList = new ArrayList<>(binItemsMap.keySet());
+                int displayCountBin = 0;
+                int currentBinY = itemStartY;
+                for (Item item : binItemList) {
+                    if (displayCountBin >= maxVisibleItems) {
+                        g2.setColor(Color.LIGHT_GRAY);
+                        g2.drawString("...and " + (binItemList.size() - maxVisibleItems) + " more...", itemStartXBin, currentBinY);
+                        break;
+                    }
+                    int amount = binItemsMap.get(item);
+                    String itemText = item.getName() + " x" + amount;
+                    Integer itemSellPrice = item.getSellPrice();
+                    if (itemSellPrice != null) {
+                         itemText += " (Value: " + (itemSellPrice * amount) + "g)";
+                    }
+                    g2.setColor(Color.CYAN);
+                    g2.drawString(itemText, itemStartXBin, currentBinY);
+                    currentBinY += lineHeight;
+                    displayCountBin++;
+                }
+                if (binItemList.isEmpty()) {
+                    g2.setColor(Color.GRAY);
+                    g2.drawString("Bin is empty for today.", itemStartXBin, itemStartY);
+                }
+            }
+
+            // --- Pesan Transisi/Info dari Controller ---
+            String currentTransitionMessage = gameController.getTransitionMessage();
+            if (currentTransitionMessage != null && !currentTransitionMessage.isEmpty()) {
+                g2.setColor(Color.ORANGE);
+                g2.setFont(new Font("Arial", Font.ITALIC, 16));
+                int msgY = pY + pH - 50;
+                g2.drawString(currentTransitionMessage, pX + 20, msgY);
+            }
+
+            // --- Instruksi Umum ---
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.drawString("W/S: Select Item | E: Add to Bin | Esc: Finish Shipping", pX + 20, pY + pH - 20);
+
+        } catch (Exception e) {
+            System.err.println("RUNTIME ERROR in drawShippingState: " + e.getMessage());
+            e.printStackTrace();
+            g2.setColor(Color.RED);
+            g2.setFont(new Font("Arial", Font.BOLD, 16));
+            g2.drawString("Error rendering Shipping UI. Check console.", 50, SCREEN_HEIGHT / 2);
+        }
+    }
 
     private void drawShopState(Graphics2D g2) {
         drawPlayState(g2); 

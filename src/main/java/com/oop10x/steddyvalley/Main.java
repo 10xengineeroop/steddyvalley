@@ -23,7 +23,7 @@ public class Main {
             SeasonManager seasonManager = SeasonManager.getInstance(timeManager);
             WeatherManager weatherManager = WeatherManager.getInstance(timeManager);
 
-            FarmMap farmMapModel = new FarmMap(timeManager);
+            FarmMap farmMapModel = new FarmMap(timeManager, playerModel);
             SeasonManager seasonModel = seasonManager;
             WeatherManager weatherModel = weatherManager;
 
