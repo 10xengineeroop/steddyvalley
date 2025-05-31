@@ -141,12 +141,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         else if (currentGameState == GameState.GIFTED_STATE) {
             drawGiftedState(g2);
         }
-        else if (currentGameState == GameState.CHAT_STATE) {
-            drawChattingState(g2);
-        }
-        else if (currentGameState == GameState.PROPOSE_STATE) {
-            drawProposingState(g2);
-        }
 
         g2.dispose();
     }
@@ -185,7 +179,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("Tekan Esc untuk kembali", getXforCenteredText("Tekan Esc untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+            g2.drawString("Tekan Esc atau E untuk kembali", getXforCenteredText("Tekan Esc atau E untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
         } else {
             List<Item> shopItems = gameController.getCurrentShopItems();
             int selectedIdx = gameController.getSelectedShopItemIndex();
@@ -786,23 +780,38 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int actionX = panelX + 30;
         int lineHeight = 30;
 
-        List<String> actions = gameController.getNpcVisitActions();
-        if (gameController.getNpcRelation().equals(RelStatus.FIANCE)){
-             actions = List.of("Chat", "Gift", "Marry");
-        }
-        int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
+        if (gameController.isShowingNPCFeedback()) {
+            String feedback = gameController.getNPCFeedbackMessage();
+            int feedbackX = getXforCenteredText(feedback, g2, panelX, panelWidth);
+            g2.drawString(feedback, feedbackX, panelY + panelHeight / 2 - 10);
 
-        if (actions.isEmpty()) {
-            g2.drawString("No actions available.", actionX, actionY);
-        } else {
-            for (int i = 0; i < actions.size(); i++) {
-                String actionText = actions.get(i);
-                if (i == selectedIndex) {
-                    g2.setColor(Color.YELLOW);
-                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
-                    g2.setColor(Color.WHITE);
-                } else {
-                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("Tekan Esc atau E untuk kembali", getXforCenteredText("Tekan Esc atau E untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+        }
+        else{
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
+            actionY = panelY + 80;
+            actionX = panelX + 30;
+            lineHeight = 30;
+            List<String> actions = gameController.getNpcVisitActions();
+            if (gameController.getNpcRelation().equals(RelStatus.FIANCE)){
+                actions = List.of("Chat", "Gift", "Marry");
+            }
+            int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
+
+            if (actions.isEmpty()) {
+                g2.drawString("No actions available.", actionX, actionY);
+            } else {
+                for (int i = 0; i < actions.size(); i++) {
+                    String actionText = actions.get(i);
+                    if (i == selectedIndex) {
+                        g2.setColor(Color.YELLOW);
+                        g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                        g2.setColor(Color.WHITE);
+                    } else {
+                        g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                    }
                 }
             }
         }
@@ -814,7 +823,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         String currentlyWithText = "Currently With: " + gameController.getNpcNow();
         String heartPointsText = "HeartPoints: " + gameController.getNpcHeartPoints();
         String npcStatusText = "Status: " + gameController.getNpcRelStatus();
-        String failText = gameController.getFailMessage();
 
         Font npcInfoFont = new Font("Arial", Font.PLAIN, 12);
         g2.setFont(npcInfoFont);
@@ -830,10 +838,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString(heartPointsText, infoX - heartPointsWidth, infoY + 2 * infoLineHeight);
         int npcStatusWidth = fm.stringWidth(npcStatusText);
         g2.drawString(npcStatusText, infoX - npcStatusWidth, infoY + 3 * infoLineHeight);
-        if (failText != null && !failText.isEmpty()) {
-            int failWidth = fm.stringWidth(failText);
-            g2.drawString(failText, infoX - failWidth, infoY + 4 * infoLineHeight);
-        }
     }
 
     private void drawGiftingState(Graphics2D g2) {
@@ -888,60 +892,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     
         String message = gameController.getHeartMessage();
-        if (message == null || message.isEmpty()) {
-            message = "Displaying message...";
-        }
-    
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 24));
-        int yPos = SCREEN_HEIGHT / 2 - 30;
-        for (String line : message.split("\n")) {
-            int stringWidth = g2.getFontMetrics().stringWidth(line);
-            int xPos = (SCREEN_WIDTH - stringWidth) / 2;
-            g2.drawString(line, xPos, yPos);
-            yPos += 30;
-        }
-    
-        g2.setFont(new Font("Arial", Font.ITALIC, 18));
-        String continueMessage = "Press Escape to continue...";
-        int continueStringWidth = g2.getFontMetrics().stringWidth(continueMessage);
-        int continueXPos = (SCREEN_WIDTH - continueStringWidth) / 2;
-        g2.drawString(continueMessage, continueXPos, yPos + 20);
-    }
-
-    private void drawProposingState(Graphics2D g2) {
-        drawPlayState(g2);
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-        String message = gameController.getProposeMessage();
-        if (message == null || message.isEmpty()) {
-            message = "Displaying message...";
-        }
-    
-        g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 24));
-        int yPos = SCREEN_HEIGHT / 2 - 30;
-        for (String line : message.split("\n")) {
-            int stringWidth = g2.getFontMetrics().stringWidth(line);
-            int xPos = (SCREEN_WIDTH - stringWidth) / 2;
-            g2.drawString(line, xPos, yPos);
-            yPos += 30;
-        }
-    
-        g2.setFont(new Font("Arial", Font.ITALIC, 18));
-        String continueMessage = "Press Escape to continue...";
-        int continueStringWidth = g2.getFontMetrics().stringWidth(continueMessage);
-        int continueXPos = (SCREEN_WIDTH - continueStringWidth) / 2;
-        g2.drawString(continueMessage, continueXPos, yPos + 20);
-    }
-
-    private void drawChattingState(Graphics2D g2) {
-        drawPlayState(g2);
-        g2.setColor(new Color(0, 0, 0, 180));
-        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-        String message = gameController.getChatMessage();
         if (message == null || message.isEmpty()) {
             message = "Displaying message...";
         }
