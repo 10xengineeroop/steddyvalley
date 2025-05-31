@@ -1,6 +1,7 @@
 package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.items.Crop;
+import com.oop10x.steddyvalley.model.items.Equipment;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.RelStatus;
 import com.oop10x.steddyvalley.model.items.Fish;
@@ -135,7 +136,17 @@ public class NPC {
     }
     static {
         // I can't do Mayor Tadi's hated items
-        new NPC("Mayor Tadi", Set.of(Fish.getFishbyName("Legend")), Set.of(Fish.getFishbyName("Angler"), Fish.getFishbyName("Crimsonfish"), Fish.getFishbyName("Glacierfish")), Set.of());
+        Set<Item> hatedItems = new HashSet<>();
+        hatedItems.addAll(Fish.getFishSet());
+        hatedItems.addAll(Misc.getMiscset());
+        hatedItems.addAll(Crop.getCropSet());
+        hatedItems.addAll(Seed.getSeedSet());
+        hatedItems.addAll(Food.getFoodSet());
+        hatedItems.addAll(Equipment.getEquipmentSet());
+
+        NPC mayted = new NPC("Mayor Tadi", Set.of(Fish.getFishbyName("Legend")), Set.of(Fish.getFishbyName("Angler"), Fish.getFishbyName("Crimsonfish"), Fish.getFishbyName("Glacierfish")), hatedItems);
+        mayted.getHatedItems().removeAll(mayted.getLovedItems());
+        mayted.getHatedItems().removeAll(mayted.getLikedItems());
         new NPC("Caroline", Set.of(Misc.getMisc("Firewood"), Misc.getMisc("Coal")), Set.of(Crop.getCropByName("Potato"), Crop.getCropByName("Wheat")), Set.of(Crop.getCropByName("Hot Pepper")));
         new NPC("Perry", Set.of(Crop.getCropByName("Cranberry"), Crop.getCropByName("Blueberry")), Set.of(Food.getFoodbyName("Wine")), new HashSet<>(Fish.getFishSet()));
         new NPC("Dasco",Set.of(Food.getFoodbyName("The Legends of Spakbor"), Food.getFoodbyName("Cooked Pig's Head"), Food.getFoodbyName("Wine"), Food.getFoodbyName("Fugu"), Food.getFoodbyName("Spakbor Salad")),Set.of(Food.getFoodbyName("Fish Sandwich"), Food.getFoodbyName("Fish Stew"), Food.getFoodbyName("Baguette"), Food.getFoodbyName("Fish n' Chips")),Set.of(Fish.getFishbyName("Legend"), Crop.getCropByName("Grape"), Crop.getCropByName("Cauliflower"), Crop.getCropByName("Wheat"), Fish.getFishbyName("Pufferfish"), Fish.getFishbyName("Salmon")));
