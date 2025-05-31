@@ -1,4 +1,4 @@
-package com.oop10x.steddyvalley.model; // Sesuaikan paket
+package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.map.Land;
 import com.oop10x.steddyvalley.model.objects.DeployedObject;
@@ -21,9 +21,9 @@ public class FarmMap {
     public static final int MAP_HEIGHT_IN_TILES = 32;
     private Random random = new Random();
 
-    private HouseObject house; // Simpan referensi ke rumah untuk posisi bin
+    private HouseObject house; 
 
-    public FarmMap(TimeManager timeManager) { // Terima TimeManager
+    public FarmMap(TimeManager timeManager) { 
         this.landGrid = new Land[MAP_HEIGHT_IN_TILES][MAP_WIDTH_IN_TILES];
         this.deployedObjects = new ArrayList<>();
 
@@ -45,7 +45,7 @@ public class FarmMap {
         int houseY = (maxHouseY > 0) ? random.nextInt(maxHouseY + 1) : 0;
         this.house = new HouseObject(houseX, houseY);
         addDeployedObject(this.house);
-        System.out.println("House placed at tile: (" + houseX + "," + houseY + ")");
+        System.out.println("House placed tile: (" + houseX + "," + houseY + ")");
 
         PondObject pond;
         Rectangle houseBounds = this.house.getTileBounds();
@@ -62,9 +62,6 @@ public class FarmMap {
             attempts++;
             if (attempts > 100) {
                 System.err.println("Could not place pond without overlapping after 100 attempts. Placing at default or skipping.");
-                // Penempatan pond di posisi default atau tidak menempatkannya sama sekali
-                // pond = new PondObject(0, 0);
-                // pondBounds = pond.getTileBounds();
                 break;
             }
         } while (houseBounds.intersects(pondBounds));
@@ -127,14 +124,8 @@ public class FarmMap {
         for (int r = bounds.y; r < bounds.y + bounds.height; r++) {
             for (int c = bounds.x; c < bounds.x + bounds.width; c++) {
                 if (c >= 0 && c < MAP_WIDTH_IN_TILES && r >= 0 && r < MAP_HEIGHT_IN_TILES) {
-                    // landGrid[r][c] = null; // Opsi 1: Hapus Land
-                    // jika Land punya state:
-                    if (landGrid[r][c] != null) {
-                        // landGrid[r][c].setOccupied(true, object.getObjectName());
-                        // Untuk sekarang, kita bisa biarkan Land apa adanya,
-                        // CollisionChecker akan menangani solid-nya DeployedObject.
-                        // GamePanel akan menggambar DeployedObject di atas Land.
-                    }
+
+                    if (landGrid[r][c] != null) {}
                 }
             }
         }
@@ -143,7 +134,6 @@ public class FarmMap {
 
     public Land getLandAt(int tileX, int tileY) {
         if (tileX >= 0 && tileX < MAP_WIDTH_IN_TILES && tileY >= 0 && tileY < MAP_HEIGHT_IN_TILES) {
-            // Cek apakah ada DeployedObject solid di sini dulu
             for (DeployedObject obj : deployedObjects) {
                 if (obj.isSolid() && obj.containsTile(tileX, tileY)) {
                     return null;
@@ -168,7 +158,6 @@ public class FarmMap {
                 for (DeployedObject obj : deployedObjects) {
 
                     if (obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY)) {
-                        // System.out.println("DEBUG FarmMap: Found interactable " + obj.getObjectName() + " at adjacent tile (" + checkTileX + "," + checkTileY + ")");
                         return obj;
                     }
                 }
@@ -209,7 +198,7 @@ public class FarmMap {
     
         for (DeployedObject obj : deployedObjects) {
 
-            Color objColor = Color.GRAY; // Default
+            Color objColor = Color.GRAY; 
             if (obj.getObjectName().equals("House")) objColor = Color.RED;
             else if (obj.getObjectName().equals("Pond")) objColor = Color.CYAN;
             else if (obj.getObjectName().equals("ShippingBin")) objColor = Color.MAGENTA;

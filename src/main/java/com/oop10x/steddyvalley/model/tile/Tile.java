@@ -12,6 +12,6 @@ public class Tile {
     }
 
     public Tile(BufferedImage image) {
-        this(image, false); // Default tidak solid
+        this(image, false); 
     }
 }

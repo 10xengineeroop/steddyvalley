@@ -13,7 +13,6 @@ public class PondObject extends DeployedObject implements Actionable {
 
     @Override
     public void onPlayerAction(Player player) {
-        // Only print debug message. Game state change is handled in GameController.
         System.out.println("Player interacted with the Pond!");
     }
 }

@@ -13,8 +13,6 @@ public class HouseObject extends DeployedObject implements Actionable {
 
     @Override
     public void onPlayerAction(Player player) {
-        // Logika saat pemain berinteraksi dengan rumah (misalnya, masuk rumah)
-        // Ini akan dipanggil oleh GameController jika pemain berinteraksi di sebelah rumah
         System.out.println("Player interacted with the House!");
         
     }

@@ -1,13 +1,13 @@
 package com.oop10x.steddyvalley.model.objects;
 
 import com.oop10x.steddyvalley.model.map.Placeable;
-import com.oop10x.steddyvalley.utils.Position; // Asumsi Position ada di utils
-import java.awt.Rectangle; // Untuk area solid
+import com.oop10x.steddyvalley.utils.Position; 
+import java.awt.Rectangle; 
 
 public abstract class DeployedObject implements Placeable {
-    protected Position position; // Posisi tile kiri atas
-    protected int widthInTiles;  // Lebar dalam satuan tile
-    protected int heightInTiles; // Tinggi dalam satuan tile
+    protected Position position; 
+    protected int widthInTiles;  // Lebar dalam  tile
+    protected int heightInTiles; // Tinggi dalam  tile
     protected String objectName;
     protected boolean isSolid;
 
@@ -29,16 +29,11 @@ public abstract class DeployedObject implements Placeable {
     public String getObjectName() { return objectName; }
     public boolean isSolid() { return isSolid; }
 
-    /**
-     * Mendapatkan area yang ditempati objek ini dalam koordinat tile.
-     */
+
     public Rectangle getTileBounds() {
         return new Rectangle(getX(), getY(), widthInTiles, heightInTiles);
     }
 
-    /**
-     * Memeriksa apakah tile (tx, ty) berada di dalam bounds objek ini.
-     */
     public boolean containsTile(int tx, int ty) {
         return tx >= getX() && tx < getX() + widthInTiles &&
                ty >= getY() && ty < getY() + heightInTiles;

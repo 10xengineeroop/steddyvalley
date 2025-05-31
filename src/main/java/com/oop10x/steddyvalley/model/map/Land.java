@@ -9,25 +9,23 @@ import com.oop10x.steddyvalley.model.items.Item; // Untuk getEquippedItem
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.utils.EventType;
 import com.oop10x.steddyvalley.utils.Observer;
-import com.oop10x.steddyvalley.utils.Position; // Asumsi Position ada di utils
+import com.oop10x.steddyvalley.utils.Position;
 import com.oop10x.steddyvalley.utils.Season;
 import com.oop10x.steddyvalley.utils.Weather;
 
 public class Land implements Actionable, Placeable, Observer {
-    private final Position position; // Koordinat tile (bukan piksel)
+    private final Position position; 
     private LandType landType = LandType.UNTILLED;
     private Integer startPlantDate = null; // Waktu tanam dalam menit game
     private Integer endPlantDate = null;   // Waktu panen dalam menit game
     private boolean isWatered = false;
     private Seed seed = null;
-    // private TimeManager timeManager; // Tidak perlu disimpan jika waktu di-pass saat aksi
 
-    public Land(int tileX, int tileY, TimeManager timeManager) { // Terima TimeManager untuk mendaftar
+    public Land(int tileX, int tileY, TimeManager timeManager) { 
         this.position = new Position(tileX, tileY);
         if (timeManager != null) {
-            timeManager.addObserver(this); // Daftarkan diri ke TimeManager
+            timeManager.addObserver(this); 
         } else {
-            System.err.println("Warning: TimeManager is null for Land at (" + tileX + "," + tileY + "). NEWDAY events won't be received.");
         }
     }
 
@@ -37,17 +35,15 @@ public class Land implements Actionable, Placeable, Observer {
     @Override public void setY(int y) { position.setY(y); }
     @Override public int getY() { return position.getY(); }
 
-    // --- Getters dan Setters untuk State Land ---
+
     public LandType getLandType() { return landType; }
     public void setLandType(LandType landType) { this.landType = landType; }
     public boolean getIsWatered() { return isWatered; }
     public void setWatered(boolean watered) { isWatered = watered; }
     public Integer getEndPlantDate() { return endPlantDate; }
-    // public void setEndPlantTimeMinutes(Integer endPlantTimeMinutes) { this.endPlantTimeMinutes = endPlantTimeMinutes; }
-    // public Integer getStartPlantTimeMinutes() { return startPlantTimeMinutes; }
-    // public void setStartPlantTimeMinutes(Integer startPlantTimeMinutes) { this.startPlantTimeMinutes = startPlantTimeMinutes; }
+
     public Seed getSeed() { return seed; }
-    // public void setSeed(Seed seed) { this.seed = seed; }
+
 
     public void checkAndSetWatered() {
         Weather currentWeather = WeatherManager.getInstance(TimeManager.getInstance()).getCurrentWeather();
@@ -55,13 +51,11 @@ public class Land implements Actionable, Placeable, Observer {
             setWatered(true);
         }
     }
-    // --- Metode Aksi (dipanggil oleh GameController) ---
+
     public boolean till(Player player) {
         if (landType == LandType.UNTILLED) {
-            // Cek apakah pemain punya Hoe dan energi cukup (logika ini bisa di Controller)
-            // if (player.getEquippedItem() instanceof HoeTool && player.hasEnoughEnergy(COST_TILL)) {
+
             setLandType(LandType.TILLED);
-            // player.decreaseEnergy(COST_TILL);
             System.out.println("Land at (" + getX() + "," + getY() + ") tilled.");
             player.setEnergy(player.getEnergy() - 5);
             TimeManager.getInstance().addMinutes(5);
@@ -74,35 +68,28 @@ public class Land implements Actionable, Placeable, Observer {
 
     public boolean plant(Seed seedToPlant, Player player, int currentTimeMinutes) {
         if (landType == LandType.TILLED && seedToPlant != null) {
-            // Cek apakah pemain punya benih tersebut dan energi cukup (logika ini bisa di Controller)
-            // if (player.getInventory().hasItem(seedToPlant) && player.hasEnoughEnergy(COST_PLANT)) {
+
             this.seed = seedToPlant;
             this.startPlantDate = (currentTimeMinutes / 1440) + 1;
-            // Asumsi 1 hari = 1440 menit game (24 jam * 60 menit)
-            // Jika getDaysToHarvest() adalah hari game, maka perlu konversi ke menit game
-            // Jika spesifikasi Anda 1 detik nyata = 5 menit game, 1 hari game (misal 16 jam game = 960 menit game)
-            // Untuk sekarang, kita pakai contoh dari kode Anda: 3600 menit per hari (60 jam game?)
-            // Ini perlu disesuaikan dengan definisi "hari" di TimeManager Anda
-            this.endPlantDate = this.startPlantDate + seedToPlant.getDaysToHarvest(); // Contoh: 1 hari = 1440 menit game
+
+            this.endPlantDate = this.startPlantDate + seedToPlant.getDaysToHarvest(); 
             setLandType(LandType.PLANTED);
-            // player.getInventory().removeItem(seedToPlant, 1);
-            // player.decreaseEnergy(COST_PLANT);
+
             player.getInventory().removeItem(seedToPlant.getName(), 1);
             checkAndSetWatered();
             player.setEnergy(player.getEnergy() - 5);
             TimeManager.getInstance().addMinutes(5);
             return true;
-            // }
+            
         }
         return false;
     }
 
     public boolean water(Player player) {
         if ((landType == LandType.PLANTED || landType == LandType.TILLED) && !isWatered) {
-            // Cek apakah pemain punya WateringCan dan energi (logika di Controller)
-            // if (player.getEquippedItem() instanceof WateringCanTool && player.hasEnoughEnergy(COST_WATER)) {
+
             setWatered(true);
-            // player.decreaseEnergy(COST_WATER);
+
             System.out.println("Land at (" + getX() + "," + getY() + ") watered.");
             player.setEnergy(player.getEnergy() - 5);
             TimeManager.getInstance().addMinutes(5);
@@ -125,7 +112,7 @@ public class Land implements Actionable, Placeable, Observer {
             return true;
         }
         else {
-            return false; // Tidak bisa panen jika tidak ada tanaman atau belum waktunya
+            return false; 
         }
     }
 
@@ -153,7 +140,7 @@ public class Land implements Actionable, Placeable, Observer {
         if (eventType == EventType.NEWDAY) {
             Season currentSeason = SeasonManager.getInstance(TimeManager.getInstance()).getCurrentSeason();
             if (currentSeason == Season.WINTER && getLandType() == LandType.PLANTED) {
-                witherCrop(); // Tanaman mati di musim dingin
+                witherCrop(); 
                 return;
             }
             checkAndSetWatered();
@@ -172,7 +159,7 @@ public class Land implements Actionable, Placeable, Observer {
             }
             checkAndSetWatered();
         }
-        // Implementasi untuk NEWWEATHER, NEWSEASON jika diperlukan
+
         
     }
     public void onPlayerAction(Player player) {
