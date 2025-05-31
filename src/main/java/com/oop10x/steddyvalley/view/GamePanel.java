@@ -195,7 +195,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("Tekan Esc untuk kembali", getXforCenteredText("Tekan Esc untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+            g2.drawString("Tekan Esc atau E untuk kembali", getXforCenteredText("Tekan Esc atau E untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
         } else {
             List<Item> shopItems = gameController.getCurrentShopItems();
             int selectedIdx = gameController.getSelectedShopItemIndex();
@@ -789,23 +789,38 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int actionX = panelX + 30;
         int lineHeight = 30;
 
-        List<String> actions = gameController.getNpcVisitActions();
-        if (gameController.getNpcRelation().equals(RelStatus.FIANCE)){
-             actions = List.of("Chat", "Gift", "Marry");
-        }
-        int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
+        if (gameController.isShowingNPCFeedback()) {
+            String feedback = gameController.getNPCFeedbackMessage();
+            int feedbackX = getXforCenteredText(feedback, g2, panelX, panelWidth);
+            g2.drawString(feedback, feedbackX, panelY + panelHeight / 2 - 10);
 
-        if (actions.isEmpty()) {
-            g2.drawString("No actions available.", actionX, actionY);
-        } else {
-            for (int i = 0; i < actions.size(); i++) {
-                String actionText = actions.get(i);
-                if (i == selectedIndex) {
-                    g2.setColor(Color.YELLOW);
-                    g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
-                    g2.setColor(Color.WHITE);
-                } else {
-                    g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+            g2.setFont(new Font("Arial", Font.PLAIN, 16));
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("Tekan Esc atau E untuk kembali", getXforCenteredText("Tekan Esc atau E untuk kembali", g2, panelX, panelWidth), panelY + panelHeight / 2 + 30);
+        }
+        else{
+            g2.setFont(new Font("Arial", Font.PLAIN, 18));
+            actionY = panelY + 80;
+            actionX = panelX + 30;
+            lineHeight = 30;
+            List<String> actions = gameController.getNpcVisitActions();
+            if (gameController.getNpcRelation().equals(RelStatus.FIANCE)){
+                actions = List.of("Chat", "Gift", "Marry");
+            }
+            int selectedIndex = gameController.getSelectedNPCVisitActionIndex();
+
+            if (actions.isEmpty()) {
+                g2.drawString("No actions available.", actionX, actionY);
+            } else {
+                for (int i = 0; i < actions.size(); i++) {
+                    String actionText = actions.get(i);
+                    if (i == selectedIndex) {
+                        g2.setColor(Color.YELLOW);
+                        g2.drawString("> " + actionText, actionX, actionY + (i * lineHeight));
+                        g2.setColor(Color.WHITE);
+                    } else {
+                        g2.drawString("  " + actionText, actionX, actionY + (i * lineHeight));
+                    }
                 }
             }
         }
