@@ -76,6 +76,8 @@ public class GameController implements PlayerInputActions, Observer {
     private int npcHeartPoints = 0;
     private List<Item> giftOption;
     private String heartEarned;
+    private String npcFeedbackMessage = "";
+    private boolean npcFeedbackStatus = false;
 
     //fish punya
     private Fish currentFishingTargetFish;
@@ -362,9 +364,14 @@ public class GameController implements PlayerInputActions, Observer {
             selectedVisitActionIndex = 0;
         }
         else if (currentState == GameState.NPCVISIT_STATE) {
-            gameStateModel.setCurrentState(GameState.VISIT_STATE);
-            resetMovementFlags();
-            selectedNPCVisitActionIndex = 0;
+        if (npcFeedbackStatus) {
+            npcFeedbackStatus = false;
+            npcFeedbackMessage = "";
+        } else {
+                gameStateModel.setCurrentState(GameState.VISIT_STATE);
+                resetMovementFlags();
+                selectedNPCVisitActionIndex = 0;
+        }
         }
         else if (currentState == GameState.STOREOPT_STATE) {
             gameStateModel.setCurrentState(GameState.VISIT_STATE);
@@ -392,7 +399,13 @@ public class GameController implements PlayerInputActions, Observer {
     }
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
-            gameStateModel.setCurrentState(GameState.VISIT_STATE);
+            if (playerModel.getEnergy() >= 15) {
+                gameStateModel.setCurrentState(GameState.VISIT_STATE);
+                timeManager.stop();
+            }
+            else{
+                System.out.println("Not enough energy to visit!");
+            }
         }
     }
 
@@ -465,25 +478,31 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         }
         else if (currentState == GameState.SHOP_STATE) {
-            if (currentShopItems != null && !currentShopItems.isEmpty() && selectedShopItemIndex >= 0 && selectedShopItemIndex < currentShopItems.size()) {
-                Item itemToBuy = currentShopItems.get(selectedShopItemIndex);
-                int quantityToBuy = 1; 
-                Integer itemPrice = itemToBuy.getBuyPrice();
-                if (itemPrice == null) {
-                    shopFeedbackMessage = itemToBuy.getName() + " tidak dapat dibeli." ;
-                }
-                else {
-                    int totalPrice = itemPrice * quantityToBuy;
-                    if (playerModel.getGold() >= totalPrice) {
-                        Store.getInstance().buyItem(playerModel, itemToBuy.getName(), quantityToBuy);
-                        shopFeedbackMessage = "Anda membeli " + quantityToBuy + " " + itemToBuy.getName() + ".";
-
+            if(!showingShopFeedback) {
+                if (currentShopItems != null && !currentShopItems.isEmpty() && selectedShopItemIndex >= 0 && selectedShopItemIndex < currentShopItems.size()) {
+                    Item itemToBuy = currentShopItems.get(selectedShopItemIndex);
+                    int quantityToBuy = 1; 
+                    Integer itemPrice = itemToBuy.getBuyPrice();
+                    if (itemPrice == null) {
+                        shopFeedbackMessage = itemToBuy.getName() + " tidak dapat dibeli." ;
                     }
                     else {
-                        shopFeedbackMessage = "Tidak cukup emas untuk membeli " + itemToBuy.getName() + ".";
+                        int totalPrice = itemPrice * quantityToBuy;
+                        if (playerModel.getGold() >= totalPrice) {
+                            Store.getInstance().buyItem(playerModel, itemToBuy.getName(), quantityToBuy);
+                            shopFeedbackMessage = "Anda membeli " + quantityToBuy + " " + itemToBuy.getName() + ".";
+
+                        }
+                        else {
+                            shopFeedbackMessage = "Tidak cukup emas untuk membeli " + itemToBuy.getName() + ".";
+                        }
                     }
+                    showingShopFeedback = true;
                 }
-                showingShopFeedback = true;
+            }
+            else {
+                showingShopFeedback = false;
+                shopFeedbackMessage = "";
             }
             return;
         }
@@ -498,21 +517,29 @@ public class GameController implements PlayerInputActions, Observer {
         }
 
         if (currentState == GameState.NPCVISIT_STATE) {
-            giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
-            handleNPCVisit(npcVisitActions.get(selectedNPCVisitActionIndex), visitActions.get(npcVisitIndex));
-            selectedNPCVisitActionIndex = 0; 
+            if (!npcFeedbackStatus) {
+                giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
+                handleNPCVisit(npcVisitActions.get(selectedNPCVisitActionIndex), visitActions.get(npcVisitIndex));
+            }
+            else{
+                npcFeedbackStatus = false;
+                npcFeedbackMessage = "";
+            }
+            selectedNPCVisitActionIndex = 0;
             return;
         }
         if (currentState == GameState.STOREOPT_STATE) {
             if(selectedStoreOptionIndex == 1) {
-                    enterShopState();
-                }
-                else if (selectedStoreOptionIndex == 0) {
-                    gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
-                }
-                selectedStoreOptionIndex = 0;
-                return;
+                enterShopState();
             }
+            else if (selectedStoreOptionIndex == 0) {
+                gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
+            }
+            playerModel.setEnergy(playerModel.getEnergy() - 10);
+            timeManager.addMinutes(15);
+            selectedStoreOptionIndex = 0;
+            return;
+        }
 
         if (currentState == GameState.GIFT_STATE){
             handleGifting(NPC.getNpcByName(visitActions.get(npcVisitIndex)));
@@ -1118,6 +1145,7 @@ public class GameController implements PlayerInputActions, Observer {
             timeManager.addMinutes(15);
         }
         else if (index >= 7 && index <= 9){
+            playerModel.setEnergy(playerModel.getEnergy() - 10);
             timeManager.addMinutes(15);
             setFishingLocation(visitActions.get(index));
             gameStateModel.setCurrentState(GameState.FISHING_STATE);
@@ -1129,27 +1157,41 @@ public class GameController implements PlayerInputActions, Observer {
         }
     
     public void handleNPCVisit(String action, String name) {
-        playerModel.setEnergy(playerModel.getEnergy() - 10);
-        timeManager.addMinutes(15);
         NPC npc = NPC.getNpcByName(name);
         switch (action) {
             case "Chat":
-                System.out.println("Chatting with " + name + ".");
-                npc.chat();
-                npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
-                playerModel.setEnergy(playerModel.getEnergy() - 10);
-                timeManager.addMinutes(10);
+                if (playerModel.getEnergy() >= 10) {
+                    npcFeedbackMessage = "Chatting with " + name + ". You had a great time.";
+                    npc.chat();
+                    npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
+                    playerModel.setEnergy(playerModel.getEnergy() - 10);
+                    timeManager.addMinutes(10);
+                }
+                else {
+                    npcFeedbackMessage = "Not enough energy to chat with " + name + ".";
+                }
+                npcFeedbackStatus = true;
                 break;
             case "Gift":
-                gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                if (playerModel.getEnergy() >= 5) {
+                    gameStateModel.setCurrentState(GameState.GIFT_STATE);
+                }
+                else{
+                    npcFeedbackMessage = "Not enough energy to gift!";
+                    npcFeedbackStatus = true;
+                }
                 break;
             case "Propose":
-                if (!npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
-                    handlePropose(npc);
-                }
-                else{System.out.println("You've married " + npc.getName() + "!");}
+                handlePropose(npc);
+                npcFeedbackStatus = true;
                 break;
         } 
+    }
+    public boolean isShowingNPCFeedback() {
+        return npcFeedbackStatus;
+    }
+    public String getNPCFeedbackMessage() {
+        return npcFeedbackMessage;
     }
 
     public void handleGifting(NPC npc) {
@@ -1169,41 +1211,56 @@ public class GameController implements PlayerInputActions, Observer {
         }
         gameStateModel.setCurrentState(GameState.GIFTED_STATE);
         npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
-        {playerModel.getInventory().removeItem(getGiftOption().get(selectedGiftIndex).getName(), 1);}
+        playerModel.getInventory().removeItem(getGiftOption().get(selectedGiftIndex).getName(), 1);
     }
     
     public void handlePropose(NPC npc) {
-        if(!npc.getName().equals("LittleLucy")){
-            boolean accepted = npc.propose(playerModel);
-            if(npc.getRelationshipStatus().equals(RelStatus.SPOUSE)){
-                if (timeManager.getMinutes() / 1440 + 1 > proposedTime.get(selectedVisitActionIndex)) {
-                    System.out.println("Successfully married " + npc.getName() + "!");
-                    playerModel.setEnergy(playerModel.getEnergy() - 80);
-                    timeManager.setTimeToTenPM();
-                }
-                else{System.out.println("You need to wait for the next day before marrying " + npc.getName() + "!");
-                    npc.setRelationshipStatus(RelStatus.FIANCE);
-                    playerModel.setRelationshipStatus(RelStatus.FIANCE);
-                }
-                }
-            else{
-                if (accepted){
-                    playerModel.setEnergy(playerModel.getEnergy() - 10);
-                    System.out.println("Successfully become " + npc.getName() + "'s fiance!");
-                    proposedTime.set(selectedVisitActionIndex, timeManager.getTotalDaysPlayed());
-                }
-                else{
-                    playerModel.setEnergy(playerModel.getEnergy() - 20);
-                    System.out.println("Failed to propose " + npc.getName() + ", Increase your heart points with her first");
-                }
-                timeManager.addMinutes(60);
-            }
+        if(npc.getName().equals("LittleLucy")){
+            npcFeedbackMessage = "Bro? Why are you trying to propose a child?";
+        }
+        else if (npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
+            npcFeedbackMessage = "You are already married to " + npc.getName() + ".";
         }
         else{
-            System.out.println("You cannot propose to LittleLucy, she is a child!");
+            if(npc.getRelationshipStatus().equals(RelStatus.FIANCE)){
+                if (playerModel.getEnergy() >= 80) {
+                    if (getDay(timeManager.getMinutes()) > proposedTime.get(selectedVisitActionIndex)) {
+                        boolean accepted = npc.propose(playerModel);
+                        npcFeedbackMessage = "Successfully married " + npc.getName() + "!";
+                        playerModel.setEnergy(playerModel.getEnergy() - 80);
+                        timeManager.setTimeToTenPM();
+                    }
+                    else{npcFeedbackMessage = "You need to wait for the next day before marrying " + npc.getName() + "!";
+                    }
+                }
+                else{
+                    npcFeedbackMessage = "Not enough energy to marry!";
+                }}
+            else{
+                if (playerModel.getEnergy() >= 10) {
+                    boolean accepted = npc.propose(playerModel);
+                    if (accepted){
+                            playerModel.setEnergy(playerModel.getEnergy() - 10);
+                            npcFeedbackMessage = "Successfully become " + npc.getName() + "'s fiance!";
+                            proposedTime.set(selectedVisitActionIndex, getDay(timeManager.getMinutes()));
+                    }
+                    else{
+                        if (npc.getHeartPoints() < 150) {
+                            npcFeedbackMessage = "Increase your heart point with " + npc.getName() + "first.";
+                        }
+                        else if (playerModel.getInventory().getItemByName("Proposal Ring") == null) {
+                            npcFeedbackMessage = "You need a Proposal Ring to propose!";
+                        }
+                        playerModel.setEnergy(playerModel.getEnergy() - 20);
+                    }
+                    timeManager.addMinutes(60);
+                }
+                else{
+                    npcFeedbackMessage = "Not enough energy to propose!";
+                }
+            }
         }
     }
-
     public int getDay(int time) {
         int days = (time - (time % 1440)) / 1440;
         return days;
