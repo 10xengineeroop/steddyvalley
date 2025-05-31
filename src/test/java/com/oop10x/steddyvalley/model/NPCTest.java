@@ -34,6 +34,7 @@ public class NPCTest {
     abigail.propose(player);
     assertEquals(RelStatus.SINGLE, abigail.getRelationshipStatus(), "Abigail should not accept proposal with less than 150 hearts");
     abigail.setHeartPoints(150);
+    player.addItem(Misc.getMisc("Proposal Ring"));
     abigail.propose(player);
     assertEquals(RelStatus.FIANCE, abigail.getRelationshipStatus(), "Abigail should accept proposal with 150 hearts");
     abigail.propose(player);

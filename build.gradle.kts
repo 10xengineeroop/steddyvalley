@@ -47,3 +47,11 @@ jlink {
         name = "app"
     }
 }
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "com.oop10x.steddyvalley.Main"
+        )
+    }
+}

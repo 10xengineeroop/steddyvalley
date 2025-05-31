@@ -13,4 +13,11 @@ game sederhana.
 Cara run game Spakbor Hills lewat CLI adalah dengan cara melakukan clone pada repositori ini, compile, dan run.
 Bila nantinya dibuat GUI untuk game Spakbor Hills, maka game dapat dijalankan file utama GUI.
 
-Status Progress : Class Diagram Finishing.
+## How to Build
+./gradlew clean build
+
+## How to run Executable JAR
+java -jar build\libs\steddyvalley-1.0-SNAPSHOT.jar
+
+## How to Run:
+./gradlew run
