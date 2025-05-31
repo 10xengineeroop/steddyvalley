@@ -723,9 +723,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int y = 100;
         g2.drawString(title, x, y);
         g2.setFont(new Font("Arial", Font.PLAIN, 20));
-        if (fishingUIMessage != null && !fishingUIMessage.isEmpty()) {
+        if (fishingMessage != null && !fishingMessage.isEmpty()) {
             int lineY = y + 40;
-            for (String line : fishingUIMessage.split("\n")) {
+            for (String line : fishingMessage.split("\n")) {
                 g2.drawString(line, getXforCenteredText(line, g2), lineY);
                 lineY += 25;
             }

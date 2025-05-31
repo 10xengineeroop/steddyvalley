@@ -601,19 +601,9 @@ public class GameController implements PlayerInputActions, Observer {
                     return;
                 } 
                 else if (adjacentObject instanceof PondObject) {
-                    Item equipped = playerModel.getEquippedItem();
-                    if (equipped != null && "Fishing Rod".equals(equipped.getName())) {
-                        if (playerModel.getEnergy() >= 5) {
-                            gameStateModel.setCurrentState(GameState.FISHING_STATE);
-                            if (gamePanel != null) {
-                                gamePanel.clearFishingUIState();
-                            }
-                            System.out.println("Entered FISHING_STATE. Ready to cast.");
-                        } else {
-                            if (gamePanel != null) gamePanel.setFishingMessage("Not enough energy to fish!");
-                        }
-                    } else {
-                        if (gamePanel != null) gamePanel.setFishingMessage("You need a Fishing Rod!");
+                    gameStateModel.setCurrentState(GameState.FISHING_STATE);
+                    if (gamePanel != null) {
+                        gamePanel.clearFishingUIState();
                     }
                     return;
                 }
