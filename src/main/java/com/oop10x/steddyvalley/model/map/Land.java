@@ -138,29 +138,33 @@ public class Land implements Actionable, Placeable, Observer {
     @Override
     public void update(EventType eventType, Object message) {
         if (eventType == EventType.NEWDAY) {
+            checkAndSetWatered();
             Season currentSeason = SeasonManager.getInstance(TimeManager.getInstance()).getCurrentSeason();
-            if (currentSeason == Season.WINTER && getLandType() == LandType.PLANTED) {
+            if (currentSeason == Season.WINTER && (getLandType() == LandType.PLANTED) || (getLandType() == LandType.HARVESTABLE)) {
                 witherCrop(); 
                 return;
             }
-            checkAndSetWatered();
+            if (getLandType() == LandType.UNTILLED) {
+                return; // Tidak ada yang perlu dilakukan jika tanah belum diolah
+            }
+            if (getLandType() == LandType.TILLED) {
+                if (isWatered) {
+                    setWatered(false);
+                    return;
+                }
+            }
             if (getLandType() == LandType.PLANTED) {
                 if (isWatered) {
                     int currentDay = (TimeManager.getInstance().getMinutes() / 1440) + 1;
                     if (currentDay >= endPlantDate) {
                         setLandType(LandType.HARVESTABLE);
                     }
-                    System.out.println(eventType);
                 } else {
                     witherCrop();
                 }
-            } else if (isWatered) {
-                setWatered(false);
             }
-            checkAndSetWatered();
+            checkAndSetWatered();        
         }
-
-        
     }
     public void onPlayerAction(Player player) {
             Item equippedItem = player.getEquippedItem();
