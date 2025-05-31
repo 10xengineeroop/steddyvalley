@@ -321,6 +321,7 @@ public class GameController implements PlayerInputActions, Observer {
         } else if (currentState == GameState.INVENTORY_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
+            timeManager.start();
         } else if (currentState == GameState.HOUSE_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
@@ -636,15 +637,21 @@ public class GameController implements PlayerInputActions, Observer {
                 }
                 
             }
-
-            
+            Item equippedItem = playerModel.getEquippedItem();
+            if (equippedItem != null) {
+                boolean isEdible = equippedItem instanceof Food ||
+                                   equippedItem instanceof Fish ||
+                                   equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+    
+                if (isEdible) {
+                    handleEatEquippedItem();
+                    return;
+                }
+            }
 
             Land currentLand = farmMapModel.getLandAt(playerTileX, playerTileY);
-            
             if (currentLand != null) {
-                Item equippedItem = playerModel.getEquippedItem();
                 boolean actionTaken = false;
-
                 if (equippedItem != null) {
                     currentLand.harvest(playerModel, timeManager.getMinutes());
                     if ("Hoe".equals(equippedItem.getName())) {
@@ -670,6 +677,41 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
         return ;
+    }
+
+    public void handleEatEquippedItem() {
+        if (!gameStateModel.isPlaying()) {
+            return;
+        }
+
+        Item equippedItem = playerModel.getEquippedItem();
+
+        if (equippedItem == null) {
+            this.transitionMessage = "Nothing equipped to eat!";
+            System.out.println("Eat attempt: No item equipped.");
+            return;
+        }
+
+        boolean isEdible = equippedItem instanceof Food ||
+                           equippedItem instanceof Fish ||
+                           equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+        if (!isEdible) {
+            this.transitionMessage = equippedItem.getName() + " is not edible!";
+            System.out.println("Eat attempt: " + equippedItem.getName() + " is not edible.");
+            return;
+        }
+
+        playerModel.eat(equippedItem);
+
+        playerModel.getInventory().removeItem(equippedItem.getName(), 1);
+
+        String itemName = equippedItem.getName();
+        playerModel.setEquippedItem(null);
+
+        timeManager.addMinutes(5);
+
+        this.transitionMessage = "You ate " + itemName + ".";
+        System.out.println("Player ate: " + itemName);
     }
 
     public void updateGameLogic() {

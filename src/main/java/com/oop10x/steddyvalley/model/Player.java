@@ -173,12 +173,13 @@ public class Player {
     }
 
     public void setGold(int gold) {
-        this.gold = gold;
+        
         if (gold > this.gold) {
             totalIncome += (gold - this.gold);
         } else if (gold < this.gold) {
             totalExpenditure += (this.gold - gold);
         }
+        this.gold = gold;
         notifyObservers();
     }
 
