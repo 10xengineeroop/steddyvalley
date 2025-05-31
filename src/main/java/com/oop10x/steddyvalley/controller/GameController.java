@@ -1129,7 +1129,7 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
         gameStateModel.setCurrentState(GameState.FISHING_STATE); 
-        if (gamePanel != null) gamePanel.setFishingMessage(resultMessage);
+        if (gamePanel != null) gamePanel.setFishingMessage2(resultMessage);
     }
     public void endFishingSession() {
         System.out.println("Ending fishing session completely. Returning to PLAY_STATE.");
