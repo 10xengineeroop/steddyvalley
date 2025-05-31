@@ -883,15 +883,14 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
         System.out.println("[DEBUG] Removing Fuel, quantity: " + recipe.fuelNeeded);
-        inventory.removeItem("Fuel", recipe.fuelNeeded);
+        inventory.removeItem("Coal", recipe.fuelNeeded);
 
-        com.oop10x.steddyvalley.model.items.Food cookedFood = null;
+        Food cookedFood = null;
         try {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50); 
             cookedFood = Food.getFoodbyName(recipe.name);
             System.out.println("[DEBUG] Found Food object for: " + recipe.name);
         } catch (Exception e) {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50);
+            //cookedFood = new Food(recipe.name, 20, 100, 50);
             System.out.println("[DEBUG] Created fallback Food object for: " + recipe.name);
         }
         playerModel.addItem(cookedFood);
