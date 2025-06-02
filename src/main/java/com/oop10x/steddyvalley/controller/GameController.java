@@ -839,7 +839,6 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
 
-<<<<<<< HEAD
         if (currentState == GameState.MAIN_MENU_STATE) {
             if (!mainMenuOptions.isEmpty() && selectedMainMenuIndex >= 0 && selectedMainMenuIndex < mainMenuOptions.size()) {
                 String selectedOption = mainMenuOptions.get(selectedMainMenuIndex);
@@ -958,7 +957,7 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
-<<<<<<< HEAD
+
 
         if(gameStateModel.isMainMenuState()){
             return currentState == MAIN_MENU_STATE;
@@ -1447,7 +1446,7 @@ public class GameController implements PlayerInputActions, Observer {
         this.moveRightActive = false;
     }
 
-<<<<<<< HEAD
+
     public void handleVisitAction(int index) {
         for (Item item : getGiftOption()) {
             if (!(item instanceof Equipment)) {
@@ -1672,7 +1671,7 @@ public class GameController implements PlayerInputActions, Observer {
         return selectedShippingInventoryIndex;
     }
 
-<<<<<<< HEAD
+
     private void finishShippingSession() {
         if (timeManager != null) {
             timeManager.addMinutes(15);

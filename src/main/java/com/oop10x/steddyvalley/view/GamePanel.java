@@ -200,7 +200,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.dispose();
     }
 
-<<<<<<< HEAD
     private void drawHUD(Graphics2D g2) {
         if (timeManager == null || seasonManagerInternal == null || playerModel == null || gameController == null) {
              System.err.println("[GamePanel] HUD draw skipped: One or more managers/models are null.");
