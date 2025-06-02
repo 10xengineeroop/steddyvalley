@@ -248,5 +248,4 @@ public class FarmMap {
         this.deployedObjects.clear();
         placeDeployedObjects(player);
     }
-
 }

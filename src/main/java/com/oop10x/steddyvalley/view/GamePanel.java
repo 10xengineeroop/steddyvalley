@@ -29,6 +29,8 @@ import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.utils.RelStatus;
+import java.util.List;
+import java.util.Map;
 
 
 public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameStateObserver {
@@ -107,7 +109,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             }
         }
     }
-    public void updateGame() { 
+    public void updateGame() {
         gameController.updateGameLogic();
     }
 
@@ -198,6 +200,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.dispose();
     }
 
+<<<<<<< HEAD
     private void drawHUD(Graphics2D g2) {
         if (timeManager == null || seasonManagerInternal == null || playerModel == null || gameController == null) {
              System.err.println("[GamePanel] HUD draw skipped: One or more managers/models are null.");
@@ -692,12 +695,13 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int weatherStrWidth = g2.getFontMetrics().stringWidth(weatherStr);
         int dayStrWidth = g2.getFontMetrics().stringWidth(dayStr);
 
-        int totalTextWidth = timeStrWidth + seasonStrWidth + weatherStrWidth + dayStrWidth;
-        int interTextPadding = hudPadding * 2;
-        int hudWidth = totalTextWidth + (interTextPadding * 3) + (hudPadding * 2);
+        int interTextPadding = 15;
+
+        int totalTextWidthWithPaddings = timeStrWidth + interTextPadding + seasonStrWidth + interTextPadding + weatherStrWidth + interTextPadding + dayStrWidth;
+        int hudWidth = totalTextWidthWithPaddings + (hudPadding * 2);
 
         g2.setColor(new Color(0,0,0,180));
-        g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15, 15);
+        g2.fillRoundRect(5, 5, hudWidth, singleLineHudHeight, 15,   15);
 
         g2.setColor(Color.WHITE);
         int textY = 5 + hudPadding + g2.getFontMetrics().getAscent();
@@ -1199,7 +1203,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
         g2.setFont(new Font("Arial", Font.PLAIN, 16));
         g2.drawString("W/S: Navigate | E: Select | Esc: Exit", panelX + 20, panelY + panelHeight - 20);
-
 
         String locationText = "Location: " + gameController.getVisiting();
         String currentlyWithText = "Currently With: " + gameController.getNpcNow();

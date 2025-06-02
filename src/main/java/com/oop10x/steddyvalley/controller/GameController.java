@@ -24,6 +24,7 @@ import com.oop10x.steddyvalley.utils.EventType;
 import com.oop10x.steddyvalley.utils.FishRarity;
 import com.oop10x.steddyvalley.utils.RelStatus;
 import com.oop10x.steddyvalley.model.SeasonManager;
+import com.oop10x.steddyvalley.model.ShippingBin;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.view.GamePanel;
 import com.oop10x.steddyvalley.model.Store;
@@ -113,7 +114,6 @@ public class GameController implements PlayerInputActions, Observer {
     private int selectedMainMenuIndex = 0;
     private List<String> pauseMenuOptions;
     private int selectedPauseMenuIndex = 0;
-
     public GameController(Player player, GameState gameState, FarmMap farmMap,
                           CollisionChecker cc, TimeManager tm, int tileSize,
                           SeasonManager seasonManager, WeatherManager weatherManager, GamePanel gamePanel) {
@@ -196,6 +196,15 @@ public class GameController implements PlayerInputActions, Observer {
     public void clearPlayerNameInput() { 
         playerNameInputBuffer.setLength(0); 
     }
+        this.timeManager.addObserver(this);
+
+        if (this.farmMapModel != null && this.farmMapModel.getPlayerShippingBin() != null && this.timeManager != null) {
+            this.timeManager.addObserver(this.farmMapModel.getPlayerShippingBin());
+            System.out.println("[GameController] Player's ShippingBin registered to TimeManager.");
+        } else {
+            System.err.println("[GameController] CRITICAL: Failed to register ShippingBin to TimeManager. Check FarmMap/PlayerShippingBin/TimeManager initialization.");
+        }
+    }
 
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -231,6 +240,16 @@ public class GameController implements PlayerInputActions, Observer {
                 selectedInventoryIndex-- ;
                 if (selectedInventoryIndex < 0) {
                     selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1; 
+                    selectedInventoryIndex = playerModel.getInventory().getAllItems().size()-1;
+                }
+            }
+            if (gameStateModel.isInShippingMode()) {
+                if (!playerModel.getInventory().getAllItems().isEmpty()) {
+                    selectedShippingInventoryIndex--;
+                    int invSize = playerModel.getInventory().getAllItems().size();
+                    if (selectedShippingInventoryIndex < 0) {
+                        selectedShippingInventoryIndex = invSize > 0 ? invSize - 1 : 0;
+                    }
                 }
             }
             if (gameStateModel.getCurrentState() == GameState.VISIT_STATE) {
@@ -290,6 +309,7 @@ public class GameController implements PlayerInputActions, Observer {
                 }
                 return;
             }
+
         }
         if (gameStateModel.isPlaying()) {
             this.moveUpActive = active; 
@@ -354,12 +374,14 @@ public class GameController implements PlayerInputActions, Observer {
                 }
             }
             if (gameStateModel.getCurrentState() == GameState.SHIPPING_STATE) {
+            if (gameStateModel.isInShippingMode()) {
                 if (!playerModel.getInventory().getAllItems().isEmpty()) {
                     selectedShippingInventoryIndex++;
                     int invSize = playerModel.getInventory().getAllItems().size();
                     if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
                         selectedShippingInventoryIndex = 0;
                     } if (invSize == 0) {
+                    } else if (invSize == 0) {
                         selectedShippingInventoryIndex = 0;
                     }
                 }
@@ -396,6 +418,9 @@ public class GameController implements PlayerInputActions, Observer {
         } else {
              if (gameStateModel.isPlaying()) {
                 this.moveLeftActive = false;
+            } else if (gameStateModel.isGuessingFish() && !active) {
+            } else if (!active) {
+                 this.moveLeftActive = false;
             }
         }
     }
@@ -409,6 +434,9 @@ public class GameController implements PlayerInputActions, Observer {
         } else {
             if (gameStateModel.isPlaying()) {
                 this.moveRightActive = false;
+            } else if (gameStateModel.isGuessingFish() && !active) {
+            } else if (!active) {
+                 this.moveRightActive = false;
             }
         }
     }
@@ -698,6 +726,34 @@ public class GameController implements PlayerInputActions, Observer {
             int playerTileY = playerPixelY / tileSize;
 
             DeployedObject adjacentObject = farmMapModel.getAdjacentInteractableDeployedObject(playerTileX, playerTileY);
+            
+            Item equippedItem = playerModel.getEquippedItem();
+
+            if (adjacentObject instanceof ShippingBinObject) {
+                this.activeShippingBin = ((ShippingBinObject) adjacentObject).getLogicalBin();
+                if (this.activeShippingBin != null) {
+                    timeManager.stop();
+                    gameStateModel.setCurrentState(GameState.SHIPPING_STATE);
+                    selectedShippingInventoryIndex = 0;
+                    transitionMessage = "Select item to ship (E) / Esc to Finish.";
+                    System.out.println("Player entered SHIPPING_STATE.");
+                } else {
+                    System.err.println("Logical Shipping Bin not found for ShippingBinObject interaction.");
+                    transitionMessage = "Shipping Bin is not working.";
+                }
+                return;
+            }
+
+            if (equippedItem != null) {
+                boolean isEdible = equippedItem instanceof Food ||
+                                   equippedItem instanceof Fish ||
+                                   equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+    
+                if (isEdible) {
+                    handleEatEquippedItem();
+                    return;
+                }
+            }
 
             if (adjacentObject != null) {
                 System.out.println("DEBUG GC: Player attempting to interact with DeployedObject: " + adjacentObject.getObjectName());
@@ -783,6 +839,7 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
 
+<<<<<<< HEAD
         if (currentState == GameState.MAIN_MENU_STATE) {
             if (!mainMenuOptions.isEmpty() && selectedMainMenuIndex >= 0 && selectedMainMenuIndex < mainMenuOptions.size()) {
                 String selectedOption = mainMenuOptions.get(selectedMainMenuIndex);
@@ -901,6 +958,7 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
+<<<<<<< HEAD
 
         if(gameStateModel.isMainMenuState()){
             return currentState == MAIN_MENU_STATE;
@@ -1001,6 +1059,41 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setPosition(this.tileSize * 5, this.tileSize * 5);
         }
         gameStateModel.setCurrentState(GameState.SLEEP_STATE);
+    }
+
+    public void handleEatEquippedItem() {
+        if (!gameStateModel.isPlaying()) {
+            return;
+        }
+
+        Item equippedItem = playerModel.getEquippedItem();
+
+        if (equippedItem == null) {
+            this.transitionMessage = "Nothing equipped to eat!";
+            System.out.println("Eat attempt: No item equipped.");
+            return;
+        }
+
+        boolean isEdible = equippedItem instanceof Food ||
+                           equippedItem instanceof Fish ||
+                           equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+        if (!isEdible) {
+            this.transitionMessage = equippedItem.getName() + " is not edible!";
+            System.out.println("Eat attempt: " + equippedItem.getName() + " is not edible.");
+            return;
+        }
+
+        playerModel.eat(equippedItem);
+
+        playerModel.getInventory().removeItem(equippedItem.getName(), 1);
+
+        String itemName = equippedItem.getName();
+        playerModel.setEquippedItem(null);
+
+        timeManager.addMinutes(5);
+
+        this.transitionMessage = "You ate " + itemName + ".";
+        System.out.println("Player ate: " + itemName);
     }
 
     private void handleHouseAction(String action) {
@@ -1290,7 +1383,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         fishingSliderCurrentValue += delta;
         fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax)); 
-
+        fishingSliderCurrentValue = Math.max(fishingSliderMin, Math.min(fishingSliderCurrentValue, fishingSliderMax));
         String currentAttemptMessage = "Current value: " + fishingSliderCurrentValue +
                                      " (Range: " + fishingSliderMin + "-" + fishingSliderMax +"). Tries left: " + currentFishingTriesLeft;
         gamePanel.updateFishingSliderDisplay(fishingSliderCurrentValue, currentAttemptMessage, currentFishingTriesLeft);
@@ -1339,6 +1432,8 @@ public class GameController implements PlayerInputActions, Observer {
         }
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
         if (timeManager != null) timeManager.start(); 
+        resetMovementFlags();
+        if (timeManager != null) timeManager.start();
     }
 
     public void setFishingLocation(String location) {
@@ -1352,6 +1447,7 @@ public class GameController implements PlayerInputActions, Observer {
         this.moveRightActive = false;
     }
 
+<<<<<<< HEAD
     public void handleVisitAction(int index) {
         for (Item item : getGiftOption()) {
             if (!(item instanceof Equipment)) {
@@ -1557,7 +1653,6 @@ public class GameController implements PlayerInputActions, Observer {
             if (gamePanel != null) gamePanel.repaint();
         }
     }
-    
     public ShippingBin getActiveShippingBin() {
         return activeShippingBin;
     }
@@ -1577,6 +1672,7 @@ public class GameController implements PlayerInputActions, Observer {
         return selectedShippingInventoryIndex;
     }
 
+<<<<<<< HEAD
     private void finishShippingSession() {
         if (timeManager != null) {
             timeManager.addMinutes(15);

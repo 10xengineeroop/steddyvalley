@@ -14,20 +14,19 @@ public class GameState {
     public static final int FISHING_STATE = 7;
     public static final int FISH_GUESS_STATE = 8;
     public static final int MESSAGE_TV = 9;
-    public static final int SHOP_STATE =10;
+    public static final int SHIPPING_STATE = 10;
     public static final int VISIT_STATE = 11;
     public static final int NPCVISIT_STATE = 12;
     public static final int STOREOPT_STATE = 13;
     public static final int GIFT_STATE = 14;
     public static final int GIFTED_STATE = 15;
     public static final int ENDGAME_STATE = 16;
-    public static final int SHIPPING_STATE = 17;
-    public static final int MAIN_MENU_STATE = 18;
-    public static final int HELP_STATE = 19;
-    public static final int CREDITS_STATE = 20;
-    public static final int PLAYER_NAME_INPUT_STATE = 21;
-    public static final int PLAYER_GENDER_INPUT_STATE = 22;
-    public static final int PLAYER_FAV_ITEM_INPUT_STATE = 23;
+    public static final int MAIN_MENU_STATE = 17;
+    public static final int HELP_STATE = 18;
+    public static final int CREDITS_STATE = 19;
+    public static final int PLAYER_NAME_INPUT_STATE = 20;
+    public static final int PLAYER_GENDER_INPUT_STATE = 21;
+    public static final int PLAYER_FAV_ITEM_INPUT_STATE = 22;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
@@ -145,5 +144,8 @@ public class GameState {
     }
     public boolean isPlayerFavItemInputState() { 
         return currentState == PLAYER_FAV_ITEM_INPUT_STATE;
+    }
+    public boolean isInShippingMode() {
+        return currentState == SHIPPING_STATE;
     }
 }

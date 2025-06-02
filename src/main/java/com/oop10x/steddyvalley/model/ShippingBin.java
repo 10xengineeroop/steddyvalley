@@ -87,5 +87,4 @@ public class ShippingBin implements Placeable, Observer {
     public Player getOwner() {
         return owner;
     }
-
 }
