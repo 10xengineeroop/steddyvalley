@@ -5,6 +5,7 @@ import com.oop10x.steddyvalley.model.GameState;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
+import com.oop10x.steddyvalley.model.items.Crop;
 import com.oop10x.steddyvalley.model.items.Equipment;
 import com.oop10x.steddyvalley.model.items.Fish;
 import com.oop10x.steddyvalley.model.items.Item;
@@ -29,6 +30,7 @@ import com.oop10x.steddyvalley.model.Store;
 import com.oop10x.steddyvalley.model.NPC;
 import com.oop10x.steddyvalley.model.ShippingBin;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -50,7 +52,6 @@ public class GameController implements PlayerInputActions, Observer {
 
     private boolean endGameStatisticsTriggered = false;
 
-    //house punya
     private List<String> houseActions = List.of("Sleep", "Cook", "Watch TV") ;
     private int selectedHouseActionIndex = 0; 
     private List<String> recipes = List.of("Fish n' Chips", "Baguette", "Sashimi", "Fugu", "wine", "Pumpkin Pie", "Veggie Soup",
@@ -58,7 +59,6 @@ public class GameController implements PlayerInputActions, Observer {
     private int selectedRecipeIndex = 0;
     private String messageTV = "";
 
-    //Visit sama NPC bonding
     private List<String> viewVisitActions = List.of("Emily's Store", "Mayor Tadi's Manor", "Caroline's Workshop", "Perry's Atelier",
      "Dasco's Casino", "Abigail's House", "Little Lucy's House", "Forest River", "Mountain Lake", "Ocean");
     private List<String> visitActions = List.of("Emily", "Mayor Tadi", "Caroline", "Perry", "Dasco", "Abigail", "LittleLucy",
@@ -79,7 +79,6 @@ public class GameController implements PlayerInputActions, Observer {
     private String npcFeedbackMessage = "";
     private boolean npcFeedbackStatus = false;
 
-    //fish punya
     private Fish currentFishingTargetFish;
     private int currentFishingTargetNumber;
     private int currentFishingTriesLeft;
@@ -89,22 +88,32 @@ public class GameController implements PlayerInputActions, Observer {
     private Random randomGenerator = new Random();
     private String fishingLocation = "Pond";
     
-    //store punya
     private List<Item> currentShopItems;
     private int selectedShopItemIndex = 0;
     private boolean showingShopFeedback = false;
     private String shopFeedbackMessage = "";
 
+    private StringBuilder playerNameInputBuffer = new StringBuilder();
+    private List<String> genderOptions = Arrays.asList("Male", "Female");
+    private int selectedGenderIndex = 0;
+    private StringBuilder favItemInputBuffer = new StringBuilder();
+    
+    private String tempPlayerName;
+    private String tempPlayerGender;
+    private String tempPlayerFavItem;
+
     private boolean moveUpActive, moveDownActive, moveLeftActive, moveRightActive;
 
-    // Recipe data moved to com.oop10x.steddyvalley.model.recipes
     private List<Recipe> recipeList = RecipeList.RECIPES;
 
-    // Managers for season and weather
     private SeasonManager seasonManager;
     private WeatherManager weatherManager;
 
-    // Register as observer in constructor
+    private List<String> mainMenuOptions;
+    private int selectedMainMenuIndex = 0;
+    private List<String> pauseMenuOptions;
+    private int selectedPauseMenuIndex = 0;
+
     public GameController(Player player, GameState gameState, FarmMap farmMap,
                           CollisionChecker cc, TimeManager tm, int tileSize,
                           SeasonManager seasonManager, WeatherManager weatherManager, GamePanel gamePanel) {
@@ -119,14 +128,83 @@ public class GameController implements PlayerInputActions, Observer {
         this.gamePanel = gamePanel;
         this.timeManager.addObserver(this); 
         this.giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
+        this.mainMenuOptions = Arrays.asList("New Game", "Help", "Statistics", "Credits", "Exit");
+        this.pauseMenuOptions = Arrays.asList("Resume", "Help", "Statistics", "Exit to Main Menu", "Quit Game");
     }
+
+    public List<String> getMainMenuOptions() { 
+        return mainMenuOptions; 
+    }
+
+    public int getSelectedMainMenuIndex() { 
+        return selectedMainMenuIndex; 
+    }
+
+    public List<String> getPauseMenuOptions() { 
+        return pauseMenuOptions; 
+    }
+    public int getSelectedPauseMenuIndex() { 
+        return selectedPauseMenuIndex; 
+    }
+
+    public List<String> getGenderOptions() { 
+        return genderOptions; 
+    }
+    public int getSelectedGenderIndex() { 
+        return selectedGenderIndex; 
+    }
+    public String getFavItemInputBuffer() { 
+        return favItemInputBuffer.toString(); 
+    }
+
+    public void appendCharacterToInputBuffer(char c) {
+        if (gameStateModel.isPlayerNameInputState()) {
+            if (playerNameInputBuffer.length() < 15) playerNameInputBuffer.append(c);
+        } if (gameStateModel.isPlayerFavItemInputState()) {
+            if (favItemInputBuffer.length() < 20) favItemInputBuffer.append(c);
+        }
+    }
+
+    public void backspaceInputBuffer() {
+        if (gameStateModel.isPlayerNameInputState()) {
+            if (playerNameInputBuffer.length() > 0) playerNameInputBuffer.deleteCharAt(playerNameInputBuffer.length() - 1);
+        } if (gameStateModel.isPlayerFavItemInputState()) {
+            if (favItemInputBuffer.length() > 0) favItemInputBuffer.deleteCharAt(favItemInputBuffer.length() - 1);
+        }
+    }
+
+    public void clearFavItemInput() { 
+        favItemInputBuffer.setLength(0); 
+    }
+
+    public String getPlayerNameInputBuffer() { 
+        return playerNameInputBuffer.toString(); 
+    }
+
+    public void appendPlayerNameInput(char c) {
+        if (playerNameInputBuffer.length() < 15) {
+            playerNameInputBuffer.append(c);
+        }
+    }
+
+    public void backspacePlayerNameInput() {
+        if (playerNameInputBuffer.length() > 0) {
+            playerNameInputBuffer.deleteCharAt(playerNameInputBuffer.length() - 1);
+        }
+    }
+
+    public void clearPlayerNameInput() { 
+        playerNameInputBuffer.setLength(0); 
+    }
+
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
     }
+
     public void scrollDisplay(int direction) {
-        if (gameStateModel.isEndGame()) { // Hanya berlaku jika di ENDGAME_STATE
+        if (gameStateModel.isEndGame()) {
             if (gamePanel != null) {
-                int scrollAmount = direction * 20; // Jumlah pixel untuk scroll, bisa disesuaikan
+                int scrollAmount = direction * 20;
                 gamePanel.adjustEndGameStatsScroll(scrollAmount);
             }
         }
@@ -193,12 +271,25 @@ public class GameController implements PlayerInputActions, Observer {
                     int invSize = playerModel.getInventory().getAllItems().size();
                     if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
                         selectedShippingInventoryIndex = 0;
-                    } else if (invSize == 0) {
+                    } if (invSize == 0) {
                         selectedShippingInventoryIndex = 0;
                     }
                 }
             }
-
+            if (gameStateModel.isMainMenuState()) {
+                selectedMainMenuIndex--;
+                if (selectedMainMenuIndex < 0) {
+                    selectedMainMenuIndex = mainMenuOptions.size() - 1;
+                }
+                return;
+            }
+            if (gameStateModel.isPauseMenuState()) {
+                selectedPauseMenuIndex--;
+                if (selectedPauseMenuIndex < 0) {
+                    selectedPauseMenuIndex = pauseMenuOptions.size() - 1;
+                }
+                return;
+            }
         }
         if (gameStateModel.isPlaying()) {
             this.moveUpActive = active; 
@@ -268,10 +359,24 @@ public class GameController implements PlayerInputActions, Observer {
                     int invSize = playerModel.getInventory().getAllItems().size();
                     if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
                         selectedShippingInventoryIndex = 0;
-                    } else if (invSize == 0) {
+                    } if (invSize == 0) {
                         selectedShippingInventoryIndex = 0;
                     }
                 }
+            }
+            if (gameStateModel.isMainMenuState()) {
+                selectedMainMenuIndex++;
+                if (selectedMainMenuIndex >= mainMenuOptions.size()) {
+                    selectedMainMenuIndex = 0;
+                }
+                return;
+            }
+            if (gameStateModel.isPauseMenuState()) {
+                selectedPauseMenuIndex++;
+                if (selectedPauseMenuIndex >= pauseMenuOptions.size()) {
+                    selectedPauseMenuIndex = 0;
+                }
+                return;
             }
         }
         if (gameStateModel.isPlaying()) {
@@ -285,7 +390,7 @@ public class GameController implements PlayerInputActions, Observer {
         if (active) { 
             if (gameStateModel.isGuessingFish()) {
                 adjustFishingSlider(-1); 
-            } else if (gameStateModel.isPlaying()) { 
+            } if (gameStateModel.isPlaying()) { 
                 this.moveLeftActive = true;
             }
         } else {
@@ -298,7 +403,7 @@ public class GameController implements PlayerInputActions, Observer {
         if (active) {
             if (gameStateModel.isGuessingFish()) {
                 adjustFishingSlider(1);
-            } else if (gameStateModel.isPlaying()) {
+            } if (gameStateModel.isPlaying()) {
                 this.moveRightActive = true;
             }
         } else {
@@ -312,39 +417,38 @@ public class GameController implements PlayerInputActions, Observer {
     public void togglePause() {
         int currentState = gameStateModel.getCurrentState();
         if (currentState == GameState.PLAY_STATE) {
-            gameStateModel.setCurrentState(GameState.PAUSE_STATE);
+            gameStateModel.setCurrentState(GameState.PAUSE_MENU_STATE);
+            selectedPauseMenuIndex = 0;
             timeManager.stop();
-        } else if (currentState == GameState.PAUSE_STATE) {
+        } if (currentState == GameState.PAUSE_MENU_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
             timeManager.start();
-        } else if (currentState == GameState.INVENTORY_STATE) {
+        } if (currentState == GameState.INVENTORY_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
             timeManager.start();
-        } else if (currentState == GameState.HOUSE_STATE) {
+        } if (currentState == GameState.HOUSE_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
-        } else if (currentState == GameState.SLEEP_STATE) {
+        } if (currentState == GameState.SLEEP_STATE) {
             gameStateModel.setCurrentState(GameState.HOUSE_STATE);
             resetMovementFlags();
             transitionMessage = "";
             timeManager.start();
         }
-        else if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
+        if (currentState == GameState.COOK_STATE || currentState == GameState.RECIPE_STATE) {
             gameStateModel.setCurrentState(GameState.HOUSE_STATE);
             resetMovementFlags();
         } 
-        else if (currentState == GameState.FISHING_STATE) {
+        if (currentState == GameState.FISHING_STATE) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             resetMovementFlags();
             timeManager.start();
         }
-        else if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
+        if (currentState == GameState.FISHING_STATE || currentState == GameState.FISH_GUESS_STATE) {
             endFishingSession();
-        } /*  else if (currentState == GameState.SHIPPING_MODE) {
-            playerFinishesShippingSession(); // Metode ini harus memanggil timeManager.start() setelah addMinutes(15)
-        } */
+        } 
         if (currentState == GameState.MESSAGE_TV) {
             messageTV = "";
             gameStateModel.setCurrentState(GameState.HOUSE_STATE);
@@ -364,7 +468,7 @@ public class GameController implements PlayerInputActions, Observer {
             timeManager.start();
             selectedVisitActionIndex = 0;
         }
-        else if (currentState == GameState.NPCVISIT_STATE) {
+        if (currentState == GameState.NPCVISIT_STATE) {
         if (npcFeedbackStatus) {
             npcFeedbackStatus = false;
             npcFeedbackMessage = "";
@@ -374,29 +478,31 @@ public class GameController implements PlayerInputActions, Observer {
                 selectedNPCVisitActionIndex = 0;
         }
         }
-        else if (currentState == GameState.STOREOPT_STATE) {
+        if (currentState == GameState.STOREOPT_STATE) {
             gameStateModel.setCurrentState(GameState.VISIT_STATE);
             resetMovementFlags();
             selectedStoreOptionIndex = 0;
         }
-        else if (currentState == GameState.GIFT_STATE) {
+        if (currentState == GameState.GIFT_STATE) {
             gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
             resetMovementFlags();
             selectedGiftIndex = 0;
         }
-        else if (currentState == GameState.GIFTED_STATE) {
+        if (currentState == GameState.GIFTED_STATE) {
             giftOption = new ArrayList<>(playerModel.getInventory().getAllItems().keySet());
             gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
             resetMovementFlags();
         }
-        else if (currentState == GameState.ENDGAME_STATE) {
-            gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        if (currentState == GameState.ENDGAME_STATE || currentState == GameState.HELP_STATE || currentState == GameState.CREDITS_STATE) {
+            gameStateModel.setCurrentState(GameState.MAIN_MENU_STATE);
+            selectedMainMenuIndex = 0;
             resetMovementFlags();
             timeManager.start();
         }
-        else if (currentState == GameState.SHIPPING_STATE) {
+        if (currentState == GameState.SHIPPING_STATE) {
             finishShippingSession();
         }
+
     }
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
@@ -418,7 +524,7 @@ public class GameController implements PlayerInputActions, Observer {
         if (gameStateModel.isPlaying() || gameStateModel.isFishing()) {
             timeManager.stop();
             gameStateModel.setCurrentState(GameState.INVENTORY_STATE);
-        } else if (gameStateModel.isInInventory()) {
+        } if (gameStateModel.isInInventory()) {
             gameStateModel.setCurrentState(GameState.PLAY_STATE);
             timeManager.start();
         }
@@ -470,15 +576,15 @@ public class GameController implements PlayerInputActions, Observer {
             gameStateModel.setCurrentState(GameState.COOK_STATE);
             return;
         }
-        else if (currentState == GameState.FISHING_STATE) {
+        if (currentState == GameState.FISHING_STATE) {
             handleFishingAction();
             return;
         }
-        else if (currentState == GameState.FISH_GUESS_STATE) {
+        if (currentState == GameState.FISH_GUESS_STATE) {
             confirmFishingSliderGuess();
             return;
         }
-        else if (currentState == GameState.SHOP_STATE) {
+        if (currentState == GameState.SHOP_STATE) {
             if(!showingShopFeedback) {
                 if (currentShopItems != null && !currentShopItems.isEmpty() && selectedShopItemIndex >= 0 && selectedShopItemIndex < currentShopItems.size()) {
                     Item itemToBuy = currentShopItems.get(selectedShopItemIndex);
@@ -533,7 +639,7 @@ public class GameController implements PlayerInputActions, Observer {
             if(selectedStoreOptionIndex == 1) {
                 enterShopState();
             }
-            else if (selectedStoreOptionIndex == 0) {
+            if (selectedStoreOptionIndex == 0) {
                 gameStateModel.setCurrentState(GameState.NPCVISIT_STATE);
             }
             playerModel.setEnergy(playerModel.getEnergy() - 10);
@@ -577,7 +683,7 @@ public class GameController implements PlayerInputActions, Observer {
                 } else {
                     transitionMessage = itemToShip.getName() + " cannot be sold or has no sell price.";
                 }
-            } else if (playerItemList.isEmpty()) {
+            } if (playerItemList.isEmpty()) {
                 transitionMessage = "Inventory is empty. Press Esc to finish shipping.";
             } else {
                 transitionMessage = "No item selected. Press Esc to finish shipping.";
@@ -600,7 +706,7 @@ public class GameController implements PlayerInputActions, Observer {
                     selectedHouseActionIndex = 0;
                     return;
                 } 
-                else if (adjacentObject instanceof PondObject) {
+                if (adjacentObject instanceof PondObject) {
                     Item equipped = playerModel.getEquippedItem();
                     if (equipped != null && "Fishing Rod".equals(equipped.getName())) {
                         if (playerModel.getEnergy() >= 5) {
@@ -617,7 +723,7 @@ public class GameController implements PlayerInputActions, Observer {
                     }
                     return;
                 }
-                else if (adjacentObject instanceof ShippingBinObject) {
+                if (adjacentObject instanceof ShippingBinObject) {
                         this.activeShippingBin = ((ShippingBinObject) adjacentObject).getLogicalBin();
                     if (this.activeShippingBin != null) {
                         timeManager.stop();
@@ -631,7 +737,7 @@ public class GameController implements PlayerInputActions, Observer {
                     }
                     return;
                 }
-                else if (adjacentObject instanceof Actionable) {
+                if (adjacentObject instanceof Actionable) {
                     ((Actionable) adjacentObject).onPlayerAction(playerModel);
                     return; 
                 }
@@ -641,7 +747,7 @@ public class GameController implements PlayerInputActions, Observer {
             if (equippedItem != null) {
                 boolean isEdible = equippedItem instanceof Food ||
                                    equippedItem instanceof Fish ||
-                                   equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+                                   equippedItem instanceof Crop;
     
                 if (isEdible) {
                     handleEatEquippedItem();
@@ -656,12 +762,12 @@ public class GameController implements PlayerInputActions, Observer {
                     currentLand.harvest(playerModel, timeManager.getMinutes());
                     if ("Hoe".equals(equippedItem.getName())) {
                         if (currentLand.till(playerModel)) actionTaken = true;
-                    } else if (equippedItem instanceof Seed) {
+                    } if (equippedItem instanceof Seed) {
                         if (currentLand.plant((Seed) equippedItem, playerModel, timeManager.getMinutes())) actionTaken = true;
-                    } else if ("Watering Can".equals(equippedItem.getName())) {
+                    } if ("Watering Can".equals(equippedItem.getName())) {
                         if (currentLand.water(playerModel)) actionTaken = true;
                     }
-                    else if ("Pickaxe".equals(equippedItem.getName())) {
+                    if ("Pickaxe".equals(equippedItem.getName())) {
                         if (true) {
                             actionTaken = true;
                             currentLand.resetLand();
@@ -676,7 +782,87 @@ public class GameController implements PlayerInputActions, Observer {
                 return;
             }
         }
+
+        if (currentState == GameState.MAIN_MENU_STATE) {
+            if (!mainMenuOptions.isEmpty() && selectedMainMenuIndex >= 0 && selectedMainMenuIndex < mainMenuOptions.size()) {
+                String selectedOption = mainMenuOptions.get(selectedMainMenuIndex);
+                handleMainMenuAction(selectedOption);
+            }
+        if (currentState == GameState.PAUSE_MENU_STATE) {
+            if (!pauseMenuOptions.isEmpty() && selectedPauseMenuIndex >= 0 && selectedPauseMenuIndex < pauseMenuOptions.size()) {
+                String selectedOption = pauseMenuOptions.get(selectedPauseMenuIndex);
+                handlePauseMenuAction(selectedOption);
+            }
+            return;
+        }
+            return;
+        } if (currentState == GameState.PLAYER_NAME_INPUT_STATE) {
+            if (playerNameInputBuffer.length() > 0) {
+                this.tempPlayerName = playerNameInputBuffer.toString(); // Simpan sementara
+                System.out.println("Temporary Player name: " + this.tempPlayerName);
+                gameStateModel.setCurrentState(GameState.PLAYER_GENDER_INPUT_STATE);
+                transitionMessage = "Select Your Gender (W/S, E/Enter to confirm)";
+                selectedGenderIndex = 0;
+            } else {
+                transitionMessage = "Player name cannot be empty!";
+            }
+        } if (currentState == GameState.PLAYER_GENDER_INPUT_STATE) {
+            if (selectedGenderIndex >= 0 && selectedGenderIndex < genderOptions.size()) {
+                this.tempPlayerGender = genderOptions.get(selectedGenderIndex);
+                System.out.println("Temporary Player gender: " + this.tempPlayerGender);
+                gameStateModel.setCurrentState(GameState.PLAYER_FAV_ITEM_INPUT_STATE);
+                transitionMessage = "Enter Favorite Item (max 20 chars), then E/Enter.";
+                clearFavItemInput();
+                System.out.println("--- Possible Favorite Items (Examples) ---");
+                System.out.println("- Any Fish (e.g., Carp, Salmon)");
+                System.out.println("- Any Crop (e.g., Parsnip, Melon)");
+                System.out.println("- Any Food (e.g., Fish n' Chips, Wine)");
+                System.out.println("- Specific items like 'Diamond', 'Old Coin', 'Spakbor Kanan'");
+                System.out.println("------------------------------------------");
+            }
+        } if (currentState == GameState.PLAYER_FAV_ITEM_INPUT_STATE) {
+            if (favItemInputBuffer.length() > 0) {
+                this.tempPlayerFavItem = favItemInputBuffer.toString();
+                System.out.println("Temporary Player favorite item: " + this.tempPlayerFavItem);
+                initializeNewGame();
+            } else {
+                transitionMessage = "Favorite item cannot be empty!";
+            }
+        }
         return ;
+    }
+
+    private void handlePauseMenuAction(String option) {
+        System.out.println("Pause Menu option selected: " + option);
+        switch (option) {
+            case "Resume":
+                gameStateModel.setCurrentState(GameState.PLAY_STATE);
+                if (timeManager != null) timeManager.start();
+                resetMovementFlags();
+                break;
+            case "Help":
+                gameStateModel.setCurrentState(GameState.HELP_STATE);
+                break;
+            case "Statistics":
+                gameStateModel.setCurrentState(GameState.ENDGAME_STATE);
+                break;
+            case "Credits":
+                gameStateModel.setCurrentState(GameState.CREDITS_STATE);
+                break;
+            case "Exit to Main Menu":
+                if (timeManager != null) timeManager.stop();
+                activeShippingBin = null;
+                gameStateModel.setCurrentState(GameState.MAIN_MENU_STATE);
+                selectedMainMenuIndex = 0; 
+                break;
+            case "Quit Game":
+                System.out.println("Exiting game via pause menu...");
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Unknown pause menu option: " + option);
+        }
+        if (gamePanel != null) gamePanel.repaint();
     }
 
     public void handleEatEquippedItem() {
@@ -694,7 +880,7 @@ public class GameController implements PlayerInputActions, Observer {
 
         boolean isEdible = equippedItem instanceof Food ||
                            equippedItem instanceof Fish ||
-                           equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
+                           equippedItem instanceof Crop;
         if (!isEdible) {
             this.transitionMessage = equippedItem.getName() + " is not edible!";
             System.out.println("Eat attempt: " + equippedItem.getName() + " is not edible.");
@@ -715,12 +901,16 @@ public class GameController implements PlayerInputActions, Observer {
     }
 
     public void updateGameLogic() {
+
+        if(gameStateModel.isMainMenuState()){
+            return currentState == MAIN_MENU_STATE;
+        }
         if (gameStateModel.isEndGame() || endGameStatisticsTriggered) {
             return ;
         }
         if (gameStateModel.isSleeping()) return;
         
-        if (gameStateModel.isPlaying() || gameStateModel.isInHouse()) { // Atau state aktif lainnya yang relevan
+        if (gameStateModel.isPlaying() || gameStateModel.isInHouse()) {
             checkAndTriggerEndGameStatistics();
             if (gameStateModel.isEndGame()) {
                 return;
@@ -782,10 +972,10 @@ public class GameController implements PlayerInputActions, Observer {
         if (isDueToExhaustion) {
             energyToSet = MAX_ENERGY / 2;
             sleepReasonMessage = "You collapsed from exhaustion! Energy restored to half.";
-        } else if (energyBeforeSleep == 0) {
+        } if (energyBeforeSleep == 0) {
             energyToSet = 10;
             sleepReasonMessage = "You were completely out of energy and went to sleep. Energy +10.";
-        } else if (energyBeforeSleep < (MAX_ENERGY * 0.10)) {
+        } if (energyBeforeSleep < (MAX_ENERGY * 0.10)) {
             energyToSet = MAX_ENERGY / 2;
             sleepReasonMessage = "You were too tired and went to sleep. Energy restored to half.";
         } else {
@@ -895,13 +1085,13 @@ public class GameController implements PlayerInputActions, Observer {
         System.out.println("[DEBUG] Removing Fuel, quantity: " + recipe.fuelNeeded);
         inventory.removeItem("Fuel", recipe.fuelNeeded);
 
-        com.oop10x.steddyvalley.model.items.Food cookedFood = null;
+        Food cookedFood = null;
         try {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50); 
+            cookedFood = new Food(recipe.name, 20, 100, 50); 
             cookedFood = Food.getFoodbyName(recipe.name);
             System.out.println("[DEBUG] Found Food object for: " + recipe.name);
         } catch (Exception e) {
-            cookedFood = new com.oop10x.steddyvalley.model.items.Food(recipe.name, 20, 100, 50);
+            cookedFood = new Food(recipe.name, 20, 100, 50);
             System.out.println("[DEBUG] Created fallback Food object for: " + recipe.name);
         }
         playerModel.addItem(cookedFood);
@@ -1010,9 +1200,9 @@ public class GameController implements PlayerInputActions, Observer {
         NPC npc = NPC.getNpcByName(npcNow);
         if (npc.getRelationshipStatus().equals(RelStatus.SINGLE)) {
             status = "Single";
-        } else if (npc.getRelationshipStatus().equals(RelStatus.FIANCE)) {
+        } if (npc.getRelationshipStatus().equals(RelStatus.FIANCE)) {
             status = "Engaged";
-        } else if (npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
+        } if (npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
             status = "Married";
         }
         return status;
@@ -1176,7 +1366,7 @@ public class GameController implements PlayerInputActions, Observer {
             emily.recordPlayerVisit();
             gameStateModel.setCurrentState(GameState.STOREOPT_STATE);
         }
-        else if (index >= 1 && index <= 6) {
+        if (index >= 1 && index <= 6) {
             visiting = viewVisitActions.get(selectedVisitActionIndex);
             npcNow = visitActions.get(selectedVisitActionIndex);
             npcHeartPoints = NPC.getNpcByName(npcNow).getHeartPoints();
@@ -1186,7 +1376,7 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setEnergy(playerModel.getEnergy() - 10);
             timeManager.addMinutes(15);
         }
-        else if (index >= 7 && index <= 9){
+        if (index >= 7 && index <= 9){
             playerModel.setEnergy(playerModel.getEnergy() - 10);
             timeManager.addMinutes(15);
             setFishingLocation(visitActions.get(index));
@@ -1244,9 +1434,9 @@ public class GameController implements PlayerInputActions, Observer {
         System.out.println("Gifting " + getGiftOption().get(selectedGiftIndex) + " to " + npc.getName() + ".");
         if(npc.getLovedItems().contains(giftItem)) {
             heartEarned = "You earned 25 heart points with " + npc.getName() + "!";
-        } else if (npc.getLikedItems().contains(giftItem)) {
+        } if (npc.getLikedItems().contains(giftItem)) {
             heartEarned = "You earned 20 heart points with " + npc.getName() + "!";
-        } else if (npc.getHatedItems().contains(giftItem)) {
+        } if (npc.getHatedItems().contains(giftItem)) {
             heartEarned = "You lost 25 heart points with " + npc.getName() + ".";
         } else {
             heartEarned = "No change in heart points with " + npc.getName() + ".";
@@ -1260,7 +1450,7 @@ public class GameController implements PlayerInputActions, Observer {
         if(npc.getName().equals("LittleLucy")){
             npcFeedbackMessage = "Bro? Why are you trying to propose a child?";
         }
-        else if (npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
+        if (npc.getRelationshipStatus().equals(RelStatus.SPOUSE)) {
             npcFeedbackMessage = "You are already married to " + npc.getName() + ".";
         }
         else{
@@ -1290,7 +1480,7 @@ public class GameController implements PlayerInputActions, Observer {
                         if (npc.getHeartPoints() < 150) {
                             npcFeedbackMessage = "Increase your heart point with " + npc.getName() + "first.";
                         }
-                        else if (playerModel.getInventory().getItemByName("Proposal Ring") == null) {
+                        if (playerModel.getInventory().getItemByName("Proposal Ring") == null) {
                             npcFeedbackMessage = "You need a Proposal Ring to propose!";
                         }
                         playerModel.setEnergy(playerModel.getEnergy() - 20);
@@ -1356,7 +1546,7 @@ public class GameController implements PlayerInputActions, Observer {
         boolean marriageMilestoneMet = playerModel.getRelationshipStatus() == RelStatus.SPOUSE; 
         if (goldMilestoneMet || marriageMilestoneMet) {
             endGameStatisticsTriggered = true; 
-             
+
             if (timeManager != null) {
                 timeManager.stop(); 
             }
@@ -1364,13 +1554,14 @@ public class GameController implements PlayerInputActions, Observer {
                 gamePanel.resetEndGameStatsScroll();
             }
             gameStateModel.setCurrentState(GameState.ENDGAME_STATE);
-
             if (gamePanel != null) gamePanel.repaint();
         }
     }
+    
     public ShippingBin getActiveShippingBin() {
         return activeShippingBin;
     }
+
     public int getSelectedShippingInventoryIndex() {
         int inventorySize = (playerModel != null && playerModel.getInventory() != null) ? playerModel.getInventory().getAllItems().size() : 0;
         if (inventorySize == 0) {
@@ -1385,6 +1576,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         return selectedShippingInventoryIndex;
     }
+
     private void finishShippingSession() {
         if (timeManager != null) {
             timeManager.addMinutes(15);
@@ -1395,5 +1587,112 @@ public class GameController implements PlayerInputActions, Observer {
         transitionMessage = "Finished shipping for the day.";
         activeShippingBin = null;
         System.out.println("Player finished shipping session.");
+    }
+
+    private void handleMainMenuAction(String option) {
+        System.out.println("Main Menu option selected: " + option);
+        transitionMessage = "";
+        switch (option) {
+            case "New Game":
+                clearPlayerNameInput();
+                clearFavItemInput();
+                selectedGenderIndex = 0;
+                gameStateModel.setCurrentState(GameState.PLAYER_NAME_INPUT_STATE);
+                transitionMessage = "Enter Your Name (max 15 chars), then press E/Enter.";
+                break;
+            case "Help":
+                gameStateModel.setCurrentState(GameState.HELP_STATE);
+                break;
+            case "Statistics":
+                gameStateModel.setCurrentState(GameState.ENDGAME_STATE);
+                break;
+            case "Credits":
+                gameStateModel.setCurrentState(GameState.CREDITS_STATE);
+                break;
+            case "Exit":
+                System.out.println("Exiting game via menu...");
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Unknown main menu option: " + option);
+        }
+
+        if (gamePanel != null) gamePanel.repaint();
+    }
+
+    private void initializeNewGame() {
+        System.out.println("Starting game with Name: " + (tempPlayerName != null ? tempPlayerName : "Player") +
+                           ", Gender: " + (tempPlayerGender != null ? tempPlayerGender : "N/A") +
+                           ", FavItem: " + (tempPlayerFavItem != null ? tempPlayerFavItem : "N/A"));
+
+        if (playerModel != null) {
+            playerModel.setName(tempPlayerName != null ? tempPlayerName : "Steddy");
+            playerModel.setGender(tempPlayerGender != null ? tempPlayerGender : "Helikopter");
+            playerModel.setFavoriteItem(tempPlayerFavItem != null ? tempPlayerFavItem : "Everything");
+            playerModel.setFarmName(playerModel.getName() + "'s Farm");
+            playerModel.setGold(500);
+            playerModel.setEnergy(100);
+            playerModel.setPosition(GamePanel.TILE_SIZE * 5, GamePanel.TILE_SIZE * 5);
+            playerModel.setRelationshipStatus(RelStatus.SINGLE);
+            playerModel.setPartnerNPC(null);
+
+            if (playerModel.getInventory() != null) {
+                playerModel.getInventory().clearInventory();
+                playerModel.addItem(new Equipment("Hoe"));
+                playerModel.addItem(new Equipment("Watering Can"));
+                playerModel.addItem(new Equipment("Pickaxe"));
+                playerModel.addItem(new Equipment("Fishing Rod"));
+                try {
+                     playerModel.addItem(new Seed("Parsnip Seeds", "Spring", 1, 20, 10, 1, "Parsnip"), 15);
+                } catch (Exception e) {
+                    System.err.println("Error initializing Parsnip Seeds for new game: " + e.getMessage());
+                }
+                Item hoeToEquip = playerModel.getInventory().getItemByName("Hoe");
+                playerModel.setEquippedItem(hoeToEquip);
+            }
+        } else {
+            System.err.println("CRITICAL: playerModel is null in initializeNewGame!");
+            gameStateModel.setCurrentState(GameState.MAIN_MENU_STATE);
+            return;
+        }
+
+        if (this.timeManager != null) {
+            this.timeManager.setTimeToSixAM();
+        }
+        if (this.seasonManager != null) {
+            this.seasonManager.resetSeasonForNewGame();
+        }
+        if (this.weatherManager != null) {
+            this.weatherManager.resetWeatherForNewGame();
+        }
+
+        this.farmMapModel = new FarmMap(this.timeManager, this.playerModel);
+
+        if (this.farmMapModel != null && this.farmMapModel.getPlayerShippingBin() != null && this.timeManager != null) {
+            this.timeManager.removeObserver(this.farmMapModel.getPlayerShippingBin());
+            this.timeManager.addObserver(this.farmMapModel.getPlayerShippingBin());
+            System.out.println("[GameController initializeNewGame] Player's new ShippingBin re-registered to TimeManager.");
+        } else {
+            System.err.println("[GameController initializeNewGame] WARNING: Failed to register new ShippingBin to TimeManager.");
+        }
+
+        if (this.timeManager != null) {
+            this.timeManager.start();
+        }
+        gameStateModel.setCurrentState(GameState.PLAY_STATE);
+        transitionMessage = "Welcome to " + playerModel.getFarmName() + ", " + playerModel.getName() + "!";
+        resetMovementFlags();
+        endGameStatisticsTriggered = false;
+        if (gamePanel != null) gamePanel.resetEndGameStatsScroll();
+    }
+
+    public String getTempPlayerName() { 
+        return tempPlayerName; 
+    }
+    public String getTempPlayerGender() { 
+        return tempPlayerGender; 
+    }
+    public String getTempPlayerFavItem() { 
+        return tempPlayerFavItem; 
     }
 }

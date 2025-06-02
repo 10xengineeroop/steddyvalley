@@ -6,7 +6,7 @@ import java.util.List;
 public class GameState {
     public static final int HOUSE_STATE = 0;
     public static final int PLAY_STATE = 1;
-    public static final int PAUSE_STATE = 2;
+    public static final int PAUSE_MENU_STATE  = 2;
     public static final int INVENTORY_STATE = 3;
     public static final int SLEEP_STATE = 4;
     public static final int COOK_STATE = 5;
@@ -22,12 +22,18 @@ public class GameState {
     public static final int GIFTED_STATE = 15;
     public static final int ENDGAME_STATE = 16;
     public static final int SHIPPING_STATE = 17;
+    public static final int MAIN_MENU_STATE = 18;
+    public static final int HELP_STATE = 19;
+    public static final int CREDITS_STATE = 20;
+    public static final int PLAYER_NAME_INPUT_STATE = 21;
+    public static final int PLAYER_GENDER_INPUT_STATE = 22;
+    public static final int PLAYER_FAV_ITEM_INPUT_STATE = 23;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();
 
     public GameState() {
-        this.currentState = PLAY_STATE;
+        this.currentState = MAIN_MENU_STATE;
     }
 
     // --- Observer Methods ---
@@ -52,12 +58,15 @@ public class GameState {
     public int getCurrentState() {
         return currentState;
     }
+    public String getCurrentStateName(int stateCode) {
+        return "MAIN_MENU_STATE";
+    }
 
     public void setCurrentState(int newState) {
         if (this.currentState != newState) {
             int oldState = this.currentState;
             this.currentState = newState;
-            notifyObservers(oldState); // Beri tahu observer tentang perubahan state
+            notifyObservers(oldState);
         }
     }
 
@@ -67,7 +76,7 @@ public class GameState {
     }
 
     public boolean isPaused() {
-        return currentState == PAUSE_STATE;
+        return currentState == PAUSE_MENU_STATE ;
     }
 
     public boolean isInHouse() {
@@ -118,5 +127,23 @@ public class GameState {
     }
     public boolean isShipping() {
         return currentState == SHIPPING_STATE;
+    }
+    public boolean isMainMenuState() {
+        return currentState == MAIN_MENU_STATE;
+    }
+    public boolean isHelpState() {
+        return currentState == HELP_STATE;
+    }
+    public boolean isCreditsState() {
+        return currentState == CREDITS_STATE;
+    }
+    public boolean isPlayerNameInputState() {
+        return currentState == PLAYER_NAME_INPUT_STATE;
+    }
+    public boolean isPlayerGenderInputState() { 
+        return currentState == PLAYER_GENDER_INPUT_STATE; 
+    }
+    public boolean isPlayerFavItemInputState() { 
+        return currentState == PLAYER_FAV_ITEM_INPUT_STATE;
     }
 }

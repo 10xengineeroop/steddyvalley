@@ -1,12 +1,20 @@
 package com.oop10x.steddyvalley;
 
-import com.oop10x.steddyvalley.model.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
+import com.oop10x.steddyvalley.controller.GameController;
+import com.oop10x.steddyvalley.controller.KeyHandler;
+import com.oop10x.steddyvalley.model.FarmMap;
+import com.oop10x.steddyvalley.model.GameState;
+import com.oop10x.steddyvalley.model.Player;
+import com.oop10x.steddyvalley.model.SeasonManager;
+import com.oop10x.steddyvalley.model.TimeManager;
+import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.collision.CollisionChecker;
 import com.oop10x.steddyvalley.model.tile.TileManager;
-import com.oop10x.steddyvalley.controller.*;
-import com.oop10x.steddyvalley.view.*;
-
-import javax.swing.SwingUtilities;
+import com.oop10x.steddyvalley.view.GamePanel;
+import com.oop10x.steddyvalley.view.GameWindow;
 
 public class Main {
 
@@ -15,11 +23,9 @@ public class Main {
             final int TILE_SIZE = GamePanel.TILE_SIZE;
 
             // --- Inisialisasi Model ---
-
             TimeManager timeManager = TimeManager.getInstance();
             Player playerModel = new Player(TILE_SIZE * 5, TILE_SIZE * 5, 500, 100, 4);
             GameState gameStateModel = new GameState();
-            // Tambahkan SeasonManager dan WeatherManager
             SeasonManager seasonManager = SeasonManager.getInstance(timeManager);
             WeatherManager weatherManager = WeatherManager.getInstance(timeManager);
 
@@ -27,13 +33,11 @@ public class Main {
             SeasonManager seasonModel = seasonManager;
             WeatherManager weatherModel = weatherManager;
 
-            // TileManager masih diperlukan oleh CollisionChecker untuk tile dasar non-FarmMap
             TileManager tileManagerForCollision = new TileManager(TILE_SIZE, FarmMap.MAP_WIDTH_IN_TILES, FarmMap.MAP_HEIGHT_IN_TILES);
             CollisionChecker collisionChecker = new CollisionChecker(tileManagerForCollision, farmMapModel, TILE_SIZE);
 
             // --- Inisialisasi Controller ---
-            GameController gameController = new GameController(playerModel, gameStateModel, farmMapModel,
-                                                               collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, null);
+            GameController gameController = new GameController(playerModel, gameStateModel, farmMapModel, collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, null);
             KeyHandler keyHandler = new KeyHandler(gameController);
 
             // --- Inisialisasi View ---
@@ -46,7 +50,6 @@ public class Main {
             gameWindow.addCleanShutdownHook();
 
             // --- Mulai Game ---
-            timeManager.start();
             gameWindow.displayAndFocus();
             gamePanel.startGameThread();
         });

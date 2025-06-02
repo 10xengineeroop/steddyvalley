@@ -87,11 +87,9 @@ public class NPC {
     }
 
     public boolean propose(Player player) {
-        // Cek apakah player memiliki Proposal Ring
         if (player == null || player.getInventory().getItemByName("Proposal Ring") == null) {
-            return false; // Tidak ada Proposal Ring
+            return false;
         } else if (heartPoints == 150 && (player.getRelationshipStatus().equals(RelStatus.SINGLE) || player.getRelationshipStatus().equals(RelStatus.FIANCE))) {
-            // Jika heart points cukup dan status hubungan player adalah SINGLE
             if (relationshipStatus == RelStatus.SINGLE) {
                 relationshipStatus = RelStatus.FIANCE;
                 player.setRelationshipStatus(RelStatus.FIANCE);
@@ -102,7 +100,7 @@ public class NPC {
                 return true; // Pernikahan terjadi
             }
         } else {
-            return false; // Heart points tidak cukup untuk menikah
+            return false; // Heart points TIDAK cukup untuk menikah
         }
         
     }
@@ -116,8 +114,6 @@ public class NPC {
     }
 
     public void chat() {
-        // Implementasi chat dengan NPC
-        // Misalnya, bisa menampilkan dialog atau interaksi lainnya
         setHeartPoints(getHeartPoints() + 10);
         chatCountWithPlayer++;
     }
@@ -135,7 +131,6 @@ public class NPC {
         throw new NullPointerException("No NPC with name " + name);
     }
     static {
-        // I can't do Mayor Tadi's hated items
         Set<Item> hatedItems = new HashSet<>();
         hatedItems.addAll(Fish.getFishSet());
         hatedItems.addAll(Misc.getMiscset());

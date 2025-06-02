@@ -188,7 +188,6 @@ public class FarmMap {
 
 
     public void draw(Graphics2D g2, int tileSize) {
-        // Gambar Land
         for (int r = 0; r < MAP_HEIGHT_IN_TILES; r++) {
             for (int c = 0; c < MAP_WIDTH_IN_TILES; c++) {
                 Land land = landGrid[r][c];
@@ -238,4 +237,16 @@ public class FarmMap {
     public ShippingBin getPlayerShippingBin() {
         return playerShippingBin;
     }
+
+    public void resetMapForNewGame(TimeManager timeManager, Player player) {
+        System.out.println("Resetting FarmMap for new game...");
+        for (int r = 0; r < MAP_HEIGHT_IN_TILES; r++) {
+            for (int c = 0; c < MAP_WIDTH_IN_TILES; c++) {
+                this.landGrid[r][c] = new Land(c, r, timeManager);
+            }
+        }
+        this.deployedObjects.clear();
+        placeDeployedObjects(player);
+    }
+
 }

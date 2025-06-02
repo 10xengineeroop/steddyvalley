@@ -92,5 +92,12 @@ public class SeasonManager implements Observer, Observable {
         this.seasonsPassed = seasonsPassed;
     }
 
-    
+    public void resetSeasonForNewGame() {
+        populateSeasons();
+        daysUntilNextSeason = 10;
+        seasonsPassed = 0;
+        System.out.println("[SeasonManager] Season reset to SPRING, Day 1 for New Game.");
+        notifyObservers(EventType.NEWSEASON, currentSeason.toString());
+    }
+
 }

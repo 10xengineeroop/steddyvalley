@@ -93,4 +93,17 @@ public class WeatherManager implements Observable, Observer {
         }
         return weatherSchedule.peek();
     }
+
+    public void resetWeatherForNewGame() {
+        populateWeather();
+        if (!weatherSchedule.isEmpty()) {
+            currentWeather = weatherSchedule.poll();
+        } else {
+            currentWeather = Weather.SUNNY;
+            System.err.println("WeatherManager: Failed to populate weather schedule for new game, defaulting to SUNNY.");
+        }
+        System.out.println("[WeatherManager] Weather reset for New Game. Initial weather: " + currentWeather);
+        notifyObservers(EventType.NEWWEATHER, currentWeather != null ? currentWeather.toString() : "UNKNOWN");
+    }
+
 }

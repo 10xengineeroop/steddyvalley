@@ -43,10 +43,9 @@ public class Inventory {
     public int countItemsByType(String type) {
         int total = 0;
         for (Map.Entry<Item, Integer> entry : inventory.entrySet()) {
-            if (entry.getKey().getClass().getSimpleName().equalsIgnoreCase(type)) {// Check the class name for type{
+            if (entry.getKey().getClass().getSimpleName().equalsIgnoreCase(type)) {
                     total += entry.getValue();
                 }
-            // Add more types if needed
         }
         return total;
     }
@@ -82,7 +81,6 @@ public class Inventory {
                 }
             }
         }
-        // Add more types if needed
     }
 
     public Item getItemByName(String name) {
@@ -96,5 +94,9 @@ public class Inventory {
 
     public Map<Item, Integer> getAllItems() {
         return new HashMap<>(inventory);
+    }
+
+    public void clearInventory() {
+        this.inventory.clear();
     }
 }

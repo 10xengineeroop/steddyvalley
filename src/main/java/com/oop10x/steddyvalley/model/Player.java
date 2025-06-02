@@ -17,6 +17,11 @@ public class Player {
     private int currentTime;
     private int speed;
     private RelStatus relationshipStatus = RelStatus.SINGLE;
+    private String name = "Steddy";
+    private String gender = "Helikopter";
+    private String favoriteItem = "Anything!";
+    private String farmName = "Steddy Farm";
+    private NPC partnerNPC = null;
 
     // End Game Statistics
     private static int totalIncome = 0;
@@ -25,7 +30,46 @@ public class Player {
     private static int totalFishCaught = 0;
     private static Map<FishRarity, Integer> fishCaughtByRarity = new EnumMap<>(FishRarity.class);
 
-    
+    public String getName() {
+        return name; 
+    }
+    public void setName(String name) { 
+        this.name = name;
+    }
+
+    public void setFarmName(String name){
+        this.farmName = farmName;
+    }
+
+    public String getGender() { 
+        return gender; 
+    }
+    public void setGender(String gender) { 
+        this.gender = gender; notifyObservers(); 
+    }
+
+    public String getFavoriteItem() { 
+        return favoriteItem; 
+    }
+    public void setFavoriteItem(String favoriteItem) { 
+        this.favoriteItem = favoriteItem; notifyObservers(); 
+    }
+
+    public NPC getPartnerNPC() { 
+        return partnerNPC; 
+    }
+    public void setPartnerNPC(NPC partnerNPC) {
+        this.partnerNPC = partnerNPC;
+        if (partnerNPC != null) {
+            if (getRelationshipStatus().equals(RelStatus.FIANCE)) {
+                this.relationshipStatus = RelStatus.FIANCE;
+            }
+            else {
+                this.relationshipStatus = RelStatus.SPOUSE;
+            }
+        }
+        notifyObservers();
+    }
 
     public static int getTotalIncome() {
         return totalIncome;
