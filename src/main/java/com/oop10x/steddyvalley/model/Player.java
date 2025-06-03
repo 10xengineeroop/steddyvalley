@@ -89,9 +89,15 @@ public class Player {
     }
 
     public static int getIncomePerSeason() {
+        if (SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed() == 0) {
+            return getTotalIncome();
+        }
         return getTotalIncome() / SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed();
     }
     public static int getExpenditurePerSeason() {
+        if (SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed() == 0) {
+            return getTotalExpenditure();
+        }
         return getTotalExpenditure() / SeasonManager.getInstance(TimeManager.getInstance()).getSeasonsPassed();
     }
 

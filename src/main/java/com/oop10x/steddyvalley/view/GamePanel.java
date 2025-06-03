@@ -224,6 +224,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                     }
                 }
             }
+
+            g2.setFont(new Font("Arial", Font.ITALIC, 18));
+            g2.drawString("Press ['Enter'] to Confirm Continue.", getXforCenteredText("Press ['Enter'] to Confirm Continue", g2), SCREEN_HEIGHT - 50);
             
             String feedbackMsg = gameController.getTransitionMessage();
             if (feedbackMsg != null && !feedbackMsg.isEmpty() && !feedbackMsg.startsWith("Welcome")) {
@@ -260,7 +263,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("Press E to confirm, Backspace to delete.", getXforCenteredText("Press E to confirm, Backspace to delete.", g2), nameFieldY + 60);
+            g2.drawString("Press ['Enter'] to confirm, [Backspace] to delete.", getXforCenteredText("Press ['Enter'] to confirm, [Backspace] to delete.", g2), nameFieldY + 60);
 
             String feedbackMsg = gameController.getTransitionMessage();
             if (feedbackMsg != null && !feedbackMsg.isEmpty() && feedbackMsg.contains("cannot be empty")) {
@@ -288,11 +291,14 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
        int helpY = SCREEN_HEIGHT / 4 + 50;
        String[] helpText = {
            "Welcome to Spakbor Hills! Your mission is to become a successful farmer.",
+           "",
            "Controls:",
            "  W/A/S/D or Arrow Keys: Move player",
            "  E / Enter: Interact / Select Menu / Confirm",
            "  I: Open/Close Inventory",
+           "  V: Visit (must be on the Right Side of Map)",
            "  Esc: Pause Game / Go Back / Exit Menus",
+           "",
            "Game Basics:",
            "  - Manage your Energy and Gold.",
            "  - Till land, plant seeds, water crops, and harvest them.",
@@ -309,7 +315,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
            helpY += 25;
        }
        g2.setFont(new Font("Arial", Font.ITALIC, 18));
-       g2.drawString("Press Esc to return to Main Menu.", getXforCenteredText("Press Esc to return to Main Menu.", g2), SCREEN_HEIGHT - 50);
+       g2.drawString("Press Esc to return to Main Menu.", getXforCenteredText("Press Esc to return to Main Menu.", g2), SCREEN_HEIGHT - 30);
    }
 
    private void drawCreditsState(Graphics2D g2) {
@@ -329,9 +335,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
            "",
            "Developed By:",
            "18222011 Serenada Cinta Sunindyo\n",
-           "18223041 Luckman Fakhmanidris Arvasirri : Controller, view\n",
-           "18223093 Ghazy Achmed Movlech Urbayani : Controller, view\n",
-           "18223009 Muhammad Faiz Alfikrona : Model\n",
+           "18223041 Luckman Fakhmanidris Arvasirri\n",
+           "18223093 Ghazy Achmed Movlech Urbayani\n",
+           "18223009 Muhammad Faiz Alfikrona\n",
            "18223087 Bryan Adi Priasmoro\n",
            "",
            "Special Thanks to Dr. Asep Spakbor & Agen Purry!"
@@ -534,7 +540,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
                     if (i == selectedIdx) {
                         g2.setColor(Color.YELLOW);
-                        g2.drawString("> " + itemText, itemDrawX - 10, currentItemY); // Pointer sedikit ke kiri
+                        g2.drawString("> " + itemText, itemDrawX - 10, currentItemY);
                     } else {
                         g2.setColor(Color.WHITE);
                         g2.drawString("  " + itemText, itemDrawX, currentItemY);
@@ -586,90 +592,114 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         }
 
         if (playerModel != null) {
+
             int playerScreenX = playerModel.getPosition().getX();
             int playerScreenY = playerModel.getPosition().getY();
-            g2.setColor(Color.BLUE);
+            g2.setColor(new Color(0, 100, 255, 200));
             g2.fillRect(playerScreenX, playerScreenY, TILE_SIZE, TILE_SIZE);
         }
 
-        if (timeManager == null || seasonManager == null || playerModel == null || gameController == null || gameStateModel == null) {
-            g2.setColor(Color.RED);
-            g2.setFont(new Font("Arial", Font.PLAIN, 12));
-            g2.drawString("HUD Error: Missing data", 5, SCREEN_HEIGHT - 5);
+        if (timeManager == null || seasonManager == null || playerModel == null || gameController == null) {
             return; 
         }
 
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        Font hudFont = new Font("Arial", Font.BOLD, 14);
-        g2.setFont(hudFont);
-        FontMetrics fm = g2.getFontMetrics();
-        
-        int padding = 8;
-        int lineHeight = fm.getHeight();
-        int lineSpacing = 5; // Jarak vertikal antar baris teks di HUD
+        FontMetrics fm;
+        int hudPadding = 10;
+        int topHudY = 8;
 
-        List<String> hudLines = new ArrayList<>();
+        // --- Bagian HUD Atas (Time, Day, Season, Weather) ---
+        Font topHudFont = new Font("Arial", Font.BOLD, 15);
+        g2.setFont(topHudFont);
+        fm = g2.getFontMetrics();
+        int topTextHeight = fm.getHeight();
+        int topHudElementHeight = topTextHeight + (hudPadding);
 
-        if (timeManager != null) {
-            int mins = timeManager.getMinutes();
-            int hour = (mins / 60) % 24;
-            int min = mins % 60;
-            String ampm = (hour < 12 || hour == 24) ? "AM" : "PM";
-            if (hour == 0) {
-                hour = 12;
-            } else if (hour > 12) {
-                hour -= 12;
-            }
-            String dayStr = String.format("Day %d ", (mins / 1440) + 1);
+        String timeStr = String.format("Time: %02d:%02d %s", (timeManager.getMinutes() / 60) % 24 == 0 ? 12 : (timeManager.getMinutes() / 60) % 24 > 12 ? ((timeManager.getMinutes() / 60) % 24) - 12 : (timeManager.getMinutes() / 60) % 24, timeManager.getMinutes() % 60, ((timeManager.getMinutes() / 60) % 24 < 12 || (timeManager.getMinutes() / 60) % 24 == 0) ? "AM" : "PM");
+        String dayStr = String.format("Day %d ", (timeManager.getMinutes() / 1440) + 1);
+        String seasonStr = "Season: " + seasonManager.getCurrentSeason().toString();
+        String weatherStr = "Weather: " + (weatherManager != null ? weatherManager.getCurrentWeather().toString() : "N/A");
 
-        hudLines.add(String.format("Time: %02d:%02d %s", (timeManager.getMinutes() / 60) % 24 == 0 ? 12 : (timeManager.getMinutes() / 60) % 24 > 12 ? ((timeManager.getMinutes() / 60) % 24) - 12 : (timeManager.getMinutes() / 60) % 24, timeManager.getMinutes() % 60, ((timeManager.getMinutes() / 60) % 24 < 12 || (timeManager.getMinutes() / 60) % 24 == 0) ? "AM" : "PM"));
-        hudLines.add("Day: " + dayStr);
-        hudLines.add("Season: " + seasonManager.getCurrentSeason().toString());
-        hudLines.add("Weather: " + (weatherManager != null ? weatherManager.getCurrentWeather().toString() : "N/A"));
-        
-        hudLines.add("Gold: " + playerModel.getGold() + "g");
-        hudLines.add("Energy: " + playerModel.getEnergy());
+        int timeStrWidth = fm.stringWidth(timeStr);
+        int dayStrWidth = fm.stringWidth(dayStr);
+        int seasonStrWidth = fm.stringWidth(seasonStr);
+        int weatherStrWidth = fm.stringWidth(weatherStr);
+        int interTextPadTop = 20; // Jarak antar teks di HUD atas
+
+        int hudTopActualWidth = timeStrWidth + interTextPadTop + dayStrWidth + interTextPadTop + seasonStrWidth + interTextPadTop + weatherStrWidth;
+        int hudTopPanelWidth = hudTopActualWidth + (hudPadding * 2);
+        int hudTopX = (SCREEN_WIDTH - hudTopPanelWidth) / 2; // Pusatkan HUD atas
+        if (hudTopX < 5) hudTopX = 5;
+
+        g2.setColor(new Color(0, 0, 0, 170)); // Background HUD atas (gelap transparan)
+        g2.fillRoundRect(hudTopX, topHudY, hudTopPanelWidth, topHudElementHeight, 12, 12); // Rounded corner lebih kecil
+        g2.setColor(new Color(210, 210, 210, 190)); // Border tipis
+        g2.setStroke(new java.awt.BasicStroke(1.5f));
+        g2.drawRoundRect(hudTopX, topHudY, hudTopPanelWidth, topHudElementHeight, 12, 12);
+        g2.setStroke(new java.awt.BasicStroke(1));
+
+
+        g2.setColor(Color.WHITE);
+        int textYTop = topHudY + (topHudElementHeight - topTextHeight)/2 + fm.getAscent() -2; // Vertikal center teks
+        int currentXTop = hudTopX + hudPadding;
+        g2.drawString(timeStr, currentXTop, textYTop);
+        currentXTop += timeStrWidth + interTextPadTop;
+        g2.drawString(dayStr, currentXTop, textYTop);
+        currentXTop += dayStrWidth + interTextPadTop;
+        g2.drawString(seasonStr, currentXTop, textYTop);
+        currentXTop += seasonStrWidth + interTextPadTop;
+        g2.drawString(weatherStr, currentXTop, textYTop);
+
+        // --- Bagian HUD Info Player Lainnya (Kiri Bawah) ---
+        Font infoFont = new Font("Arial", Font.PLAIN, 14); // Font untuk info player
+        g2.setFont(infoFont);
+        fm = g2.getFontMetrics(); // Update FontMetrics untuk infoFont
+        int infoPadding = 8;
+        int infoLineHeight = fm.getHeight();
+        int infoLineSpacing = 5;
+
+        List<String> infoLines = new ArrayList<>();
+        // infoLines.add("Player X: " + playerModel.getPosition().getX() + " Y: " + playerModel.getPosition().getY()); // Info Posisi bisa dihilangkan jika terlalu ramai
+        infoLines.add("Gold: " + playerModel.getGold() + "g");
+        infoLines.add("Energy: " + playerModel.getEnergy());
 
         String playerName = gameController.getTempPlayerName();
         String playerGender = gameController.getTempPlayerGender();
         String playerFavItem = gameController.getTempPlayerFavItem();
-
         if (gameStateModel.isPlaying()) {
             playerName = playerModel.getName();
             playerGender = playerModel.getGender();
             playerFavItem = playerModel.getFavoriteItem();
         }
-        hudLines.add("Name: " + (playerName != null && !playerName.isEmpty() ? playerName : "Adventurer"));
-        hudLines.add("Gender: " + (playerGender != null && !playerGender.isEmpty() ? playerGender : "N/A"));
-        hudLines.add("Fav Item: " + (playerFavItem != null && !playerFavItem.isEmpty() ? playerFavItem : "Anything"));
-        hudLines.add("Partner: " + playerModel.getRelationshipStatus());
-        hudLines.add(playerModel.getEquippedItem() != null ? "Equipped: " + playerModel.getEquippedItem().getName() : "Equipped: None");
+        infoLines.add("Name: " + (playerName != null && !playerName.isEmpty() ? playerName : "N/A"));
+        infoLines.add("Gender: " + (playerGender != null && !playerGender.isEmpty() ? playerGender : "N/A"));
+        infoLines.add("Fav Item: " + (playerFavItem != null && !playerFavItem.isEmpty() ? playerFavItem : "N/A"));
+        infoLines.add("Partner: " + playerModel.getRelationshipStatus());
+        infoLines.add(playerModel.getEquippedItem() != null ? "Equipped: " + playerModel.getEquippedItem().getName() : "Equipped: None");
+        // Info State dihilangkan
 
-        int maxWidth = 0;
-        for (String line : hudLines) {
-            if (line != null) maxWidth = Math.max(maxWidth, fm.stringWidth(line));
+        int maxInfoWidth = 0;
+        for (String line : infoLines) {
+            if (line != null) maxInfoWidth = Math.max(maxInfoWidth, fm.stringWidth(line));
         }
-        int hudPanelWidth = maxWidth + padding * 2 + 10;
-        int hudPanelHeight = (lineHeight * hudLines.size()) + (lineSpacing * (hudLines.size() - 1)) + (padding * 2);
+
+        int infoPanelWidth = maxInfoWidth + infoPadding * 2;
+        int infoPanelHeight = (infoLineHeight * infoLines.size()) + (infoLineSpacing * (infoLines.size() -1)) + (infoPadding * 2);
         
-        int hudX = 5;
-        int hudY = 5;
+        int infoPanelX = 10; // Posisi X panel info (kiri bawah)
+        int infoPanelY = topHudElementHeight - topHudY + 5; // Posisi Y panel info
 
-        g2.setColor(new Color(30, 30, 30, 200));
-        g2.fillRoundRect(hudX, hudY, hudPanelWidth, hudPanelHeight, 15, 15);
-        g2.setColor(new Color(210, 210, 220));
-        g2.setStroke(new java.awt.BasicStroke(1.5f));
-        g2.drawRoundRect(hudX, hudY, hudPanelWidth, hudPanelHeight, 15, 15);
-        g2.setStroke(new java.awt.BasicStroke(1));
+        g2.setColor(new Color(235, 235, 235, 170)); // Putih lebih samar, lebih transparan
+        g2.fillRoundRect(infoPanelX, infoPanelY, infoPanelWidth, infoPanelHeight, 10, 10);
+        g2.setColor(new Color(80,80,80, 170)); // Border abu-abu gelap
+        g2.drawRoundRect(infoPanelX, infoPanelY, infoPanelWidth, infoPanelHeight, 10, 10);
 
-        g2.setColor(Color.WHITE);
-        int textY = hudY + padding + fm.getAscent();
-        for (String line : hudLines) {
+        g2.setColor(Color.BLACK); // Teks hitam
+        int textYInfo = infoPanelY + infoPadding + fm.getAscent();
+        for (String line : infoLines) {
             if (line != null) {
-                g2.drawString(line, hudX + padding, textY);
-                textY += lineHeight + lineSpacing;
+                g2.drawString(line, infoPanelX + infoPadding, textYInfo);
+                textYInfo += infoLineHeight + infoLineSpacing;
             }
-        }
         }
     }
 
@@ -699,6 +729,8 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
                 }
             }
         }
+        g2.setFont(new Font("Arial", Font.ITALIC, 18));
+        g2.drawString("Press ['Enter'] to Confirm Continue.", getXforCenteredText("Press ['Enter'] to Confirm Continue", g2), SCREEN_HEIGHT - 50);
     }
 
     int selectedInventoryIndex = 0;
@@ -807,7 +839,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 28));
+        g2.setFont(new Font("Arial", Font.BOLD, 25));
         String message = gameController.getTransitionMessage();
         if (message == null || message.isEmpty()) {
             message = "Processing...";
@@ -1304,7 +1336,7 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
             }
             g2.setFont(new Font("Arial", Font.PLAIN, 16));
             g2.setColor(Color.LIGHT_GRAY);
-            g2.drawString("W/S to select, E to confirm.", getXforCenteredText("W/S to select, E to confirm.", g2), optionStartY + (options.size() * lineHeight) + 30);
+            g2.drawString("W/S to select, Press ['Enter'] to Confirm Continue.", getXforCenteredText("W/S to select, Press ['Enter'] to Confirm Continue", g2), optionStartY + (options.size() * lineHeight) + 30);
             
             String feedbackMsg = gameController.getTransitionMessage();
              if (feedbackMsg != null && !feedbackMsg.isEmpty() && feedbackMsg.contains("Select Your Gender")) {
@@ -1319,124 +1351,114 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
 
     private void drawPlayerFavItemInputState(Graphics2D g2) {
         try {
-            // Latar belakang state input
-            g2.setColor(new Color(20, 20, 50, 240)); // Latar biru tua
+            g2.setColor(new Color(20, 20, 50, 240)); 
             g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-            // KETERANGAN PEMBAHARUAN: Variabel untuk mengatur posisi Y
-            int currentY = TILE_SIZE * 2; 
-            if (currentY < 30) currentY = 30; // Minimum Y
+            int pX = TILE_SIZE * 2;
+            int pY = TILE_SIZE;
+            int pW = SCREEN_WIDTH - (TILE_SIZE * 4);
+            int pH = SCREEN_HEIGHT - (TILE_SIZE * 2);
 
-            // KETERANGAN PEMBAHARUAN: Menampilkan daftar contoh item yang bisa disukai
-            g2.setFont(new Font("Arial", Font.ITALIC, 13)); // Font untuk daftar contoh
-            g2.setColor(new Color(180, 180, 200));       // Warna teks contoh
+            g2.setColor(new Color(30, 30, 30, 200));
+            g2.fillRoundRect(pX, pY, pW, pH, 25, 25);
+            g2.setColor(new Color(200, 200, 220)); 
+            g2.setStroke(new java.awt.BasicStroke(2)); 
+            g2.drawRoundRect(pX, pY, pW, pH, 25, 25);
+            g2.setStroke(new java.awt.BasicStroke(1)); 
 
-            int suggestionLineHeight = 18;
-            int suggestionPaddingX = TILE_SIZE; // Padding kiri untuk daftar item (selain judul)
+            int currentY = pY + TILE_SIZE;
 
-            // KETERANGAN PEMBAHARUAN: Isi itemExamples diperbarui dan emoji dihilangkan
+            g2.setFont(new Font("Arial", Font.ITALIC, 14));
+            g2.setColor(new Color(190, 190, 210));
+            int suggestionLineHeight = 20;
+            int suggestionPaddingX = pX + TILE_SIZE / 2;
+
             String[] itemExamples = {
-                "--- Possible Favorite Items (Example Items) ---", // Judul
-                "", // Spasi
-                "- Common Fish:",
-                "  • Bullhead, Carp, Chub, Largemouth Bass, Rainbow Trout, Catfish",
+                "--- Possible Favorite Items (Example Items) ---",
+                "", 
+                "- Common Fish: Bullhead, Carp, Chub",
+                "  Largemouth Bass, Rainbow Trout, Catfish",
                 "",
-                "- Regular Fish:",
-                "  • Midnight Carp, Flounder, Halibut, Octopus, Pufferfish, Sardine, Salmon, Super Cucumber",
+                "- Regular Fish: Midnight Carp, Flounder, Halibut",
+                "  Octopus, Pufferfish, Sardine, Salmon, Super Cucumber",
                 "",
-                "- Legendary Fish:",
-                "  • Angler, Crimsonfish, Glacierfish, Legend",
+                "- Legendary Fish: Angler, Crimsonfish, Glacierfish, Legend",
                 "",
-                "- Crops (Harvested Plants) / Seeds (Plantable Items): [Parsnip Seeds/Melon Seeds / Grape Seeds]",
-                "  • Parsnip, Cauliflower, Potato, Wheat, Blueberry, Tomato, Hot Pepper, Melon, Cranberry, Pumpkin, Grape",
+                "- Crops/Seeds: [Parsnip Seeds/Melon Seeds/Grape Seeds]",
+                "  Parsnip, Cauliflower, Potato, Wheat, Blueberry, Tomato",
+                "  Hot Pepper, Melon, Cranberry, Pumpkin, Grape",
                 "",
-                "- Food (Cooked/Energy Items):",
-                "  • Fish n’ Chips, Baguette, Sashimi, Fugu, Wine, Pumpkin Pie, Veggie Soup,",
-                "    Fish Stew, Spakbor Salad, Fish Sandwich, Cooked Pig’s Head, The Legends of Spakbor",
+                "- Food: Fish n’ Chips, Baguette, Sashimi, Fugu, Wine",
+                "  Pumpkin Pie, Veggie Soup, Fish Stew, Spakbor Salad",
+                "  Fish Sandwich, Cooked Pig’s Head, The Legends of Spakbor",
                 "",
-                "- Equipment:",
-                "  • Hoe, Pickaxe, Watering Can, Fishing Rod",
+                "- Equipment: Hoe, Pickaxe, Watering Can, Fishing Rod",
                 "",
-                "- Misc Items:",
-                "  • Firewood, Coal, Diamond, Old Coin, Spakbor Kanan",
+                "- Misc Items: Firewood, Coal, Diamond, Old Coin, Spakbor Kanan",
                 "",
-                "- Easter Egg Items:",
-                "  • The Legends of Spakbor, Cooked Pig’s Head, Spakbor Kanan",
+                "- Easter Egg: The Legends of Spakbor, Cooked Pig’s Head",
                 "   (Or anything you like!)",
                 "------------------------------------------"
             };
             
-            int promptTextY = currentY + (itemExamples.length * suggestionLineHeight) + (TILE_SIZE / 2); 
-            if (promptTextY < SCREEN_HEIGHT / 3 + 50) promptTextY = SCREEN_HEIGHT / 3 + 50; 
-            int maxListEndY = promptTextY - 50; // Batas bawah agar tidak tumpang tindih dengan prompt utama
+            int maxListDisplayHeight = pH - (TILE_SIZE * 6);
+            int listActualHeight = 0;
 
-            // Menggambar daftar contoh
             for (int i = 0; i < itemExamples.length; i++) {
                 String exampleLine = itemExamples[i];
-                if (currentY > maxListEndY - suggestionLineHeight && i > 0 && !exampleLine.startsWith("---")) { 
+                if (listActualHeight + suggestionLineHeight > maxListDisplayHeight && i > 0 && !exampleLine.startsWith("---")) {
                     g2.setColor(Color.DARK_GRAY);
-                    g2.drawString("   ... (more examples hidden, type your own!) ...", suggestionPaddingX, currentY);
+                    g2.drawString("   ... (list truncated) ...", suggestionPaddingX, currentY);
+                    currentY += suggestionLineHeight; listActualHeight += suggestionLineHeight;
                     break;
                 }
-                
-                // KETERANGAN PEMBAHARUAN: Hanya judul yang di-center, sisanya rata kiri
-                if (i == 0) { // Asumsi baris pertama adalah judul
-                    g2.drawString(exampleLine, getXforCenteredText(exampleLine, g2), currentY);
+                if (i == 0) {
+                    g2.drawString(exampleLine, getXforCenteredText(exampleLine, g2, pX, pW), currentY);
                 } else {
                     g2.drawString(exampleLine, suggestionPaddingX, currentY);
                 }
                 currentY += suggestionLineHeight;
+                listActualHeight += suggestionLineHeight;
             }
-            // Pastikan ada cukup ruang sebelum prompt input utama
-            if (currentY < promptTextY - TILE_SIZE*2) {
-                currentY = promptTextY - TILE_SIZE*2;
-            }
+            currentY += TILE_SIZE / 2;
 
-            // Prompt utama untuk input
-            g2.setFont(new Font("Arial", Font.BOLD, 28));
+            g2.setFont(new Font("Arial", Font.BOLD, 26));
             g2.setColor(Color.WHITE);
             String prompt = "Enter Your Favorite Item:";
-            int actualPromptY = currentY; 
-            g2.drawString(prompt, getXforCenteredText(prompt, g2), actualPromptY);
+            g2.drawString(prompt, getXforCenteredText(prompt, g2, pX, pW), currentY);
+            currentY += 50;
 
-            // Area input teks
             String currentFavItem = gameController.getFavItemInputBuffer();
-            g2.setFont(new Font("Monospaced", Font.PLAIN, 30)); 
+            g2.setFont(new Font("Monospaced", Font.PLAIN, 28));
             g2.setColor(Color.YELLOW);
-            int fieldWidth = SCREEN_WIDTH * 2 / 3;
-            int fieldX = (SCREEN_WIDTH - fieldWidth) / 2;
-            int fieldInputY = actualPromptY + 50; 
-            g2.setColor(new Color(50,50,90));
-            g2.fillRect(fieldX - 5, fieldInputY - 30, fieldWidth + 10, 40);
+            int fieldWidth = pW * 2 / 3;
+            int fieldX = pX + (pW - fieldWidth) / 2;
+            g2.setColor(new Color(80,80,120, 220));
+            g2.fillRect(fieldX - 5, currentY - 28, fieldWidth + 10, 38);
             g2.setColor(Color.WHITE);
-            g2.drawRect(fieldX - 5, fieldInputY - 30, fieldWidth, 40); 
+            g2.drawRect(fieldX - 5, currentY - 28, fieldWidth, 38); 
             g2.setColor(Color.YELLOW);
             String cursor = (System.currentTimeMillis() / 500) % 2 == 0 ? "_" : " ";
-            g2.drawString(currentFavItem + cursor, fieldX + 10, fieldInputY);
+            g2.drawString(currentFavItem + cursor, fieldX + 10, currentY);
+            currentY += 40;
 
-            // Instruksi input
             g2.setFont(new Font("Arial", Font.PLAIN, 14));
             g2.setColor(Color.LIGHT_GRAY);
-            String inputInstructions = "Max 20 chars. Press E/Enter to confirm, Backspace to delete.";
-            g2.drawString(inputInstructions, getXforCenteredText(inputInstructions, g2), fieldInputY + 40); 
+            String inputInstructions = "Max 20 chars. Enter: Confirm, Backspace: Delete.";
+            g2.drawString(inputInstructions, getXforCenteredText(inputInstructions, g2, pX, pW), currentY); 
+            currentY += 30;
 
-            // Pesan feedback dari GameController
             String feedbackMsg = gameController.getTransitionMessage();
             if (feedbackMsg != null && !feedbackMsg.isEmpty() &&
                 (feedbackMsg.contains("Enter Your Favorite Item") || feedbackMsg.contains("cannot be empty"))) {
                 g2.setColor(feedbackMsg.contains("cannot be empty") ? Color.RED : Color.CYAN);
                 g2.setFont(new Font("Arial", Font.BOLD, 16));
-                g2.drawString(feedbackMsg, getXforCenteredText(feedbackMsg, g2), fieldInputY + 70); 
+                g2.drawString(feedbackMsg, getXforCenteredText(feedbackMsg, g2, pX, pW), currentY); 
             }
 
         } catch (Exception e) {
             System.err.println("Error in drawPlayerFavItemInputState: " + e.getMessage());
             e.printStackTrace();
-            if (g2 != null) { 
-                g2.setColor(Color.RED);
-                g2.setFont(new Font("Arial", Font.BOLD, 16));
-                g2.drawString("Error rendering Favorite Item input. Check console.", 50, SCREEN_HEIGHT / 2);
-            }
         }
     }
 

@@ -174,13 +174,15 @@ public class FarmMap {
             if (checkTileX >= 0 && checkTileX < MAP_WIDTH_IN_TILES &&
                 checkTileY >= 0 && checkTileY < MAP_HEIGHT_IN_TILES) {
 
-                for (DeployedObject obj : deployedObjects) {
-
-                    if (obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY)) {
-                        // System.out.println("DEBUG FarmMap: Found interactable " + obj.getObjectName() + " at adjacent tile (" + checkTileX + "," + checkTileY + ")");
-                        return obj;
+                    for (DeployedObject obj : deployedObjects) {
+                        boolean contains = obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY);
+                        System.out.println(
+                            "[DEBUG] Cek tile (" + checkTileX + "," + checkTileY + ") dengan objek " +
+                            obj.getObjectName() + " di (" + obj.getX() + "," + obj.getY() + ") size " +
+                            obj.getWidthInTiles() + "x" + obj.getHeightInTiles() + " => " + contains
+                        );
+                        if (contains) return obj;
                     }
-                }
             }
         }
         return null;
@@ -215,7 +217,7 @@ public class FarmMap {
     
         for (DeployedObject obj : deployedObjects) {
 
-            Color objColor = Color.GRAY; // Default
+            Color objColor = Color.GRAY;
             if (obj.getObjectName().equals("House")) objColor = Color.RED;
             else if (obj.getObjectName().equals("Pond")) objColor = Color.CYAN;
             else if (obj.getObjectName().equals("ShippingBin")) objColor = Color.MAGENTA;

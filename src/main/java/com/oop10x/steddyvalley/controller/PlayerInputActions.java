@@ -5,7 +5,6 @@ public interface PlayerInputActions {
     void setMoveDown(boolean moveDown); 
     void setMoveLeft(boolean moveLeft);
     void setMoveRight(boolean moveRight);
-    //void setInteract(boolean interact);
     void togglePause();
     void toggleInventory();
     void performPrimaryAction();

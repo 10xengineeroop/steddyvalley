@@ -1,11 +1,11 @@
-package com.oop10x.steddyvalley.model.map; // Sesuaikan paket
+package com.oop10x.steddyvalley.model.map;
 
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.SeasonManager;
 import com.oop10x.steddyvalley.model.TimeManager;
 import com.oop10x.steddyvalley.model.WeatherManager;
 import com.oop10x.steddyvalley.model.items.Crop;
-import com.oop10x.steddyvalley.model.items.Item; // Untuk getEquippedItem
+import com.oop10x.steddyvalley.model.items.Item;
 import com.oop10x.steddyvalley.model.items.Seed;
 import com.oop10x.steddyvalley.utils.EventType;
 import com.oop10x.steddyvalley.utils.Observer;
@@ -16,8 +16,8 @@ import com.oop10x.steddyvalley.utils.Weather;
 public class Land implements Actionable, Placeable, Observer {
     private final Position position; 
     private LandType landType = LandType.UNTILLED;
-    private Integer startPlantDate = null; // Waktu tanam dalam menit game
-    private Integer endPlantDate = null;   // Waktu panen dalam menit game
+    private Integer startPlantDate = null;
+    private Integer endPlantDate = null;
     private boolean isWatered = false;
     private Seed seed = null;
 
@@ -61,7 +61,6 @@ public class Land implements Actionable, Placeable, Observer {
             TimeManager.getInstance().addMinutes(5);
             checkAndSetWatered();
             return true;
-            // }
         }
         return false;
     }
@@ -145,7 +144,7 @@ public class Land implements Actionable, Placeable, Observer {
                 return;
             }
             if (getLandType() == LandType.UNTILLED) {
-                return; // Tidak ada yang perlu dilakukan jika tanah belum diolah
+                return;
             }
             if (getLandType() == LandType.TILLED) {
                 if (isWatered) {
