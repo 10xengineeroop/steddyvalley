@@ -27,6 +27,7 @@ public class GameState {
     public static final int PLAYER_NAME_INPUT_STATE = 20;
     public static final int PLAYER_GENDER_INPUT_STATE = 21;
     public static final int PLAYER_FAV_ITEM_INPUT_STATE = 22;
+    public static final int SHOP_STATE = 23;
 
     private int currentState;
     private final List<GameStateObserver> observers = new ArrayList<>();

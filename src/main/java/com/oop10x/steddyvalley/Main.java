@@ -38,7 +38,7 @@ public class Main {
 
             // --- Inisialisasi Controller ---
             GameController gameController = new GameController(playerModel, gameStateModel, farmMapModel, collisionChecker, timeManager, TILE_SIZE, seasonModel, weatherModel, null);
-            KeyHandler keyHandler = new KeyHandler(gameController);
+            KeyHandler keyHandler = new KeyHandler(gameController, gameStateModel);
 
             // --- Inisialisasi View ---
             GamePanel gamePanel = new GamePanel(playerModel, gameStateModel, gameController, farmMapModel);

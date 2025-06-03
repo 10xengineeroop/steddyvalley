@@ -37,6 +37,10 @@ public class Player {
         this.name = name;
     }
 
+    public String getFarmName(String name){
+        return this.farmName;
+    }
+
     public void setFarmName(String name){
         this.farmName = farmName;
     }
@@ -185,7 +189,6 @@ public class Player {
         this.energy = energy;
         this.currentTime = 0;
         this.speed = speed;
-        // Menambahkan peralatan awal
         Set<Equipment> initialEquipment = Equipment.getEquipmentSet();
         initialEquipment.forEach(equipment -> addItem(equipment));
         addItem(Seed.getSeedByName("Parsnip Seeds"), 15);

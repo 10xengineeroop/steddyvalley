@@ -132,6 +132,14 @@ public class GameController implements PlayerInputActions, Observer {
         this.pauseMenuOptions = Arrays.asList("Resume", "Help", "Statistics", "Exit to Main Menu", "Quit Game");
     }
 
+    public GamePanel getGamePanel() {
+        return this.gamePanel;
+    }
+
+    public GameState getGameStateModel() {
+        return this.gameStateModel;
+    }
+
     public List<String> getMainMenuOptions() { 
         return mainMenuOptions; 
     }
@@ -159,17 +167,29 @@ public class GameController implements PlayerInputActions, Observer {
 
     public void appendCharacterToInputBuffer(char c) {
         if (gameStateModel.isPlayerNameInputState()) {
-            if (playerNameInputBuffer.length() < 15) playerNameInputBuffer.append(c);
-        } if (gameStateModel.isPlayerFavItemInputState()) {
-            if (favItemInputBuffer.length() < 20) favItemInputBuffer.append(c);
+            if (playerNameInputBuffer.length() < 15) {
+                playerNameInputBuffer.append(c);
+                if (gamePanel != null) gamePanel.repaint();
+            }
+        } else if (gameStateModel.isPlayerFavItemInputState()) {
+            if (favItemInputBuffer.length() < 20) {
+                favItemInputBuffer.append(c);
+                if (gamePanel != null) gamePanel.repaint();
+            }
         }
     }
 
     public void backspaceInputBuffer() {
         if (gameStateModel.isPlayerNameInputState()) {
-            if (playerNameInputBuffer.length() > 0) playerNameInputBuffer.deleteCharAt(playerNameInputBuffer.length() - 1);
-        } if (gameStateModel.isPlayerFavItemInputState()) {
-            if (favItemInputBuffer.length() > 0) favItemInputBuffer.deleteCharAt(favItemInputBuffer.length() - 1);
+            if (playerNameInputBuffer.length() > 0) {
+                playerNameInputBuffer.deleteCharAt(playerNameInputBuffer.length() - 1);
+                if (gamePanel != null) gamePanel.repaint();
+            }
+        } else if (gameStateModel.isPlayerFavItemInputState()) {
+            if (favItemInputBuffer.length() > 0) {
+                favItemInputBuffer.deleteCharAt(favItemInputBuffer.length() - 1);
+                if (gamePanel != null) gamePanel.repaint();
+            }
         }
     }
 
@@ -196,15 +216,6 @@ public class GameController implements PlayerInputActions, Observer {
     public void clearPlayerNameInput() { 
         playerNameInputBuffer.setLength(0); 
     }
-        this.timeManager.addObserver(this);
-
-        if (this.farmMapModel != null && this.farmMapModel.getPlayerShippingBin() != null && this.timeManager != null) {
-            this.timeManager.addObserver(this.farmMapModel.getPlayerShippingBin());
-            System.out.println("[GameController] Player's ShippingBin registered to TimeManager.");
-        } else {
-            System.err.println("[GameController] CRITICAL: Failed to register ShippingBin to TimeManager. Check FarmMap/PlayerShippingBin/TimeManager initialization.");
-        }
-    }
 
     public void setGamePanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -222,6 +233,12 @@ public class GameController implements PlayerInputActions, Observer {
     @Override 
     public void setMoveUp(boolean active) { 
         if (active) {
+            if (gameStateModel.isPlayerGenderInputState()) {
+                selectedGenderIndex--;
+                if (selectedGenderIndex < 0) {
+                    selectedGenderIndex = genderOptions.size() - 1;
+                }
+            }
             if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
                 if (!houseActions.isEmpty()) {
                     selectedHouseActionIndex-- ;
@@ -302,7 +319,7 @@ public class GameController implements PlayerInputActions, Observer {
                 }
                 return;
             }
-            if (gameStateModel.isPauseMenuState()) {
+            if (gameStateModel.isPaused()) {
                 selectedPauseMenuIndex--;
                 if (selectedPauseMenuIndex < 0) {
                     selectedPauseMenuIndex = pauseMenuOptions.size() - 1;
@@ -321,6 +338,12 @@ public class GameController implements PlayerInputActions, Observer {
     @Override 
     public void setMoveDown(boolean active) {
         if (active) {
+            if (gameStateModel.isPlayerGenderInputState()) {
+                selectedGenderIndex++;
+                if (selectedGenderIndex >= genderOptions.size()) {
+                    selectedGenderIndex = 0;
+                }
+            }
             if (gameStateModel.getCurrentState() == GameState.HOUSE_STATE) {
                 if (!houseActions.isEmpty()) {
                     selectedHouseActionIndex++ ;
@@ -374,15 +397,16 @@ public class GameController implements PlayerInputActions, Observer {
                 }
             }
             if (gameStateModel.getCurrentState() == GameState.SHIPPING_STATE) {
-            if (gameStateModel.isInShippingMode()) {
-                if (!playerModel.getInventory().getAllItems().isEmpty()) {
-                    selectedShippingInventoryIndex++;
-                    int invSize = playerModel.getInventory().getAllItems().size();
-                    if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
-                        selectedShippingInventoryIndex = 0;
-                    } if (invSize == 0) {
-                    } else if (invSize == 0) {
-                        selectedShippingInventoryIndex = 0;
+                if (gameStateModel.isInShippingMode()) {
+                    if (!playerModel.getInventory().getAllItems().isEmpty()) {
+                        selectedShippingInventoryIndex++;
+                        int invSize = playerModel.getInventory().getAllItems().size();
+                        if (invSize > 0 && selectedShippingInventoryIndex >= invSize) {
+                            selectedShippingInventoryIndex = 0;
+                        } if (invSize == 0) {
+                        } else if (invSize == 0) {
+                            selectedShippingInventoryIndex = 0;
+                        }
                     }
                 }
             }
@@ -393,22 +417,24 @@ public class GameController implements PlayerInputActions, Observer {
                 }
                 return;
             }
-            if (gameStateModel.isPauseMenuState()) {
+            if (gameStateModel.isPaused()) {
                 selectedPauseMenuIndex++;
                 if (selectedPauseMenuIndex >= pauseMenuOptions.size()) {
                     selectedPauseMenuIndex = 0;
                 }
                 return;
             }
-        }
         if (gameStateModel.isPlaying()) {
             this.moveDownActive = active; 
         }
         if (!active && gameStateModel.isPlaying()) {
             this.moveDownActive = false; 
         }
+        }
     }
-    @Override public void setMoveLeft(boolean active) {
+
+    @Override
+    public void setMoveLeft(boolean active) {
         if (active) { 
             if (gameStateModel.isGuessingFish()) {
                 adjustFishingSlider(-1); 
@@ -424,7 +450,9 @@ public class GameController implements PlayerInputActions, Observer {
             }
         }
     }
-    @Override public void setMoveRight(boolean active) {
+
+    @Override
+    public void setMoveRight(boolean active) {
         if (active) {
             if (gameStateModel.isGuessingFish()) {
                 adjustFishingSlider(1);
@@ -530,8 +558,8 @@ public class GameController implements PlayerInputActions, Observer {
         if (currentState == GameState.SHIPPING_STATE) {
             finishShippingSession();
         }
-
     }
+
     public void toggleVisit() {
         if (playerModel.getPosition().getX() == 744) {
             if (playerModel.getEnergy() >= 15) {
@@ -799,7 +827,7 @@ public class GameController implements PlayerInputActions, Observer {
                 }
                 
             }
-            Item equippedItem = playerModel.getEquippedItem();
+
             if (equippedItem != null) {
                 boolean isEdible = equippedItem instanceof Food ||
                                    equippedItem instanceof Fish ||
@@ -854,10 +882,10 @@ public class GameController implements PlayerInputActions, Observer {
             return;
         } if (currentState == GameState.PLAYER_NAME_INPUT_STATE) {
             if (playerNameInputBuffer.length() > 0) {
-                this.tempPlayerName = playerNameInputBuffer.toString(); // Simpan sementara
+                this.tempPlayerName = playerNameInputBuffer.toString();
                 System.out.println("Temporary Player name: " + this.tempPlayerName);
                 gameStateModel.setCurrentState(GameState.PLAYER_GENDER_INPUT_STATE);
-                transitionMessage = "Select Your Gender (W/S, E/Enter to confirm)";
+                transitionMessage = "Select Your Gender (W/S, E to confirm)";
                 selectedGenderIndex = 0;
             } else {
                 transitionMessage = "Player name cannot be empty!";
@@ -867,7 +895,7 @@ public class GameController implements PlayerInputActions, Observer {
                 this.tempPlayerGender = genderOptions.get(selectedGenderIndex);
                 System.out.println("Temporary Player gender: " + this.tempPlayerGender);
                 gameStateModel.setCurrentState(GameState.PLAYER_FAV_ITEM_INPUT_STATE);
-                transitionMessage = "Enter Favorite Item (max 20 chars), then E/Enter.";
+                transitionMessage = "Enter Favorite Item (max 20 chars), then E.";
                 clearFavItemInput();
                 System.out.println("--- Possible Favorite Items (Examples) ---");
                 System.out.println("- Any Fish (e.g., Carp, Salmon)");
@@ -960,12 +988,14 @@ public class GameController implements PlayerInputActions, Observer {
 
 
         if(gameStateModel.isMainMenuState()){
-            return currentState == MAIN_MENU_STATE;
+            return;
         }
         if (gameStateModel.isEndGame() || endGameStatisticsTriggered) {
             return ;
         }
-        if (gameStateModel.isSleeping()) return;
+        if (gameStateModel.isSleeping()) {
+        return;
+        }
         
         if (gameStateModel.isPlaying() || gameStateModel.isInHouse()) {
             checkAndTriggerEndGameStatistics();
@@ -1058,41 +1088,6 @@ public class GameController implements PlayerInputActions, Observer {
             playerModel.setPosition(this.tileSize * 5, this.tileSize * 5);
         }
         gameStateModel.setCurrentState(GameState.SLEEP_STATE);
-    }
-
-    public void handleEatEquippedItem() {
-        if (!gameStateModel.isPlaying()) {
-            return;
-        }
-
-        Item equippedItem = playerModel.getEquippedItem();
-
-        if (equippedItem == null) {
-            this.transitionMessage = "Nothing equipped to eat!";
-            System.out.println("Eat attempt: No item equipped.");
-            return;
-        }
-
-        boolean isEdible = equippedItem instanceof Food ||
-                           equippedItem instanceof Fish ||
-                           equippedItem instanceof com.oop10x.steddyvalley.model.items.Crop;
-        if (!isEdible) {
-            this.transitionMessage = equippedItem.getName() + " is not edible!";
-            System.out.println("Eat attempt: " + equippedItem.getName() + " is not edible.");
-            return;
-        }
-
-        playerModel.eat(equippedItem);
-
-        playerModel.getInventory().removeItem(equippedItem.getName(), 1);
-
-        String itemName = equippedItem.getName();
-        playerModel.setEquippedItem(null);
-
-        timeManager.addMinutes(5);
-
-        this.transitionMessage = "You ate " + itemName + ".";
-        System.out.println("Player ate: " + itemName);
     }
 
     private void handleHouseAction(String action) {
@@ -1693,7 +1688,7 @@ public class GameController implements PlayerInputActions, Observer {
                 clearFavItemInput();
                 selectedGenderIndex = 0;
                 gameStateModel.setCurrentState(GameState.PLAYER_NAME_INPUT_STATE);
-                transitionMessage = "Enter Your Name (max 15 chars), then press E/Enter.";
+                transitionMessage = "Enter Your Name (max 15 chars), then press E.";
                 break;
             case "Help":
                 gameStateModel.setCurrentState(GameState.HELP_STATE);
@@ -1737,11 +1732,6 @@ public class GameController implements PlayerInputActions, Observer {
                 playerModel.addItem(new Equipment("Watering Can"));
                 playerModel.addItem(new Equipment("Pickaxe"));
                 playerModel.addItem(new Equipment("Fishing Rod"));
-                try {
-                     playerModel.addItem(new Seed("Parsnip Seeds", "Spring", 1, 20, 10, 1, "Parsnip"), 15);
-                } catch (Exception e) {
-                    System.err.println("Error initializing Parsnip Seeds for new game: " + e.getMessage());
-                }
                 Item hoeToEquip = playerModel.getInventory().getItemByName("Hoe");
                 playerModel.setEquippedItem(hoeToEquip);
             }
@@ -1775,7 +1765,7 @@ public class GameController implements PlayerInputActions, Observer {
             this.timeManager.start();
         }
         gameStateModel.setCurrentState(GameState.PLAY_STATE);
-        transitionMessage = "Welcome to " + playerModel.getFarmName() + ", " + playerModel.getName() + "!";
+        transitionMessage = "Welcome to " + playerModel.getName() + "!";
         resetMovementFlags();
         endGameStatisticsTriggered = false;
         if (gamePanel != null) gamePanel.resetEndGameStatsScroll();
