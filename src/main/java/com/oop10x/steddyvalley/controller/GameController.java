@@ -818,7 +818,6 @@ public class GameController implements PlayerInputActions, Observer {
                         }
                     }
                 }
-
                 if (actionTaken) {
                     System.out.println("Action performed on Land at: " + playerTileX + "," + playerTileY);
                 }
@@ -1573,7 +1572,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
         return newList;
     }
-    
+
     public void enterShopState() {
         this.currentShopItems = Store.getInstance().getItems(); 
         this.selectedShopItemIndex = 0;
@@ -1715,7 +1714,7 @@ public class GameController implements PlayerInputActions, Observer {
         }
 
         if (this.timeManager != null) {
-            this.timeManager.setTimeToSixAM();
+            this.timeManager.resetTimeForNewGame();
         }
         if (this.seasonManager != null) {
             this.seasonManager.resetSeasonForNewGame();
@@ -1725,6 +1724,13 @@ public class GameController implements PlayerInputActions, Observer {
         }
 
         this.farmMapModel = new FarmMap(this.timeManager, this.playerModel);
+
+        if (this.gamePanel != null) {
+            this.gamePanel.setFarmMapModel(this.farmMapModel);
+        }
+        if (this.collisionChecker != null) {
+            this.collisionChecker.setFarmMap(this.farmMapModel);
+        }
 
         if (this.farmMapModel != null && this.farmMapModel.getPlayerShippingBin() != null && this.timeManager != null) {
             this.timeManager.removeObserver(this.farmMapModel.getPlayerShippingBin());

@@ -2,7 +2,6 @@ package com.oop10x.steddyvalley.model.objects;
 import com.oop10x.steddyvalley.model.Player;
 import com.oop10x.steddyvalley.model.ShippingBin;
 import com.oop10x.steddyvalley.model.map.Actionable;
-import com.oop10x.steddyvalley.model.ShippingBin;
 
 public class ShippingBinObject extends DeployedObject implements Actionable {
 
@@ -22,5 +21,4 @@ public class ShippingBinObject extends DeployedObject implements Actionable {
     public void onPlayerAction(Player player) {
         System.out.println("Player interacted with the Shipping Bin!");
     }
-
 }

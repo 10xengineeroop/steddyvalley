@@ -92,6 +92,12 @@ public class TimeManager implements Observable {
         start();
     }
 
+    public void resetTimeForNewGame() {
+        stop();
+        minutes.set(SIXAM_MINUTES); 
+        notifyObservers(EventType.NEWDAY, minutes.get());
+    }
+
     public void setTimeToTenPM() {
         stop();
         int currentMinutes = minutes.get();

@@ -1,4 +1,4 @@
-package com.oop10x.steddyvalley.model; // Sesuaikan paket
+package com.oop10x.steddyvalley.model;
 
 import com.oop10x.steddyvalley.model.map.Land;
 import com.oop10x.steddyvalley.model.objects.DeployedObject;
@@ -165,13 +165,10 @@ public class FarmMap {
                 checkTileY >= 0 && checkTileY < MAP_HEIGHT_IN_TILES) {
 
                     for (DeployedObject obj : deployedObjects) {
-                        boolean contains = obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY);
-                        System.out.println(
-                            "[DEBUG] Cek tile (" + checkTileX + "," + checkTileY + ") dengan objek " +
-                            obj.getObjectName() + " di (" + obj.getX() + "," + obj.getY() + ") size " +
-                            obj.getWidthInTiles() + "x" + obj.getHeightInTiles() + " => " + contains
-                        );
-                        if (contains) return obj;
+                        if (obj instanceof Actionable && obj.containsTile(checkTileX, checkTileY)) {
+                            System.out.println("DEBUG FarmMap: Found interactable " + obj.getObjectName() + " at adjacent tile (" + checkTileX + "," + checkTileY + ")");
+                            return obj;
+                        }
                     }
             }
         }

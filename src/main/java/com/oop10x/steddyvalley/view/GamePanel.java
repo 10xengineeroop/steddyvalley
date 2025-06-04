@@ -623,23 +623,23 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int dayStrWidth = fm.stringWidth(dayStr);
         int seasonStrWidth = fm.stringWidth(seasonStr);
         int weatherStrWidth = fm.stringWidth(weatherStr);
-        int interTextPadTop = 20; // Jarak antar teks di HUD atas
+        int interTextPadTop = 20;
 
         int hudTopActualWidth = timeStrWidth + interTextPadTop + dayStrWidth + interTextPadTop + seasonStrWidth + interTextPadTop + weatherStrWidth;
         int hudTopPanelWidth = hudTopActualWidth + (hudPadding * 2);
-        int hudTopX = (SCREEN_WIDTH - hudTopPanelWidth) / 2; // Pusatkan HUD atas
+        int hudTopX = (SCREEN_WIDTH - hudTopPanelWidth) / 2;
         if (hudTopX < 5) hudTopX = 5;
 
-        g2.setColor(new Color(0, 0, 0, 170)); // Background HUD atas (gelap transparan)
-        g2.fillRoundRect(hudTopX, topHudY, hudTopPanelWidth, topHudElementHeight, 12, 12); // Rounded corner lebih kecil
-        g2.setColor(new Color(210, 210, 210, 190)); // Border tipis
+        g2.setColor(new Color(0, 0, 0, 170));
+        g2.fillRoundRect(hudTopX, topHudY, hudTopPanelWidth, topHudElementHeight, 12, 12);
+        g2.setColor(new Color(210, 210, 210, 190));
         g2.setStroke(new java.awt.BasicStroke(1.5f));
         g2.drawRoundRect(hudTopX, topHudY, hudTopPanelWidth, topHudElementHeight, 12, 12);
         g2.setStroke(new java.awt.BasicStroke(1));
 
 
         g2.setColor(Color.WHITE);
-        int textYTop = topHudY + (topHudElementHeight - topTextHeight)/2 + fm.getAscent() -2; // Vertikal center teks
+        int textYTop = topHudY + (topHudElementHeight - topTextHeight)/2 + fm.getAscent() -2;
         int currentXTop = hudTopX + hudPadding;
         g2.drawString(timeStr, currentXTop, textYTop);
         currentXTop += timeStrWidth + interTextPadTop;
@@ -650,9 +650,9 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         g2.drawString(weatherStr, currentXTop, textYTop);
 
         // --- Bagian HUD Info Player Lainnya (Kiri Bawah) ---
-        Font infoFont = new Font("Arial", Font.PLAIN, 14); // Font untuk info player
+        Font infoFont = new Font("Arial", Font.PLAIN, 14);
         g2.setFont(infoFont);
-        fm = g2.getFontMetrics(); // Update FontMetrics untuk infoFont
+        fm = g2.getFontMetrics();
         int infoPadding = 8;
         int infoLineHeight = fm.getHeight();
         int infoLineSpacing = 5;
@@ -675,7 +675,6 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         infoLines.add("Fav Item: " + (playerFavItem != null && !playerFavItem.isEmpty() ? playerFavItem : "N/A"));
         infoLines.add("Partner: " + playerModel.getRelationshipStatus());
         infoLines.add(playerModel.getEquippedItem() != null ? "Equipped: " + playerModel.getEquippedItem().getName() : "Equipped: None");
-        // Info State dihilangkan
 
         int maxInfoWidth = 0;
         for (String line : infoLines) {
@@ -685,15 +684,15 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         int infoPanelWidth = maxInfoWidth + infoPadding * 2;
         int infoPanelHeight = (infoLineHeight * infoLines.size()) + (infoLineSpacing * (infoLines.size() -1)) + (infoPadding * 2);
         
-        int infoPanelX = 10; // Posisi X panel info (kiri bawah)
-        int infoPanelY = topHudElementHeight - topHudY + 5; // Posisi Y panel info
+        int infoPanelX = 10;
+        int infoPanelY = topHudElementHeight - topHudY + 5;
 
-        g2.setColor(new Color(235, 235, 235, 170)); // Putih lebih samar, lebih transparan
+        g2.setColor(new Color(235, 235, 235, 170));
         g2.fillRoundRect(infoPanelX, infoPanelY, infoPanelWidth, infoPanelHeight, 10, 10);
-        g2.setColor(new Color(80,80,80, 170)); // Border abu-abu gelap
+        g2.setColor(new Color(80,80,80, 170));
         g2.drawRoundRect(infoPanelX, infoPanelY, infoPanelWidth, infoPanelHeight, 10, 10);
 
-        g2.setColor(Color.BLACK); // Teks hitam
+        g2.setColor(Color.BLACK);
         int textYInfo = infoPanelY + infoPadding + fm.getAscent();
         for (String line : infoLines) {
             if (line != null) {
@@ -1648,6 +1647,11 @@ public class GamePanel extends JPanel implements Runnable, PlayerObserver, GameS
         
         g2.setColor(Color.ORANGE);
         g2.drawString(continueMessage, continueX, SCREEN_HEIGHT - 70);
+    }
+
+    public void setFarmMapModel(FarmMap farmMap) {
+        this.farmMapModel = farmMap;
+        repaint();
     }
     
     @Override public void onPlayerUpdated(Player player) { /* ... */ }

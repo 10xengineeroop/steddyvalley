@@ -10,6 +10,10 @@ public class CollisionChecker {
     private FarmMap farmMap;         
     private int tileSize;
 
+    public void setFarmMap(FarmMap farmMap) {
+        this.farmMap = farmMap;
+    }
+
     public CollisionChecker(TileManager tileManager, FarmMap farmMap, int tileSize) {
         this.tileManager = tileManager;
         this.farmMap = farmMap;
