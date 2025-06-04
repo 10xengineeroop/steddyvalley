@@ -6,7 +6,7 @@ import com.oop10x.steddyvalley.model.tile.Tile;
 import com.oop10x.steddyvalley.model.tile.TileManager; // i dont even know apa ini masih kepake atau ga, tapi keanya ga, tapi takut kodenya rusak karna w lupa
 
 public class CollisionChecker {
-    private TileManager tileManager;
+    private TileManager tileManager; // Untuk tile dasar (rumput, dll.) yeah no
     private FarmMap farmMap;         
     private int tileSize;
 
@@ -35,17 +35,14 @@ public class CollisionChecker {
         int bottomRightTileCol = futureRightPixelX / tileSize;
         int bottomRightTileRow = futureBottomPixelY / tileSize;
 
-        if (dx != 0 && dy == 0) {
-            System.out.println("DEBUG CC H-Move: current(" + currentPixelX + "," + currentPixelY + ") dx=" + dx);
-            System.out.println("  future L=" + futureLeftPixelX + " T=" + futureTopPixelY + " R=" + futureRightPixelX + " B=" + futureBottomPixelY);
-            System.out.println("  future Tiles: LCol=" + topLeftTileCol + " TRow=" + topLeftTileRow + " RCol=" + bottomRightTileCol + " BRow=" + bottomRightTileRow);
+        if (dx != 0 && dy == 0) { 
             int checkCol = (dx > 0) ? bottomRightTileCol : topLeftTileCol;
             Tile tile1 = tileManager.getTile(checkCol, topLeftTileRow);
             Tile tile2 = tileManager.getTile(checkCol, bottomRightTileRow);
             if ((tile1 != null && tile1.collision) || (tile2 != null && tile2.collision)) {
                 return true;
             }
-        } else if (dy != 0 && dx == 0) {
+        } else if (dy != 0 && dx == 0) { 
             int checkRow = (dy > 0) ? bottomRightTileRow : topLeftTileRow;
             Tile tile1 = tileManager.getTile(topLeftTileCol, checkRow);
             Tile tile2 = tileManager.getTile(bottomRightTileCol, checkRow);
@@ -63,9 +60,10 @@ public class CollisionChecker {
             Tile tileY2 = tileManager.getTile(bottomRightTileCol, checkRowY); 
             if ((tileY1 != null && tileY1.collision) || (tileY2 != null && tileY2.collision)) return true;
         }
+
         java.awt.Rectangle playerTargetBounds = new java.awt.Rectangle(futureLeftPixelX, futureTopPixelY, tileSize, tileSize);
 
-        if (this.farmMap != null && farmMap.getDeployedObjects() != null) {
+        if (farmMap != null && farmMap.getDeployedObjects() != null) {
             for (DeployedObject obj : farmMap.getDeployedObjects()) {
                 if (obj.isSolid()) {
                     java.awt.Rectangle objectBounds = new java.awt.Rectangle(

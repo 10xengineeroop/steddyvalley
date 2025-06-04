@@ -15,7 +15,6 @@ public class KeyHandler implements KeyListener {
         this.gameStateModel = gameState;
     }
 
-
     @Override
     public void keyTyped(KeyEvent e) {
         if (gameStateModel != null && gameController != null) { 
@@ -55,7 +54,7 @@ public class KeyHandler implements KeyListener {
                     if (gameStateModel.isEndGame()) {
                         inputActionsDelegate.scrollDisplay(-1);
                     } else {
-                        inputActionsDelegate.setMoveUp(true);
+                        gameController.setMoveUp(true);
                     }
                 }
                 break;
@@ -65,20 +64,20 @@ public class KeyHandler implements KeyListener {
                     if (gameStateModel.isEndGame()) {
                         inputActionsDelegate.scrollDisplay(1);
                     } else {
-                        inputActionsDelegate.setMoveDown(true);
+                        gameController.setMoveDown(true);
                     }
                 }
                 break;
             case KeyEvent.VK_A:
             case KeyEvent.VK_LEFT:
                 if (!gameStateModel.isPlayerNameInputState() && !gameStateModel.isPlayerFavItemInputState()) {
-                    inputActionsDelegate.setMoveLeft(true);
+                    gameController.setMoveLeft(true);
                 }
                 break;
             case KeyEvent.VK_D:
             case KeyEvent.VK_RIGHT:
                 if (!gameStateModel.isPlayerNameInputState() && !gameStateModel.isPlayerFavItemInputState()) {
-                    inputActionsDelegate.setMoveRight(true);
+                    gameController.setMoveRight(true);
                 }
                 break;
             case KeyEvent.VK_ESCAPE:
@@ -116,13 +115,13 @@ public class KeyHandler implements KeyListener {
 
         if (! (gameStateModel != null && (gameStateModel.isPlayerNameInputState() || gameStateModel.isPlayerFavItemInputState())) ) {
             if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) {
-                inputActionsDelegate.setMoveUp(false);
+                gameController.setMoveUp(false);
             } else if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN) {
-                inputActionsDelegate.setMoveDown(false);
+                gameController.setMoveDown(false);
             } else if (code == KeyEvent.VK_A || code == KeyEvent.VK_LEFT) {
-                inputActionsDelegate.setMoveLeft(false);
+                gameController.setMoveLeft(false);
             } else if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) {
-                inputActionsDelegate.setMoveRight(false);
+                gameController.setMoveRight(false);
             }
         }
     }
